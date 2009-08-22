@@ -16,17 +16,19 @@ using namespace std;
 
 class Chipset {
 public:
-  Chipset(const int _maxMem);
+  Chipset(const int& _maxMem, int * _mainMem);
   virtual ~Chipset();
 
   void startClock();
 
   void addComponent(Component &);
   //  void addCpu(Cpu &);
+  const Cpu& getCpu(int num = 0) const;
 private:
   Cpu & cpu;
 
   int * mainMem;
+  const int maxMem;
 
   static const int bios[];
 };

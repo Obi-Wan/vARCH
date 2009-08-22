@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <exception>
 
-Cpu::Cpu(Mmu & mC) : memoryController(mC) { }
+Cpu::Cpu(Mmu & mC) : memoryController(mC), progCounter(0) { }
 
 //Cpu::Cpu(const Cpu& orig) { }
 
@@ -22,7 +22,7 @@ Cpu::~Cpu() { }
  * and the content of the first region of memory
  */
 void
-Cpu::dumpRegistersAndMemory() {
+Cpu::dumpRegistersAndMemory() const {
   printf("Data Registers:");
   for (int i = 0; i < 8; i++) {
     printf(" %d", regsData[i]);
@@ -35,16 +35,16 @@ Cpu::dumpRegistersAndMemory() {
 
   printf("\nProgram Counter: %d\n",progCounter);
 
-  for (int i = 0;i < memoryController.getMaxMem(); i++) {
-    printf("Mem: %d\tIstruction: %d\tData: %d\n",
-            i, memoryController.loadFromMem(i),
-            memoryController.loadFromMem(i+1));
+  for (int i = 0; i < memoryController.getMaxMem(); i++) {
+    printf("Mem: %d\tData: %d\n", i, memoryController.loadFromMem(i));
   }
 }
 
 int
 Cpu::coreStep() {
   int currentIstr = memoryController.loadFromMem(progCounter++);
+
+  printf("nuova istruzione %d\n", progCounter);
   
   switch ((currentIstr >> 30 ) & 3) {
     case 0:

@@ -16,7 +16,7 @@ public:
   Cpu(Mmu & mC);
   virtual ~Cpu();
 
-  void dumpRegistersAndMemory();
+  void dumpRegistersAndMemory() const;
 
   int coreStep();
   

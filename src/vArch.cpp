@@ -9,14 +9,18 @@
 
 #include "Chipset.h"
 
+#define MAX_MEM 100
+
 /*
  * 
  */
 int
 main(int argc, char** argv) {
   
-  Chipset chipset(1000);
+  Chipset chipset(MAX_MEM, new int[MAX_MEM]);
   chipset.startClock();
+
+  chipset.getCpu().dumpRegistersAndMemory();
 
   return (EXIT_SUCCESS);
 }

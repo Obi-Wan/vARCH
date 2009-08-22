@@ -7,6 +7,7 @@
 
 #include "Mmu.h"
 #include <exception>
+#include <stdio.h>
 
 Mmu::Mmu(const int _maxMem, int * _mem) : maxMem(_maxMem), mainMem(_mem) {
   base = 0;
@@ -31,10 +32,10 @@ Mmu::~Mmu() { }
  */
 void
 Mmu::storeToMem(int data, int addr) {
-    if ((addr >= limit) || (addr < 0))
-          throw new std::exception();//("StoreToMem Failed: wrong addr!");
+  if ((addr >= limit) || (addr < 0))
+        throw new std::exception();//("StoreToMem Failed: wrong addr!");
 
-    mainMem[addr + base] = data;
+  mainMem[addr + base] = data;
 }
 
 /** Loads data from memory
@@ -45,10 +46,10 @@ Mmu::storeToMem(int data, int addr) {
  */
 int
 Mmu::loadFromMem(const int addr) const {
-    if ((addr >= limit) || (addr < 0))
-          throw new std::exception();//("LoadFromMem Failed: wrong addr!");
+  if ((addr >= limit) || (addr < 0))
+        throw new std::exception();//("LoadFromMem Failed: wrong addr!");
 
-    return mainMem[addr + base];
+  return mainMem[addr + base];
 }
 
 /** Sets Base and Limit to the desired values
@@ -60,11 +61,11 @@ Mmu::loadFromMem(const int addr) const {
  */
 void
 Mmu::resetLimits(int base_new,int limit_new) {
-    if ((base_new < 0) || (base_new > maxMem) ||
-        (limit_new < 0) || (limit_new > maxMem) ||
-        ((base_new + limit_new) > maxMem))
-          throw new std::exception();//("ReseLimits failed: Wrong Base or Limit!");
+  if ((base_new < 0) || (base_new > maxMem) ||
+      (limit_new < 0) || (limit_new > maxMem) ||
+      ((base_new + limit_new) > maxMem))
+        throw new std::exception();//("ReseLimits failed: Wrong Base or Limit!");
 
-    base = base_new;
-    limit = limit_new;
+  base = base_new;
+  limit = limit_new;
 }

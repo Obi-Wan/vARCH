@@ -11,10 +11,16 @@
 #include "Chipset.h"
 #include "../include/StdIstructions.h"
 
-Chipset::Chipset(const int _maxMem) : cpu(*(new Cpu(*(new Mmu(_maxMem,mainMem))))) {
-  mainMem = new int[_maxMem];
-  for (int i = 0; bios[i] != 0 || bios[i+1] != 0; i++) {
+Chipset::Chipset(const int& _maxMem, int * _mainMem)
+    : cpu(* (new Cpu(*(new Mmu(_maxMem,_mainMem))))), mainMem(_mainMem)
+      , maxMem(_maxMem) {
+
+  int i = 0;
+  for (i = 0; !(bios[i-1] == HALT && (bios[i] == 0 || bios[i+1] == 0)); i++) {
     mainMem[i] = bios[i];
+  }
+  for (; i < maxMem; i++) {
+    mainMem[i] = 0;
   }
 }
 
@@ -23,7 +29,7 @@ Chipset::Chipset(const int _maxMem) : cpu(*(new Cpu(*(new Mmu(_maxMem,mainMem)))
 Chipset::~Chipset() { }
 
 const int
-Chipset::bios[] = { 0, 0, 0 };
+Chipset::bios[] = { 0, 0, HALT, 0, 0 };
 
 void
 Chipset::startClock() {
@@ -32,7 +38,7 @@ Chipset::startClock() {
   int result = 0;
   do {
     result = cpu.coreStep();
-    sleep(10);
+    usleep(100);
   } while (result != HALT);
 
   printf("Exiting\n");
@@ -46,3 +52,9 @@ Chipset::addComponent(Component &) { }
 //Chipset::addCpu(Cpu & _cpu) {
 //  cpu = _cpu;
 //}
+
+const Cpu&
+Chipset::getCpu(int num) const {
+  /* for now num is just an API placeholder */
+  return cpu;
+}
