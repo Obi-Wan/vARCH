@@ -10,11 +10,18 @@
 
 #include "Mmu.h"
 #include "Component.h"
+#include "Chipset.h"
+
+#define NUM_REGS 8
+
+class Chipset; /* just a class declaration */
 
 class Cpu : public Component {
 public:
-  Cpu(Mmu & mC);
+  Cpu(Chipset&, Mmu&);
   virtual ~Cpu();
+
+  void init();
 
   void dumpRegistersAndMemory() const;
 
@@ -22,14 +29,16 @@ public:
   
 private:
 
+  Chipset& chipset;
+
   /** the MMU */
-  Mmu &memoryController;
+  Mmu& memoryController;
 
   /** The data registers */
-  int regsData[8];
+  int regsData[NUM_REGS];
 
 //  /** The addresses registers */
-//  int regsAddr[8];
+//  int regsAddr[NUM_REGS];
 
   /** The program counter */
   int progCounter;

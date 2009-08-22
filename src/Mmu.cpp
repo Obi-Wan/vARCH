@@ -11,7 +11,7 @@
 
 Mmu::Mmu(const int _maxMem, int * _mem) : maxMem(_maxMem), mainMem(_mem) {
   base = 0;
-  limit = maxMem -1;
+  limit = maxMem;
 }
 
 Mmu::Mmu(const Mmu& orig) : maxMem(orig.maxMem), mainMem(orig.mainMem) {

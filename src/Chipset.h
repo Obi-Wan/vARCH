@@ -10,9 +10,11 @@
 
 #include "Component.h"
 #include "Cpu.h"
-//#include <map>
+#include <vector>
 
 using namespace std;
+
+class Cpu;
 
 class Chipset {
 public:
@@ -21,9 +23,13 @@ public:
 
   void startClock();
 
-  void addComponent(Component &);
+  void addComponent(const Component &);
   //  void addCpu(Cpu &);
   const Cpu& getCpu(int num = 0) const;
+
+  void singlePutToComponent(const int& numComp, const int& signal);
+  int singleGetFromComponent(const int& numComp);
+
 private:
   Cpu & cpu;
 
@@ -31,6 +37,10 @@ private:
   const int maxMem;
 
   static const int bios[];
+
+  vector<Component> components;
+
+  void initMem();
 };
 
 #endif	/* _CHIPSET_H */

@@ -11,11 +11,25 @@
 #include <stdio.h>
 #include <exception>
 
-Cpu::Cpu(Mmu & mC) : memoryController(mC), progCounter(0) { }
+Cpu::Cpu(Chipset& _chipset, Mmu& mC)
+        : chipset(_chipset)
+        , memoryController(mC)
+{
+  init();
+}
 
 //Cpu::Cpu(const Cpu& orig) { }
 
 Cpu::~Cpu() { }
+
+void
+Cpu::init() {
+  progCounter = 0;
+  overflow = sign = zero = false;
+  for( int i = 0; i < NUM_REGS; i++) {
+    regsData[i] = 0;
+  }
+}
 
 
 /** Writes to standard output the content of registers, program counter
@@ -24,7 +38,7 @@ Cpu::~Cpu() { }
 void
 Cpu::dumpRegistersAndMemory() const {
   printf("Data Registers:");
-  for (int i = 0; i < 8; i++) {
+  for( int i = 0; i < NUM_REGS; i++) {
     printf(" %d", regsData[i]);
   }
   
@@ -35,7 +49,7 @@ Cpu::dumpRegistersAndMemory() const {
 
   printf("\nProgram Counter: %d\n",progCounter);
 
-  for (int i = 0; i < memoryController.getMaxMem(); i++) {
+  for( int i = 0; i < memoryController.getMaxMem(); i++) {
     printf("Mem: %d\tData: %d\n", i, memoryController.loadFromMem(i));
   }
 }
@@ -166,8 +180,10 @@ Cpu::istructsTwoArg(const int& istr) {
       break;
 
     case PUT:
+      chipset.singlePutToComponent(temp2,temp1);
       break;
     case GET:
+      temp2 = chipset.singleGetFromComponent(temp1);
       break;
 
     case EQ:

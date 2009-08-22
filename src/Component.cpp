@@ -7,9 +7,19 @@
 
 #include "Component.h"
 
-Component::Component() { }
+Component::Component() : simpleUnsafeResponse(0) { }
 
-Component::Component(const Component& orig) { }
+//Component::Component(const Component& orig) { }
 
 Component::~Component() { }
 
+
+void
+Component::put(const int& signal) {
+  if (signal == COMP_TYPE) simpleUnsafeResponse = COMP_CHAR;
+}
+
+int
+Component::get() {
+  return simpleUnsafeResponse;
+}
