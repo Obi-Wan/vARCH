@@ -6,7 +6,7 @@
  */
 
 #include "Cpu.h"
-#include "../include/StdIstructions.h"
+#include "../include/std_istructions.h"
 
 #include <stdio.h>
 
@@ -94,8 +94,8 @@ Cpu::istructsZeroArg(const int& istr, Flags& newFlags) throw(WrongIstructionExce
     case HALT:
       return istr;
       
-    case PUSH:
-    case POP:
+    case PUSHA:
+    case POPA:
     case RET:
       break;
 
@@ -134,6 +134,10 @@ Cpu::istructsOneArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
     case RSH:
       temp >>= 1;
       break;
+
+    case PUSH:
+    case POP:
+      break;
       
     case IFJ:
       if (flags.zero) progCounter = temp;
@@ -149,8 +153,10 @@ Cpu::istructsOneArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
       throw new WrongIstructionException();
       break;
   }
-  
-  storeArg(arg, typeArg, temp);
+
+  if (polishedIstr < PUSH || polishedIstr == POP) {
+    storeArg(arg, typeArg, temp);
+  }
 
   return 0;
 }
@@ -169,7 +175,6 @@ Cpu::istructsTwoArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
   const int polishedIstr = istr - (typeArg1 << 23) - (typeArg2 << 20);
 
   switch (polishedIstr) {
-
     case MOV:
       temp2 = temp1;
       break;
@@ -234,7 +239,7 @@ Cpu::istructsTwoArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
     
     storeArg(arg2, typeArg2, temp2); /* Operations that do modify args */
 
-    if (typeArg1 & 5) { /* in case the first arg was post incr/decr */
+    if (typeArg1 & 4) { /* in case the first arg was modified */
       storeArg(arg1, typeArg1, temp1);
     }
   }

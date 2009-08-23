@@ -9,7 +9,8 @@
 #include <stdio.h>
 
 #include "Chipset.h"
-#include "../include/StdIstructions.h"
+#include "../include/std_istructions.h"
+#include "../include/asm_helpers.h"
 
 Chipset::Chipset(const int& _maxMem, int * _mainMem)
     : cpu(* (new Cpu(*this,*(new Mmu(_maxMem,_mainMem))))), mainMem(_mainMem)
@@ -25,20 +26,20 @@ Chipset::~Chipset() { }
 
 //const int
 //Chipset::bios[] = {
-//  MOV + (COST << 23) + (REG << 20), 10, 0,
-//  MOV + (COST << 23) + (REG << 20), 20, 1,
-//  ADD + (REG << 23) + (REG << 20), 0, 1,
-//  MOV + (REG << 23) + (ADDR << 20), 1, 16,
+//  MOV + ARG_1(COST) + ARG_2(REG), 10, REG_DATA_1,
+//  MOV + ARG_1(COST) + ARG_2(REG), 20, REG_DATA_2,
+//  ADD + ARG_1(REG) + ARG_2(REG), REG_DATA_1, REG_DATA_2,
+//  MOV + ARG_1(REG) + ARG_2(ADDR), REG_DATA_2, 16,
 //  HALT, 0, 0 };
 
 const int
 Chipset::bios[] = {
-  MOV + (COST << 23) + (REG << 20), 7, 0,
-  MOV + (COST << 23) + (REG << 20), 1, 1,
-  IFEQJ + (COST << 23) + (REG << 20) + (COST << 17), 17, 0, 0,
-  MULT + (REG_POST_DECR << 23) + (REG << 20), 0, 1,
-  IFNEQJ + (COST << 23) + (REG << 20) + (COST << 17), 10, 0, 0,
-  MOV + (REG << 23) + (ADDR << 20), 1, 23,
+  MOV + ARG_1(COST) + ARG_2(REG),                   7,          REG_DATA_1,
+  MOV + ARG_1(COST) + ARG_2(REG),                   1,          REG_DATA_2,
+  IFEQJ + ARG_1(COST) + ARG_2(REG) + ARG_3(COST),   17,         REG_DATA_1, 0,
+  MULT + ARG_1(REG_POST_DECR) + ARG_2(REG),         REG_DATA_1, REG_DATA_2,
+  IFNEQJ + ARG_1(COST) + ARG_2(REG) + ARG_3(COST),  10,         REG_DATA_1, 0,
+  MOV + ARG_1(REG) + ARG_2(ADDR),                   REG_DATA_2, 23,
   HALT, 0, 0 };
 
 void
