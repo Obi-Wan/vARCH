@@ -113,7 +113,9 @@ Cpu::istructsOneArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
   int arg = memoryController.loadFromMem(progCounter++);
   int temp = loadArg(arg, typeArg);
 
-  switch (istr) {
+  const int polishedIstr = istr - (typeArg << 23);
+
+  switch (polishedIstr) {
     case NOT:
       temp = ~temp;
       break;
@@ -164,7 +166,9 @@ Cpu::istructsTwoArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
   int arg2 = memoryController.loadFromMem(progCounter++);
   int temp2 = loadArg(arg2, typeArg2);
 
-  switch (istr) {
+  const int polishedIstr = istr - (typeArg1 << 23) - (typeArg2 << 20);
+
+  switch (polishedIstr) {
 
     case MOV:
       temp2 = temp1;
@@ -239,16 +243,45 @@ Cpu::istructsTwoArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
 }
 
 int
-Cpu::istructsThreeArg(const int& istr) {
-  switch (istr) {
+Cpu::istructsThreeArg(const int& istr, Flags& newFlags) throw(WrongIstructionException) {
+
+  int typeArg1 = (istr >> 23) & 7;
+  int arg1 = memoryController.loadFromMem(progCounter++);
+  int temp1 = loadArg(arg1, typeArg1);
+
+  int typeArg2 = (istr >> 20) & 7;
+  int arg2 = memoryController.loadFromMem(progCounter++);
+  int temp2 = loadArg(arg2, typeArg2);
+
+  int typeArg3 = (istr >> 17) & 7;
+  int arg3 = memoryController.loadFromMem(progCounter++);
+  int temp3 = loadArg(arg3, typeArg3);
+
+  const int polishedIstr = istr - (typeArg1 << 23) - (typeArg2 << 20)
+                                - (typeArg3 << 17);
+
+  switch (polishedIstr) {
     case BPUT:
+      break;
     case BGET:
+      break;
     case IFEQJ:
+      if (temp2 == temp3) progCounter = temp1;
+      break;
     case IFNEQJ:
+      if (temp2 != temp3) progCounter = temp1;
+      break;
     case IFLOJ:
+      if (temp2 < temp3) progCounter = temp1;
+      break;
     case IFMOJ:
+      if (temp2 > temp3) progCounter = temp1;
+      break;
     case IFLEJ:
+      if (temp2 <= temp3) progCounter = temp1;
+      break;
     case IFMEJ:
+      if (temp2 >= temp3) progCounter = temp1;
       break;
 
     default:
