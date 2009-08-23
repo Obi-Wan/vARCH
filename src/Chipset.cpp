@@ -16,15 +16,29 @@ Chipset::Chipset(const int& _maxMem, int * _mainMem)
       , maxMem(_maxMem) {
 
   initMem();
+  cpu.dumpRegistersAndMemory();
 }
 
 //Chipset::Chipset(const Chipset& orig) { }
 
 Chipset::~Chipset() { }
 
+//const int
+//Chipset::bios[] = {
+//  MOV + (COST << 23) + (REG << 20), 10, 0,
+//  MOV + (COST << 23) + (REG << 20), 20, 1,
+//  ADD + (REG << 23) + (REG << 20), 0, 1,
+//  MOV + (REG << 23) + (ADDR << 20), 1, 16,
+//  HALT, 0, 0 };
+
 const int
 Chipset::bios[] = {
-  0, 0,
+  MOV + (COST << 23) + (REG << 20), 7, 0,
+  MOV + (COST << 23) + (REG << 20), 1, 1,
+  IFEQJ + (COST << 23) + (REG << 20) + (COST << 17), 17, 0, 0,
+  MULT + (REG_POST_DECR << 23) + (REG << 20), 0, 1,
+  IFNEQJ + (COST << 23) + (REG << 20) + (COST << 17), 10, 0, 0,
+  MOV + (REG << 23) + (ADDR << 20), 1, 23,
   HALT, 0, 0 };
 
 void
