@@ -45,8 +45,8 @@ enum StdInstructions {
   SLEEP         = N_ARGS_ZERO,
   REBOOT,
   HALT,
-  PUSH,
-  POP,
+  PUSHA,
+  POPA,
   RET,
 
   NOT           = N_ARGS_ONE,
@@ -55,6 +55,10 @@ enum StdInstructions {
   COMP2,
   LSH,
   RSH,
+
+  PUSH,
+  POP,
+
   JMP           = N_ARGS_ONE + JUMP,
   IFJ           = N_ARGS_ONE + JUMP + CONDITIONAL,
   IFNJ,
