@@ -10,7 +10,7 @@
 
 #define N_ARGS_ZERO   0
 #define N_ARGS_ONE    (1 << 30)
-#define N_ARGS_TWO    (2 << 20)
+#define N_ARGS_TWO    (2 << 30)
 #define N_ARGS_THREE  (3 << 30)
 
 #define ALGEBRIC      (1 << 29)
