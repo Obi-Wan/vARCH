@@ -24,12 +24,9 @@ Cpu::~Cpu() { }
 void
 Cpu::init() {
   progCounter = 0;
-  overflow = sign = zero = false;
-  for( int i = 0; i < NUM_REGS; i++) {
-    regsData[i] = 0;
-  }
+  resetFlags(flags);
+  resetRegs();
 }
-
 
 /** Writes to standard output the content of registers, program counter
  * and the content of the first region of memory
@@ -55,6 +52,9 @@ Cpu::dumpRegistersAndMemory() const {
 
 int
 Cpu::coreStep() {
+
+  Flags newFlags;
+  resetFlags(newFlags);
   int currentIstr = memoryController.loadFromMem(progCounter++);
 
   printf("nuova istruzione %d: num args: %d\n", progCounter,
@@ -82,6 +82,7 @@ Cpu::coreStep() {
   } catch (WrongIstructionException e) {
     printf("Wrong istruction. %s\n", e.what());
   }
+  flags = newFlags;
   return res;
 }
 
@@ -133,11 +134,13 @@ Cpu::istructsOneArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
       break;
       
     case IFJ:
-      if (!zero) break;
+      if (flags.zero) progCounter = temp;
+      break;
     case IFNJ:
-      if (zero) break;
+      if (!flags.zero) progCounter = temp;
+      break;
     case JMP:
-        progCounter = temp;
+      progCounter = temp;
       break;
       
     default:
@@ -200,30 +203,30 @@ Cpu::istructsTwoArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
       break;
 
     case EQ:
-      if (temp1 == temp2) zero = true;
+      if (temp1 == temp2) newFlags.zero = true;
       break;
     case LO:
-      if (temp1 < temp2) zero = true;
+      if (temp1 < temp2) newFlags.zero = true;
       break;
     case MO:
-      if (temp1 > temp2) zero = true;
+      if (temp1 > temp2) newFlags.zero = true;
       break;
     case LE:
-      if (temp1 <= temp2) zero = true;
+      if (temp1 <= temp2) newFlags.zero = true;
       break;
     case ME:
-      if (temp1 >= temp2) zero = true;
+      if (temp1 >= temp2) newFlags.zero = true;
       break;
     case NEQ:
-      if (temp1 != temp2) zero = true;
+      if (temp1 != temp2) newFlags.zero = true;
       break;
       
     default:
-      throw new std::exception();
+      throw new WrongIstructionException();
       break;
   }
 
-  if (istr < PUT) {
+  if (polishedIstr < PUT || polishedIstr == GET) {
     
     storeArg(arg2, typeArg2, temp2); /* Operations that do modify args */
 

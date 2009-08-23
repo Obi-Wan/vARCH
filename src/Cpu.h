@@ -30,6 +30,16 @@ public:
   
 private:
 
+  struct Flags {
+    /** Flag that reports true if the last operation resulted in zero */
+    bool zero;
+    /** Flag that is true if the last result was negative */
+    bool sign;
+    /** Flag that is true if the last result overflawed */
+    bool overflow;
+  };
+
+  /** link to the chipset */
   Chipset& chipset;
 
   /** the MMU */
@@ -44,14 +54,8 @@ private:
   /** The program counter */
   int progCounter;
 
-  /** Flag that reports true if the last operation resulted in zero */
-  bool zero;
-
-  /** Flag that is true if the last result was negative */
-  bool sign;
-
-  /** Flag that is true if the last result overflawed */
-  bool overflow;
+  /** The actual flags of the cpu */
+  Flags flags;
 
   int istructsOneArg(const int& istr, Flags& newFlags)
             throw(WrongIstructionException);
@@ -66,6 +70,11 @@ private:
             throw(WrongArgumentException);
   void storeArg(const int& arg, const int& typeArg, int value)
             throw(WrongArgumentException);
+  
+  void resetFlags(Flags& _flags) {
+    _flags.overflow = _flags.sign = _flags.zero = false;
+  }
+  void resetRegs() { for( int i = 0; i < NUM_REGS; i++) regsData[i] = 0; }
 };
 
 #endif	/* _CPU_H */
