@@ -9,7 +9,6 @@
 #include "../include/StdIstructions.h"
 
 #include <stdio.h>
-#include <exception>
 
 Cpu::Cpu(Chipset& _chipset, Mmu& mC)
         : chipset(_chipset)
@@ -58,22 +57,36 @@ int
 Cpu::coreStep() {
   int currentIstr = memoryController.loadFromMem(progCounter++);
 
-  printf("nuova istruzione %d\n", progCounter);
-  
-  switch ((currentIstr >> 30 ) & 3) {
-    case 0:
-      return istructsZeroArg(currentIstr);
-    case 1:
-      return istructsOneArg(currentIstr);
-    case 2:
-      return istructsTwoArg(currentIstr);
-    case 3:
-      return istructsThreeArg(currentIstr);
+  printf("nuova istruzione %d: num args: %d\n", progCounter,
+         (currentIstr >> 30 ) & 3);
+
+  int res = 0;
+
+  try {
+    switch ((currentIstr >> 30 ) & 3) {
+      case 0:
+        res = istructsZeroArg(currentIstr, newFlags);
+        break;
+      case 1:
+        res = istructsOneArg(currentIstr, newFlags);
+        break;
+      case 2:
+        res = istructsTwoArg(currentIstr, newFlags);
+        break;
+      case 3:
+        res = istructsThreeArg(currentIstr, newFlags);
+        break;
+    }
+  } catch (WrongArgumentException e) {
+    printf("Wrong argument of the istruction. %s\n", e.what());
+  } catch (WrongIstructionException e) {
+    printf("Wrong istruction. %s\n", e.what());
   }
+  return res;
 }
 
 int
-Cpu::istructsZeroArg(const int& istr) {
+Cpu::istructsZeroArg(const int& istr, Flags& newFlags) throw(WrongIstructionException) {
   switch (istr) {
     case SLEEP:
     case REBOOT:
@@ -86,14 +99,14 @@ Cpu::istructsZeroArg(const int& istr) {
       break;
 
     default:
-      throw new std::exception();
+      throw new WrongIstructionException();
       break;
   }
   return 0;
 }
 
 int
-Cpu::istructsOneArg(const int& istr) {
+Cpu::istructsOneArg(const int& istr, Flags& newFlags) throw(WrongIstructionException) {
 
   int typeArg = (istr >> 23) & 7;
   int arg = memoryController.loadFromMem(progCounter++);
@@ -128,7 +141,7 @@ Cpu::istructsOneArg(const int& istr) {
       break;
       
     default:
-      throw new std::exception();
+      throw new WrongIstructionException();
       break;
   }
   
@@ -138,7 +151,7 @@ Cpu::istructsOneArg(const int& istr) {
 }
 
 int
-Cpu::istructsTwoArg(const int& istr) {
+Cpu::istructsTwoArg(const int& istr, Flags& newFlags) throw(WrongIstructionException) {
 
   int typeArg1 = (istr >> 23) & 7;
   int arg1 = memoryController.loadFromMem(progCounter++);
@@ -236,14 +249,14 @@ Cpu::istructsThreeArg(const int& istr) {
       break;
 
     default:
-      throw new std::exception();
+      throw new WrongIstructionException();
       break;
   }
   return 0;
 }
 
 int
-Cpu::loadArg(const int& arg,const int& typeArg) {
+Cpu::loadArg(const int& arg,const int& typeArg) throw(WrongArgumentException) {
   switch (typeArg) {
     case COST:
       return arg;
@@ -266,13 +279,13 @@ Cpu::loadArg(const int& arg,const int& typeArg) {
     case REG_POST_DECR:
       return regsData[arg];
     default:
-      throw new std::exception();
+      throw new WrongArgumentException();
       break;
   }
 }
 
 void
-Cpu::storeArg(const int& arg, const int& typeArg, int value) {
+Cpu::storeArg(const int& arg, const int& typeArg, int value) throw(WrongArgumentException) {
   switch (typeArg) {
     case COST:
       break;
@@ -295,6 +308,7 @@ Cpu::storeArg(const int& arg, const int& typeArg, int value) {
       regsData[arg] = --value;
       break;
     default:
+      throw new WrongArgumentException();
       break;
   }
 }

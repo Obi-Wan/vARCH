@@ -11,6 +11,7 @@
 #include "Mmu.h"
 #include "Component.h"
 #include "Chipset.h"
+#include "../include/exceptions.h"
 
 #define NUM_REGS 8
 
@@ -52,13 +53,19 @@ private:
   /** Flag that is true if the last result overflawed */
   bool overflow;
 
-  int istructsOneArg(const int& istr);
-  int istructsZeroArg(const int& istr);
-  int istructsTwoArg(const int& istr);
-  int istructsThreeArg(const int& istr);
+  int istructsOneArg(const int& istr, Flags& newFlags)
+            throw(WrongIstructionException);
+  int istructsZeroArg(const int& istr, Flags& newFlags)
+            throw(WrongIstructionException);
+  int istructsTwoArg(const int& istr, Flags& newFlags)
+            throw(WrongIstructionException);
+  int istructsThreeArg(const int& istr, Flags& newFlags)
+            throw(WrongIstructionException);
 
-  int loadArg(const int& arg,const int& typeArg);
-  void storeArg(const int& arg, const int& typeArg, int value);
+  int loadArg(const int& arg,const int& typeArg)
+            throw(WrongArgumentException);
+  void storeArg(const int& arg, const int& typeArg, int value)
+            throw(WrongArgumentException);
 };
 
 #endif	/* _CPU_H */
