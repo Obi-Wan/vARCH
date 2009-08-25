@@ -7,6 +7,7 @@
 
 #include "Cpu.h"
 #include "../include/std_istructions.h"
+#include "../include/asm_helpers.h"
 
 #include <stdio.h>
 
@@ -109,11 +110,11 @@ Cpu::istructsZeroArg(const int& istr, Flags& newFlags) throw(WrongIstructionExce
 int
 Cpu::istructsOneArg(const int& istr, Flags& newFlags) throw(WrongIstructionException) {
 
-  int typeArg = (istr >> 23) & 7;
+  int typeArg = GET_ARG_1(istr);
   int arg = memoryController.loadFromMem(progCounter++);
   int temp = loadArg(arg, typeArg);
 
-  const int polishedIstr = istr - (typeArg << 23);
+  const int polishedIstr = istr - ARG_1(typeArg);
 
   switch (polishedIstr) {
     case NOT:
@@ -135,6 +136,7 @@ Cpu::istructsOneArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
       temp >>= 1;
       break;
 
+    case STACK:
     case PUSH:
     case POP:
       break;
@@ -148,13 +150,15 @@ Cpu::istructsOneArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
     case JMP:
       progCounter = temp;
       break;
+    case JSR:
+      break;
       
     default:
       throw new WrongIstructionException();
       break;
   }
 
-  if (polishedIstr < PUSH || polishedIstr == POP) {
+  if (polishedIstr < STACK || polishedIstr == POP) {
     storeArg(arg, typeArg, temp);
   }
 
@@ -164,15 +168,15 @@ Cpu::istructsOneArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
 int
 Cpu::istructsTwoArg(const int& istr, Flags& newFlags) throw(WrongIstructionException) {
 
-  int typeArg1 = (istr >> 23) & 7;
+  int typeArg1 = GET_ARG_1(istr);
   int arg1 = memoryController.loadFromMem(progCounter++);
   int temp1 = loadArg(arg1, typeArg1);
 
-  int typeArg2 = (istr >> 20) & 7;
+  int typeArg2 = GET_ARG_2(istr);
   int arg2 = memoryController.loadFromMem(progCounter++);
   int temp2 = loadArg(arg2, typeArg2);
 
-  const int polishedIstr = istr - (typeArg1 << 23) - (typeArg2 << 20);
+  const int polishedIstr = istr - ARG_1(typeArg1) - ARG_2(typeArg2);
 
   switch (polishedIstr) {
     case MOV:
@@ -202,6 +206,9 @@ Cpu::istructsTwoArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
       break;
     case XOR:
       temp2 ^= temp1;
+      break;
+
+    case MMU:
       break;
 
     case PUT:
@@ -235,7 +242,7 @@ Cpu::istructsTwoArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
       break;
   }
 
-  if (polishedIstr < PUT || polishedIstr == GET) {
+  if (polishedIstr <= XOR || polishedIstr == GET) {
     
     storeArg(arg2, typeArg2, temp2); /* Operations that do modify args */
 
@@ -250,20 +257,20 @@ Cpu::istructsTwoArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
 int
 Cpu::istructsThreeArg(const int& istr, Flags& newFlags) throw(WrongIstructionException) {
 
-  int typeArg1 = (istr >> 23) & 7;
+  int typeArg1 = GET_ARG_1(istr);
   int arg1 = memoryController.loadFromMem(progCounter++);
   int temp1 = loadArg(arg1, typeArg1);
 
-  int typeArg2 = (istr >> 20) & 7;
+  int typeArg2 = GET_ARG_2(istr);
   int arg2 = memoryController.loadFromMem(progCounter++);
   int temp2 = loadArg(arg2, typeArg2);
 
-  int typeArg3 = (istr >> 17) & 7;
+  int typeArg3 = GET_ARG_3(istr);
   int arg3 = memoryController.loadFromMem(progCounter++);
   int temp3 = loadArg(arg3, typeArg3);
 
-  const int polishedIstr = istr - (typeArg1 << 23) - (typeArg2 << 20)
-                                - (typeArg3 << 17);
+  const int polishedIstr = istr - ARG_1(typeArg1) - ARG_2(typeArg2)
+                                - ARG_3(typeArg3);
 
   switch (polishedIstr) {
     case BPUT:

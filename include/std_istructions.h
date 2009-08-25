@@ -17,11 +17,12 @@
 #define JUMP          (1 << 28)
 #define CONDITIONAL   (1 << 27)
 #define COMUNICATION  (1 << 26)
+#define SYSTEM        (1 << 25)
 
-/* These bits occupy variably the positions from (1 << 25) to
- *    (1 << 23)
- *    (1 << 20)
- *    (1 << 17)
+/* These bits occupy variably the positions from (1 << 24) to
+ *    (1 << 22)
+ *    (1 << 19)
+ *    (1 << 16)
  * Varying on the number of arguments (on istructions non using them for args
  * type, they may be recycled.)
  */
@@ -43,11 +44,11 @@ enum TypeOfArgument {
 enum StdInstructions {
 
   SLEEP         = N_ARGS_ZERO,
-  REBOOT,
-  HALT,
   PUSHA,
   POPA,
   RET,
+  REBOOT        = N_ARGS_ZERO + SYSTEM,
+  HALT,
 
   NOT           = N_ARGS_ONE,
   INCR,
@@ -56,8 +57,10 @@ enum StdInstructions {
   LSH,
   RSH,
 
+  STACK,
   PUSH,
   POP,
+  JSR,
 
   JMP           = N_ARGS_ONE + JUMP,
   IFJ           = N_ARGS_ONE + JUMP + CONDITIONAL,
@@ -72,6 +75,9 @@ enum StdInstructions {
   AND,
   OR,
   XOR,
+
+  MMU           = N_ARGS_TWO + SYSTEM,
+
   PUT           = N_ARGS_TWO + COMUNICATION,
   GET,
   EQ            = N_ARGS_TWO + CONDITIONAL,
