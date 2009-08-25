@@ -14,6 +14,7 @@
 Cpu::Cpu(Chipset& _chipset, Mmu& mC)
         : chipset(_chipset)
         , memoryController(mC)
+        , sP(*this)
 {
   init();
 }
@@ -46,6 +47,8 @@ Cpu::dumpRegistersAndMemory() const {
   }
 
   printf("\nProgram Counter: %d\n",progCounter);
+
+  printf("Stack pointers, user: %d \tsupervisor: %d\n",sP.uSP, sP.sSP);
 
   for( int i = 0; i < memoryController.getMaxMem(); i++) {
     printf("Mem: %d\tData: %d\n", i, memoryController.loadFromMem(i));
@@ -98,8 +101,13 @@ Cpu::istructsZeroArg(const int& istr, int& newFlags) throw(WrongIstructionExcept
       return (flags & F_SVISOR) ? istr : SLEEP;
       
     case PUSHA:
+      sP.pushAll();
+      break;
     case POPA:
+      sP.popAll();
+      break;
     case RET:
+      progCounter = sP.pop();
       break;
 
     default:
@@ -139,8 +147,13 @@ Cpu::istructsOneArg(const int& istr, int& newFlags) throw(WrongIstructionExcepti
       break;
 
     case STACK:
+      sP.setStackPointer(temp);
+      break;
     case PUSH:
+      sP.push(temp);
+      break;
     case POP:
+      temp = sP.pop();
       break;
       
     case IFJ:
@@ -153,6 +166,8 @@ Cpu::istructsOneArg(const int& istr, int& newFlags) throw(WrongIstructionExcepti
       progCounter = temp;
       break;
     case JSR:
+      sP.push(progCounter);
+      progCounter = temp;
       break;
       
     default:

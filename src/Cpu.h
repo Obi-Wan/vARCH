@@ -54,6 +54,50 @@ private:
   /** The addresses registers */
   int regsAddr[NUM_REGS];
 
+  struct StackPointers {
+  private:
+    int sSP; /* supervisor stack pointer */
+    int uSP; /* user stack pointer */
+
+    Cpu& cpu;
+  public:
+    StackPointers(Cpu& _c) : cpu(_c) { }
+    
+    void setStackPointer(const int& newSP) {
+      if (cpu.flags & F_SVISOR) sSP = newSP; else uSP = newSP;
+    }
+
+    int getStackPointer() const { return (cpu.flags & F_SVISOR) ? sSP : uSP; }
+
+    void push(const int& data) {
+      int& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
+      cpu.memoryController.storeToMem(data,ref++);
+    }
+
+    int pop() {
+      int& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
+      return cpu.memoryController.loadFromMem(--ref);
+    }
+
+    void pushAll() {
+      int& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
+      for(int i = 0; i < NUM_REGS; i++) {
+        cpu.memoryController.storeToMem(cpu.regsData[i],ref++);
+        cpu.memoryController.storeToMem(cpu.regsAddr[i],ref++);
+      }
+    }
+    
+    void popAll() {
+      int& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
+      for(int i = NUM_REGS-1; i >= 0; i--) {
+        cpu.regsAddr[i] = cpu.memoryController.loadFromMem(--ref);
+        cpu.regsData[i] = cpu.memoryController.loadFromMem(--ref);
+      }
+    }
+
+    friend void Cpu::dumpRegistersAndMemory() const;
+  } sP;
+
   /** The program counter */
   int progCounter;
 
