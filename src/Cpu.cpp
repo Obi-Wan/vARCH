@@ -11,6 +11,8 @@
 
 #include <stdio.h>
 
+#define SET_ARITM_FLAGS( x ) ( x < 0) ? F_NEGATIVE : ( (! x ) ? F_ZERO : 0 )
+
 Cpu::Cpu(Chipset& _chipset, Mmu& mC)
         : chipset(_chipset)
         , memoryController(mC)
@@ -126,15 +128,16 @@ Cpu::istructsOneArg(const int& istr, int& newFlags) throw(WrongIstructionExcepti
 
   const int polishedIstr = istr - ARG_1(typeArg);
 
+  int old = temp;
   switch (polishedIstr) {
     case NOT:
       temp = ~temp;
       break;
     case INCR:
-      temp++;
+      if (old > ++temp) flags += F_OVERFLOW;
       break;
     case DECR:
-      temp--;
+      if (old < --temp) flags += F_OVERFLOW;
       break;
     case COMP2:
       temp = -temp;
@@ -176,6 +179,7 @@ Cpu::istructsOneArg(const int& istr, int& newFlags) throw(WrongIstructionExcepti
   }
 
   if (polishedIstr < STACK || polishedIstr == POP) {
+    newFlags += SET_ARITM_FLAGS(temp);
     storeArg(arg, typeArg, temp);
   }
 
@@ -195,18 +199,22 @@ Cpu::istructsTwoArg(const int& istr, int& newFlags) throw(WrongIstructionExcepti
 
   const int polishedIstr = istr - ARG_1(typeArg1) - ARG_2(typeArg2);
 
+  int old = temp2;
   switch (polishedIstr) {
     case MOV:
       temp2 = temp1;
       break;
     case ADD:
       temp2 += temp1;
+      if (old > temp2) flags += F_OVERFLOW;
       break;
     case MULT:
       temp2 *= temp1;
+      if (old > temp2) flags += F_OVERFLOW;
       break;
     case SUB:
       temp2 -= temp1;
+      if (old < temp2) flags += F_OVERFLOW;
       break;
     case DIV:
       temp2 /= temp1;
@@ -261,7 +269,8 @@ Cpu::istructsTwoArg(const int& istr, int& newFlags) throw(WrongIstructionExcepti
   }
 
   if (polishedIstr <= XOR || polishedIstr == GET) {
-    
+
+    newFlags += SET_ARITM_FLAGS(temp2);
     storeArg(arg2, typeArg2, temp2); /* Operations that do modify args */
 
     if (typeArg1 & 4) { /* in case the first arg was modified */
