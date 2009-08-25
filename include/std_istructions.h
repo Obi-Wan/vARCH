@@ -36,8 +36,8 @@ enum TypeOfArgument {
 
   /* Here the (1 << 1) bit stays for INCR/DECR, and the (1 << 0) for PRE/POST */
   REG_PRE_INCR,   // 100
-  REG_POST_INCR,  // 101
-  REG_PRE_DECR,   // 110
+  REG_PRE_DECR,   // 101
+  REG_POST_INCR,  // 110
   REG_POST_DECR,  // 111
 };
 
