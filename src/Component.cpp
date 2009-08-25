@@ -16,7 +16,13 @@ Component::~Component() { }
 
 void
 Component::put(const int& signal) {
-  if (signal == COMP_TYPE) simpleUnsafeResponse = COMP_CHAR;
+  switch (signal) {
+    case COMP_TYPE:
+      simpleUnsafeResponse = COMP_CHAR;
+      break;
+    case COMP_FEATURES:
+      break;
+  }
 }
 
 int

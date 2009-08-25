@@ -14,9 +14,6 @@ public:
 //  Component(const Component& orig);
   virtual ~Component();
 
-  void put(const int& signal);
-  int get();
-
   enum ComponentType {
     COMP_CHAR,
     COMP_BLOCK,
@@ -29,6 +26,9 @@ public:
     COMP_TYPE,
     COMP_FEATURES,
   };
+
+  void put(const int& signal);
+  int get();
 private:
 
   int simpleUnsafeResponse;
