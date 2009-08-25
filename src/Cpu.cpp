@@ -26,6 +26,7 @@ void
 Cpu::init() {
   progCounter = 0;
   resetFlags(flags);
+  flags += F_SVISOR; // start in supervisor mode
   resetRegs();
 }
 
@@ -54,7 +55,7 @@ Cpu::dumpRegistersAndMemory() const {
 int
 Cpu::coreStep() {
 
-  Flags newFlags;
+  int newFlags = flags;
   resetFlags(newFlags);
   int currentIstr = memoryController.loadFromMem(progCounter++);
 
@@ -88,12 +89,13 @@ Cpu::coreStep() {
 }
 
 int
-Cpu::istructsZeroArg(const int& istr, Flags& newFlags) throw(WrongIstructionException) {
+Cpu::istructsZeroArg(const int& istr, int& newFlags) throw(WrongIstructionException) {
   switch (istr) {
     case SLEEP:
+      return istr;
     case REBOOT:
     case HALT:
-      return istr;
+      return (flags & F_SVISOR) ? istr : SLEEP;
       
     case PUSHA:
     case POPA:
@@ -108,7 +110,7 @@ Cpu::istructsZeroArg(const int& istr, Flags& newFlags) throw(WrongIstructionExce
 }
 
 int
-Cpu::istructsOneArg(const int& istr, Flags& newFlags) throw(WrongIstructionException) {
+Cpu::istructsOneArg(const int& istr, int& newFlags) throw(WrongIstructionException) {
 
   int typeArg = GET_ARG_1(istr);
   int arg = memoryController.loadFromMem(progCounter++);
@@ -142,10 +144,10 @@ Cpu::istructsOneArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
       break;
       
     case IFJ:
-      if (flags.zero) progCounter = temp;
+      if (flags & F_ZERO) progCounter = temp;
       break;
     case IFNJ:
-      if (!flags.zero) progCounter = temp;
+      if (! (flags & F_ZERO)) progCounter = temp;
       break;
     case JMP:
       progCounter = temp;
@@ -166,7 +168,7 @@ Cpu::istructsOneArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
 }
 
 int
-Cpu::istructsTwoArg(const int& istr, Flags& newFlags) throw(WrongIstructionException) {
+Cpu::istructsTwoArg(const int& istr, int& newFlags) throw(WrongIstructionException) {
 
   int typeArg1 = GET_ARG_1(istr);
   int arg1 = memoryController.loadFromMem(progCounter++);
@@ -209,6 +211,7 @@ Cpu::istructsTwoArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
       break;
 
     case MMU:
+      if (flags & F_SVISOR) memoryController.resetLimits(temp1, temp2);
       break;
 
     case PUT:
@@ -219,22 +222,22 @@ Cpu::istructsTwoArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
       break;
 
     case EQ:
-      if (temp1 == temp2) newFlags.zero = true;
+      if (temp1 == temp2) newFlags += F_ZERO;
       break;
     case LO:
-      if (temp1 < temp2) newFlags.zero = true;
+      if (temp1 < temp2) newFlags += F_ZERO;
       break;
     case MO:
-      if (temp1 > temp2) newFlags.zero = true;
+      if (temp1 > temp2) newFlags += F_ZERO;
       break;
     case LE:
-      if (temp1 <= temp2) newFlags.zero = true;
+      if (temp1 <= temp2) newFlags += F_ZERO;
       break;
     case ME:
-      if (temp1 >= temp2) newFlags.zero = true;
+      if (temp1 >= temp2) newFlags += F_ZERO;
       break;
     case NEQ:
-      if (temp1 != temp2) newFlags.zero = true;
+      if (temp1 != temp2) newFlags += F_ZERO;
       break;
       
     default:
@@ -255,7 +258,7 @@ Cpu::istructsTwoArg(const int& istr, Flags& newFlags) throw(WrongIstructionExcep
 }
 
 int
-Cpu::istructsThreeArg(const int& istr, Flags& newFlags) throw(WrongIstructionException) {
+Cpu::istructsThreeArg(const int& istr, int& newFlags) throw(WrongIstructionException) {
 
   int typeArg1 = GET_ARG_1(istr);
   int arg1 = memoryController.loadFromMem(progCounter++);

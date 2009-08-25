@@ -15,6 +15,15 @@
 
 #define NUM_REGS 8
 
+#define F_CARRY     (1 << 0)
+#define F_OVERFLOW  (1 << 1)
+#define F_ZERO      (1 << 2)
+#define F_NEGATIVE  (1 << 3)
+#define F_EXTEND    (1 << 4)
+#define F_INT_MASK  (1 << 5)
+#define F_SVISOR    (1 << 6)
+#define F_TRACE     (1 << 7)
+
 class Chipset; /* just a class declaration */
 
 class Cpu : public Component {
@@ -30,14 +39,8 @@ public:
   
 private:
 
-  struct Flags {
-    /** Flag that reports true if the last operation resulted in zero */
-    bool zero;
-    /** Flag that is true if the last result was negative */
-    bool sign;
-    /** Flag that is true if the last result overflawed */
-    bool overflow;
-  };
+  /** The actual flags of the cpu */
+  int flags;
 
   /** link to the chipset */
   Chipset& chipset;
@@ -54,16 +57,13 @@ private:
   /** The program counter */
   int progCounter;
 
-  /** The actual flags of the cpu */
-  Flags flags;
-
-  int istructsOneArg(const int& istr, Flags& newFlags)
+  int istructsOneArg(const int& istr, int& newFlags)
             throw(WrongIstructionException);
-  int istructsZeroArg(const int& istr, Flags& newFlags)
+  int istructsZeroArg(const int& istr, int& newFlags)
             throw(WrongIstructionException);
-  int istructsTwoArg(const int& istr, Flags& newFlags)
+  int istructsTwoArg(const int& istr, int& newFlags)
             throw(WrongIstructionException);
-  int istructsThreeArg(const int& istr, Flags& newFlags)
+  int istructsThreeArg(const int& istr, int& newFlags)
             throw(WrongIstructionException);
 
   int loadArg(const int& arg,const int& typeArg)
@@ -71,8 +71,8 @@ private:
   void storeArg(const int& arg, const int& typeArg, int value)
             throw(WrongArgumentException);
   
-  void resetFlags(Flags& _flags) {
-    _flags.overflow = _flags.sign = _flags.zero = false;
+  void resetFlags(int& _flags) {
+    _flags -= _flags & ( F_ZERO + F_CARRY + F_NEGATIVE + F_OVERFLOW );
   }
   void resetRegs() { for( int i = 0; i < NUM_REGS; i++) regsData[i] = 0; }
 };
