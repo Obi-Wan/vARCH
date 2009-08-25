@@ -51,8 +51,8 @@ private:
   /** The data registers */
   int regsData[NUM_REGS];
 
-//  /** The addresses registers */
-//  int regsAddr[NUM_REGS];
+  /** The addresses registers */
+  int regsAddr[NUM_REGS];
 
   /** The program counter */
   int progCounter;
@@ -74,7 +74,7 @@ private:
   void resetFlags(int& _flags) {
     _flags -= _flags & ( F_ZERO + F_CARRY + F_NEGATIVE + F_OVERFLOW );
   }
-  void resetRegs() { for( int i = 0; i < NUM_REGS; i++) regsData[i] = 0; }
+  void resetRegs() { for( int i = 0; i < NUM_REGS; i++) regsData[i] = regsAddr[i] = 0; }
 };
 
 #endif	/* _CPU_H */

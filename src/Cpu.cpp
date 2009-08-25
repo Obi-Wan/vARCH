@@ -40,10 +40,10 @@ Cpu::dumpRegistersAndMemory() const {
     printf(" %d", regsData[i]);
   }
   
-//  printf("\nAddress Registers:");
-//  for (int i = 0; i < 8; i++) {
-//    printf(" %d", regsAddr[i]);
-//  }
+  printf("\nAddress Registers:");
+  for (int i = 0; i < 8; i++) {
+    printf(" %d", regsAddr[i]);
+  }
 
   printf("\nProgram Counter: %d\n",progCounter);
 
