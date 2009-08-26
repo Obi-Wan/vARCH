@@ -16,7 +16,7 @@
 #define GET_ARG_2( x ) ((x >> 19) & 7)
 #define GET_ARG_3( x ) ((x >> 16) & 7)
 
-#define OFFSET_ADDR_REGS 256
+#define OFFSET_REGS 256
 
 enum Registers {
   REG_DATA_1 = 0,
@@ -28,7 +28,7 @@ enum Registers {
   REG_DATA_7,
   REG_DATA_8,
   
-  REG_ADDR_1 = OFFSET_ADDR_REGS,
+  REG_ADDR_1 = OFFSET_REGS,
   REG_ADDR_2,
   REG_ADDR_3,
   REG_ADDR_4,
@@ -37,9 +37,11 @@ enum Registers {
   REG_ADDR_7,
   REG_ADDR_8,
 
-  STACK_POINTER = OFFSET_ADDR_REGS * 2,
+  STACK_POINTER = OFFSET_REGS * 2,
 
-  FRAME_POINTER = OFFSET_ADDR_REGS * 3,
+  FRAME_POINTER = OFFSET_REGS * 3,
+
+  STATE_REGISTER = OFFSET_REGS * 4,
 };
 
 #endif	/* _ASM_HELPERS_H */
