@@ -10,6 +10,7 @@
 
 #include "Component.h"
 #include "Cpu.h"
+#include "FileHandler.h"
 #include <vector>
 
 using namespace std;
@@ -41,6 +42,8 @@ private:
   vector<Component> components;
 
   void initMem();
+
+  Bloat loadBiosFromFile(const char * file);
 };
 
 #endif	/* _CHIPSET_H */

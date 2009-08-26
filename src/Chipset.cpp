@@ -42,11 +42,24 @@ Chipset::bios[] = {
   MOV + ARG_1(REG) + ARG_2(ADDR),                   REG_DATA_2, 23,
   HALT, 0, 0 };
 
+Bloat
+Chipset::loadBiosFromFile(const char * file) {
+  FileHandler handler(file,ios_base::in);
+  return handler.getFileContent();
+}
+
 void
 Chipset::initMem() {
   int i = 0;
-  for (i = 0; !(bios[i-1] == HALT && (bios[i] == 0 || bios[i+1] == 0)); i++) {
-    mainMem[i] = bios[i];
+  try {
+    Bloat biosLoad = loadBiosFromFile("bios.bin");
+    for (i = 0; i < biosLoad.size(); i++) {
+      mainMem[i] = biosLoad[i];
+    }
+  } catch (WrongFileException) {
+    for (i = 0; !(bios[i-1] == HALT && (bios[i] == 0 || bios[i+1] == 0)); i++) {
+      mainMem[i] = bios[i];
+    }
   }
   for (; i < maxMem; i++) {
     mainMem[i] = 0;
