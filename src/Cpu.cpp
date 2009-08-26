@@ -39,7 +39,7 @@ Cpu::init() {
 void
 Cpu::dumpRegistersAndMemory() const {
 
-  int old = setFlags(F_SVISOR);
+//  int old = setFlags(F_SVISOR);
 
   printf("Data Registers:");
   for( int i = 0; i < NUM_REGS; i++) {
@@ -60,7 +60,7 @@ Cpu::dumpRegistersAndMemory() const {
     printf("Mem: %d\tData: %d\n", i, memoryController.loadFromMem(i));
   }
 
-  resetFlags(old);
+//  restoreFlags(old);
 }
 
 int

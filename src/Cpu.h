@@ -114,11 +114,14 @@ private:
             throw(WrongArgumentException);
   void storeArg(const int& arg, const int& typeArg, int value)
             throw(WrongArgumentException);
-  
+
+  void resetRegs() { for( int i = 0; i < NUM_REGS; i++) regsData[i] = regsAddr[i] = 0; }
+
   void resetFlags(int& _flags) {
     _flags -= _flags & ( F_ZERO + F_CARRY + F_NEGATIVE + F_OVERFLOW );
   }
-  void resetRegs() { for( int i = 0; i < NUM_REGS; i++) regsData[i] = regsAddr[i] = 0; }
+
+  void restoreFlags(int& _flags) { flags = _flags; }
 
   int clearFlags(int mask) {
     int oldFlags = flags;
