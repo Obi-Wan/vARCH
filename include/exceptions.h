@@ -9,20 +9,43 @@
 #define	_EXCEPTIONS_H
 
 #include <exception>
+#include <string>
 
-class WrongIstructionException : public std::exception {
-  const char * message;
+using namespace std;
+
+class BasicException : public exception {
+  string message;
 public:
-  WrongIstructionException() { message = "\0"; }
-  WrongIstructionException(const char * _mess) { message = _mess; }
+  BasicException() { }
+  BasicException(const char * _mess) : message(_mess) { }
+  BasicException(const string& _mess) : message(_mess) { }
+  BasicException(const BasicException& _ex) : message(_ex.message) { }
 
-  const char * what() { return message; }
+  virtual ~BasicException() throw() { }
+
+  virtual const char * what() const throw() { return message.data(); }
+  const string& getMessage() const throw() { return message; }
+};
+
+class WrongIstructionException : public BasicException {
+public:
+  WrongIstructionException() { }
+  WrongIstructionException(const char * _mess) : BasicException(_mess) { }
+  WrongIstructionException(const string& _mess) : BasicException(_mess) { }
 };
 
 class WrongArgumentException : public WrongIstructionException {
 public:
   WrongArgumentException() { }
   WrongArgumentException(const char * _mess) : WrongIstructionException(_mess) { }
+  WrongArgumentException(const string& _mess) : WrongIstructionException(_mess) { }
+};
+
+class WrongFileException : public BasicException {
+public:
+  WrongFileException() { }
+  WrongFileException(const char * _mess) : BasicException(_mess) { }
+  WrongFileException(const string& _mess) : BasicException(_mess) { }
 };
 
 #endif	/* _EXCEPTIONS_H */
