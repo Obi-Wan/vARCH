@@ -69,6 +69,8 @@ private:
 
     int getStackPointer() const { return (cpu.flags & F_SVISOR) ? sSP : uSP; }
 
+    int getUStackPointer() const { return uSP; }
+
     void push(const int& data) {
       int& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
       cpu.memoryController.storeToMem(data,ref++);
@@ -94,8 +96,6 @@ private:
         cpu.regsData[i] = cpu.memoryController.loadFromMem(--ref);
       }
     }
-
-    friend void Cpu::dumpRegistersAndMemory() const;
   } sP;
 
   /** The program counter */
@@ -119,6 +119,18 @@ private:
     _flags -= _flags & ( F_ZERO + F_CARRY + F_NEGATIVE + F_OVERFLOW );
   }
   void resetRegs() { for( int i = 0; i < NUM_REGS; i++) regsData[i] = regsAddr[i] = 0; }
+
+  int clearFlags(int mask) {
+    int oldFlags = flags;
+    flags -= flags & mask;
+    return oldFlags;
+  }
+
+  int setFlags(int mask) {
+    int oldFlags = flags;
+    flags |= mask;
+    return oldFlags;
+  }
 };
 
 #endif	/* _CPU_H */

@@ -38,6 +38,9 @@ Cpu::init() {
  */
 void
 Cpu::dumpRegistersAndMemory() const {
+
+  int old = setFlags(F_SVISOR);
+
   printf("Data Registers:");
   for( int i = 0; i < NUM_REGS; i++) {
     printf(" %d", regsData[i]);
@@ -50,11 +53,14 @@ Cpu::dumpRegistersAndMemory() const {
 
   printf("\nProgram Counter: %d\n",progCounter);
 
-  printf("Stack pointers, user: %d \tsupervisor: %d\n",sP.uSP, sP.sSP);
+  printf("Stack pointers, user: %d \tsupervisor: %d\n", sP.getUStackPointer(),
+         sP.getStackPointer());
 
   for( int i = 0; i < memoryController.getMaxMem(); i++) {
     printf("Mem: %d\tData: %d\n", i, memoryController.loadFromMem(i));
   }
+
+  resetFlags(old);
 }
 
 int
