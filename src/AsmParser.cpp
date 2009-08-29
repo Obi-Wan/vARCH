@@ -201,6 +201,12 @@ AsmParser::processArgOp(int& op, const string& arg, const int& numArg) {
         throw WrongArgumentException("No costant named " + arg);
       argValue = consts.find(arg.substr(1, arg.size()-1))->second;
       break;
+    case '@':
+      op += ARG(numArg, COST);
+      if (labels.find(arg.substr(1, arg.size()-1)) == labels.end())
+        throw WrongArgumentException("No label named " + arg);
+      argValue = labels.find(arg.substr(1, arg.size()-1))->second;
+      break;
     case '%':
       op += ARG(numArg, REG);
       argValue = parseReg(arg.substr(1, arg.size()-1)) - 1;
