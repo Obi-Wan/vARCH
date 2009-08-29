@@ -115,6 +115,8 @@ AsmParser::preProcess() {
         consts.insert(Constants::value_type(name,value));
       } else {
         i++;
+        for(; (lineStr >> word) && !word.empty() ;) i++;
+
         newFileContent += line;
         newFileContent += '\n';
       }
