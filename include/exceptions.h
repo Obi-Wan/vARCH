@@ -8,7 +8,7 @@
 #ifndef _EXCEPTIONS_H
 #define	_EXCEPTIONS_H
 
-#include <exception>
+#include <stdexcept>
 #include <string>
 
 using namespace std;
