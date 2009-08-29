@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "Chipset.h"
+#include "../include/exceptions.h"
 
 #define MAX_MEM 100
 
@@ -18,7 +19,11 @@ int
 main(int argc, char** argv) {
   
   Chipset chipset(MAX_MEM, new int[MAX_MEM]);
-  chipset.startClock();
+  try {
+    chipset.startClock();
+  } catch (BasicException e) {
+    printf("An exception occurred: %s\n", e.what());
+  }
 
   chipset.getCpu().dumpRegistersAndMemory();
 
