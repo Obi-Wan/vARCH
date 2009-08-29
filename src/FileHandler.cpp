@@ -18,7 +18,9 @@ BinLoader::getBinFileContent() {
   while ( !file.eof() ) {
     file.read((char *)&temp, sizeof(int));
     bloat.push_back(temp);
+    #ifdef DEBUG
     printf("int: %d\n",temp);
+    #endif
   }
 
   return bloat;
@@ -40,5 +42,8 @@ void
 BinWriter::saveBinFileContent(const Bloat& bloat) {
   for(int i = 0; i < bloat.size(); i++) {
     file.write((const char *)&bloat[i], sizeof(Bloat::value_type));
+    #ifdef DEBUG
+    printf("int: %d\n",bloat[i]);
+    #endif
   }
 }
