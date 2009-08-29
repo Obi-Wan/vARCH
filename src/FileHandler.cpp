@@ -15,8 +15,7 @@ BinLoader::getBinFileContent() {
   Bloat bloat;
   int temp = 0;
   
-  while ( !file.eof() ) {
-    file.read((char *)&temp, sizeof(int));
+  while ( file.read((char *)&temp, sizeof(int)) ) {
     bloat.push_back(temp);
     DebugPrintf(("int: %d\n",temp));
   }
@@ -28,9 +27,9 @@ string
 TextLoader::getTextFileContent() {
   string str, line;
   
-  while ( !file.eof() ) {
-    getline(file, line);
+  while ( getline(file, line) ) {
     str.append(line += '\n');
+    DebugPrintf(("line: %s\n",line.c_str()));
   }
 
   return str;
