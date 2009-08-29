@@ -8,6 +8,7 @@
 #include "AsmParser.h"
 
 #include <sstream>
+#include "../include/macros.h"
 
 #define PUT_ISTR( x ) istructions.insert(Istructions::value_type(NAME_OF( x ), x ))
 
@@ -69,11 +70,7 @@ AsmParser::init() {
   PUT_ISTR(IFLEJ);
   PUT_ISTR(IFMEJ);
 
-  #ifdef DEBUG
-  for(Istructions::iterator iter = istructions.begin(); iter != istructions.end(); iter++) {
-    printf("DEBUG: Istr name: %s, value: %d\n", iter->first.c_str(), iter->second);
-  }
-  #endif
+  DebugPrintfMaps(Istructions, istructions, "istructions");
 }
 
 inline void
@@ -125,17 +122,10 @@ AsmParser::preProcess() {
 
   fileContent = newFileContent;
 
-  #ifdef DEBUG
-  printf("DEBUG: labels:\n");
-  for(Labels::iterator i = labels.begin(); i != labels.end(); i++) {
-    printf("label name: \"%s\", pos: %d\n", i->first.data(), i->second);
-  }
+  DebugPrintfMaps(Labels, labels, "labels");
+  DebugPrintfMaps(Constants, consts, "consts");
 
-  printf("DEBUG: consts:\n");
-  for(Constants::iterator i = consts.begin(); i != consts.end(); i++) {
-    printf("const name: \"%s\", value: %d\n", i->first.data(), i->second);
-  }
-  #endif
+  printf("PreProcess Finished\n");
 }
 
 void

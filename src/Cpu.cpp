@@ -8,8 +8,9 @@
 #include "Cpu.h"
 #include "../include/std_istructions.h"
 #include "../include/asm_helpers.h"
+#include "../include/macros.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #define SET_ARITM_FLAGS( x ) ( x < 0) ? F_NEGATIVE : ( (! x ) ? F_ZERO : 0 )
 
@@ -70,8 +71,8 @@ Cpu::coreStep() {
   resetFlags(newFlags);
   int currentIstr = memoryController.loadFromMem(progCounter++);
 
-  printf("Istruzione nell'area di mem: %d num args: %d\n", progCounter-1,
-         (currentIstr >> 30 ) & 3);
+  DebugPrintf(("Istruzione nell'area di mem: %d num args: %d\n", progCounter-1,
+         (currentIstr >> 30 ) & 3));
 
   int res = 0;
 
@@ -340,24 +341,30 @@ int
 Cpu::loadArg(const int& arg,const int& typeArg) throw(WrongArgumentException) {
   switch (typeArg) {
     case COST:
+      DebugPrintf(("COST: %d\n", arg));
       return arg;
       break;
     case ADDR:
+      DebugPrintf(("ADDR: %d\n", arg));
       return memoryController.loadFromMem(arg);
       break;
     case ADDR_IN_REG:
+      DebugPrintf(("ADDR_IN_REG: %d\n", arg));
       return memoryController.loadFromMem(getReg(arg));
       break;
 
     case REG_PRE_INCR:
+      DebugPrintf(("REG_PRE_INCR: %d\n", arg));
       return (getReg(arg) +1);
       break;
     case REG_PRE_DECR:
+      DebugPrintf(("REG_PRE_DECR: %d\n", arg));
       return (getReg(arg) +1);
       break;
     case REG:
     case REG_POST_INCR:
     case REG_POST_DECR:
+      DebugPrintf(("REG / REG_POST_*: %d\n", arg));
       return getReg(arg);
     default:
       throw WrongArgumentException("Failed in loading");
@@ -369,21 +376,26 @@ void
 Cpu::storeArg(const int& arg, const int& typeArg, int value) throw(WrongArgumentException) {
   switch (typeArg) {
     case ADDR:
+      DebugPrintf(("ADDR: %d\n", arg));
       memoryController.storeToMem(value, arg);
       break;
     case ADDR_IN_REG:
+      DebugPrintf(("ADDR_IN_REG: %d\n", arg));
       memoryController.storeToMem(value, getReg(arg));
       break;
 
     case REG:
     case REG_PRE_INCR:
     case REG_PRE_DECR:
+      DebugPrintf(("REG / REG_PRE_*: %d\n", arg));
       setReg(arg, value);
       break;
     case REG_POST_INCR:
+      DebugPrintf(("REG_POST_INCR: %d\n", arg));
       setReg(arg, ++value);
       break;
     case REG_POST_DECR:
+      DebugPrintf(("REG_POST_DECR: %d\n", arg));
       setReg(arg, --value);
       break;
     default:
@@ -396,7 +408,7 @@ inline int
 Cpu::getReg(const int& arg) {
   int type = arg / OFFSET_REGS;
   int spec = arg % OFFSET_REGS;
-  printf("arg: %d type: %d, spec: %d\n",arg,type,spec);
+  DebugPrintf(("arg: %d type: %d, spec: %d\n",arg,type,spec));
   switch (type) {
     case 0:
       return regsData[spec];
@@ -420,7 +432,7 @@ inline void
 Cpu::setReg(const int& arg, const int& value) {
   int type = arg / OFFSET_REGS;
   int spec = arg % OFFSET_REGS;
-  printf("arg: %d type: %d, spec: %d\n",arg,type,spec);
+  DebugPrintf( ("arg: %d type: %d, spec: %d\n",arg,type,spec) );
   switch (type) {
     case 0:
       regsData[spec] = value;
