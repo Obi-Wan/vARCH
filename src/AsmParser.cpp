@@ -25,6 +25,7 @@ AsmParser::init() {
   PUT_ISTR(RET);
   PUT_ISTR(REBOOT);
   PUT_ISTR(HALT);
+
   PUT_ISTR(NOT);
   PUT_ISTR(INCR);
   PUT_ISTR(DECR);
@@ -38,6 +39,7 @@ AsmParser::init() {
   PUT_ISTR(JMP);
   PUT_ISTR(IFJ);
   PUT_ISTR(IFNJ);
+
   PUT_ISTR(MOV);
   PUT_ISTR(ADD);
   PUT_ISTR(MULT);
@@ -57,6 +59,7 @@ AsmParser::init() {
   PUT_ISTR(LE);
   PUT_ISTR(ME);
   PUT_ISTR(NEQ);
+  
   PUT_ISTR(BPUT);
   PUT_ISTR(BGET);
   PUT_ISTR(IFEQJ);
@@ -65,6 +68,12 @@ AsmParser::init() {
   PUT_ISTR(IFMOJ);
   PUT_ISTR(IFLEJ);
   PUT_ISTR(IFMEJ);
+
+  #ifdef DEBUG
+  for(Istructions::iterator iter = istructions.begin(); iter != istructions.end(); iter++) {
+    printf("DEBUG: Istr name: %s, value: %d\n", iter->first.c_str(), iter->second);
+  }
+  #endif
 }
 
 inline void
@@ -92,16 +101,16 @@ AsmParser::preProcess() {
         labels.insert(Labels::value_type(label, i));
       } else if (word == "DC") {
         string name;
-        fileStr >> name;
+        lineStr >> name;
 
         if (consts.find(name) != consts.end()) {
           throw DuplicateConstException(
                   "Const already defined with the name: " + consts.find(name)->first);
         }
 
-        fileStr.ignore(256,'$');
+        lineStr.ignore(256,'$');
         int value;
-        fileStr >> value;
+        lineStr >> value;
 
         consts.insert(Constants::value_type(name,value));
       } else {
@@ -113,6 +122,18 @@ AsmParser::preProcess() {
   }
 
   fileContent = newFileContent;
+
+  #ifdef DEBUG
+  printf("DEBUG: labels:\n");
+  for(Labels::iterator i = labels.begin(); i != labels.end(); i++) {
+    printf("label name: \"%s\", pos: %d\n", i->first.data(), i->second);
+  }
+
+  printf("DEBUG: consts:\n");
+  for(Constants::iterator i = consts.begin(); i != consts.end(); i++) {
+    printf("const name: \"%s\", value: %d\n", i->first.data(), i->second);
+  }
+  #endif
 }
 
 void
@@ -174,15 +195,17 @@ AsmParser::processArgOp(int& op, const string& arg, const int& numArg) {
       break;
     case '.':
       op += ARG(numArg, COST);
+      if (consts.find(arg.substr(1, arg.size()-1)) == consts.end())
+        throw WrongArgumentException("No costant named " + arg);
       argValue = consts.find(arg.substr(1, arg.size()-1))->second;
       break;
     case '%':
       op += ARG(numArg, REG);
-      argValue = parseReg(arg.substr(1, arg.size()-1));
+      argValue = parseReg(arg.substr(1, arg.size()-1)) - 1;
       break;
     case '(':
       op += ARG(numArg, ADDR_IN_REG);
-      argValue = parseReg(arg.substr(1, arg.size()-2));
+      argValue = parseReg(arg.substr(1, arg.size()-2)) - 1;
       break;
     case '>':
       op += ARG(numArg, ADDR);
