@@ -44,8 +44,8 @@ Chipset::bios[] = {
 
 Bloat
 Chipset::loadBiosFromFile(const char * file) {
-  FileHandler handler(file,ios_base::in);
-  return handler.getFileContent();
+  BinLoader handler(file);
+  return handler.getBinFileContent();
 }
 
 void
@@ -57,6 +57,7 @@ Chipset::initMem() {
       mainMem[i] = biosLoad[i];
     }
   } catch (WrongFileException) {
+    printf("Failed to load bios from file\n");
     for (i = 0; !(bios[i-1] == HALT && (bios[i] == 0 || bios[i+1] == 0)); i++) {
       mainMem[i] = bios[i];
     }
