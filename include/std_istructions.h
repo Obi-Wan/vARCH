@@ -13,16 +13,15 @@
 #define N_ARGS_TWO    (2 << 30)
 #define N_ARGS_THREE  (3 << 30)
 
-#define ALGEBRIC      (1 << 29)
-#define JUMP          (1 << 28)
-#define CONDITIONAL   (1 << 27)
-#define COMUNICATION  (1 << 26)
-#define SYSTEM        (1 << 25)
+#define JUMP          (1 << 29)
+#define CONDITIONAL   (1 << 28)
+#define COMUNICATION  (1 << 27)
+#define SYSTEM        (1 << 26)
 
-/* These bits occupy variably the positions from (1 << 24) to
- *    (1 << 22)
- *    (1 << 19)
- *    (1 << 16)
+/* These bits occupy variably the positions from (1 << 25) to
+ *    (1 << 23)
+ *    (1 << 20)
+ *    (1 << 17)
  * Varying on the number of arguments (on istructions non using them for args
  * type, they may be recycled.)
  */
@@ -80,6 +79,7 @@ enum StdInstructions {
 
   PUT           = N_ARGS_TWO + COMUNICATION,
   GET,
+  
   EQ            = N_ARGS_TWO + CONDITIONAL,
   LO,
   MO,
@@ -89,6 +89,7 @@ enum StdInstructions {
   
   BPUT          = N_ARGS_THREE + COMUNICATION,
   BGET,
+  
   IFEQJ         = N_ARGS_THREE + JUMP + CONDITIONAL,
   IFNEQJ,
   IFLOJ,

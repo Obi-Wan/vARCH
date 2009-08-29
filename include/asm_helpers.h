@@ -8,13 +8,17 @@
 #ifndef _ASM_HELPERS_H
 #define	_ASM_HELPERS_H
 
-#define ARG_1( x ) (x << 22)
-#define ARG_2( x ) (x << 19)
-#define ARG_3( x ) (x << 16)
+#define NAME_OF( x ) #x
 
-#define GET_ARG_1( x ) ((x >> 22) & 7)
-#define GET_ARG_2( x ) ((x >> 19) & 7)
-#define GET_ARG_3( x ) ((x >> 16) & 7)
+#define ARG_1( x ) (x << 23)
+#define ARG_2( x ) (x << 20)
+#define ARG_3( x ) (x << 17)
+
+#define ARG( y, x ) (x << (23 - (3 * y)))
+
+#define GET_ARG_1( x ) ((x >> 23) & 7)
+#define GET_ARG_2( x ) ((x >> 20) & 7)
+#define GET_ARG_3( x ) ((x >> 17) & 7)
 
 #define OFFSET_REGS 256
 
@@ -38,6 +42,7 @@ enum Registers {
   REG_ADDR_8,
 
   STACK_POINTER = OFFSET_REGS * 2,
+  USER_STACK_POINTER,
 
   FRAME_POINTER = OFFSET_REGS * 3,
 
