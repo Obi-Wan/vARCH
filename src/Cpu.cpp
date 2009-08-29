@@ -368,8 +368,6 @@ Cpu::loadArg(const int& arg,const int& typeArg) throw(WrongArgumentException) {
 void
 Cpu::storeArg(const int& arg, const int& typeArg, int value) throw(WrongArgumentException) {
   switch (typeArg) {
-    case COST:
-      break;
     case ADDR:
       memoryController.storeToMem(value, arg);
       break;
