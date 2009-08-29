@@ -346,21 +346,21 @@ Cpu::loadArg(const int& arg,const int& typeArg) throw(WrongArgumentException) {
       return memoryController.loadFromMem(arg);
       break;
     case ADDR_IN_REG:
-      return memoryController.loadFromMem(regsData[arg]);
+      return memoryController.loadFromMem(getReg(arg));
       break;
 
     case REG_PRE_INCR:
-      return ++regsData[arg];
+      return (getReg(arg) +1);
       break;
     case REG_PRE_DECR:
-      return --regsData[arg];
+      return (getReg(arg) +1);
       break;
     case REG:
     case REG_POST_INCR:
     case REG_POST_DECR:
-      return regsData[arg];
+      return getReg(arg);
     default:
-      throw WrongArgumentException();
+      throw WrongArgumentException("Failed in loading");
       break;
   }
 }
@@ -374,22 +374,82 @@ Cpu::storeArg(const int& arg, const int& typeArg, int value) throw(WrongArgument
       memoryController.storeToMem(value, arg);
       break;
     case ADDR_IN_REG:
-      memoryController.storeToMem(value, regsData[arg]);
+      memoryController.storeToMem(value, getReg(arg));
       break;
 
     case REG:
     case REG_PRE_INCR:
     case REG_PRE_DECR:
-      regsData[arg] = value;
+      setReg(arg, value);
       break;
     case REG_POST_INCR:
-      regsData[arg] = ++value;
+      setReg(arg, ++value);
       break;
     case REG_POST_DECR:
-      regsData[arg] = --value;
+      setReg(arg, --value);
       break;
     default:
-      throw WrongArgumentException();
+      throw WrongArgumentException("Failed in storing");
+      break;
+  }
+}
+
+inline int
+Cpu::getReg(const int& arg) {
+  int type = arg / OFFSET_REGS;
+  int spec = arg % OFFSET_REGS;
+  printf("arg: %d type: %d, spec: %d\n",arg,type,spec);
+  switch (type) {
+    case 0:
+      return regsData[spec];
+    case 1:
+      return regsAddr[spec];
+    case 2:
+      if (spec) {
+        return sP.getStackPointer();
+      } else {
+        return (flags & F_SVISOR) ? sP.getUStackPointer() : sP.getStackPointer();
+      }
+    case 3:
+      return regsAddr[NUM_REGS-1];
+    case 4:
+      return (flags & F_SVISOR) ? flags : int(flags);
+  }
+}
+
+
+inline void
+Cpu::setReg(const int& arg, const int& value) {
+  int type = arg / OFFSET_REGS;
+  int spec = arg % OFFSET_REGS;
+  printf("arg: %d type: %d, spec: %d\n",arg,type,spec);
+  switch (type) {
+    case 0:
+      regsData[spec] = value;
+      break;
+    case 1:
+      regsAddr[spec] = value;
+      break;
+    case 2:
+      if (spec) {
+        sP.setStackPointer(value);
+      } else {
+        if (flags & F_SVISOR) {
+          sP.setUStackPointer(value);
+        } else {
+          sP.setStackPointer(value);
+        }
+      }
+      break;
+    case 3:
+      regsAddr[NUM_REGS-1] = value;
+      break;
+    case 4:
+      if (flags & F_SVISOR) {
+        flags = value;
+      } else {
+        throw WrongArgumentException();
+      }
       break;
   }
 }

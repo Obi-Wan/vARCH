@@ -66,16 +66,15 @@ private:
     void setStackPointer(const int& newSP) {
       if (cpu.flags & F_SVISOR) sSP = newSP; else uSP = newSP;
     }
+    void setUStackPointer(const int& newSP) { uSP = newSP; }
 
     int getStackPointer() const { return (cpu.flags & F_SVISOR) ? sSP : uSP; }
-
     int getUStackPointer() const { return uSP; }
 
     void push(const int& data) {
       int& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
       cpu.memoryController.storeToMem(data,ref++);
     }
-
     int pop() {
       int& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
       return cpu.memoryController.loadFromMem(--ref);
@@ -88,7 +87,6 @@ private:
         cpu.memoryController.storeToMem(cpu.regsAddr[i],ref++);
       }
     }
-    
     void popAll() {
       int& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
       for(int i = NUM_REGS-1; i >= 0; i--) {
@@ -134,6 +132,9 @@ private:
     flags |= mask;
     return oldFlags;
   }
+
+  int getReg(const int& arg);
+  void setReg(const int& arg, const int& value);
 };
 
 #endif	/* _CPU_H */
