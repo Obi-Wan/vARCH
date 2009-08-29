@@ -76,9 +76,9 @@ AsmParser::init() {
 inline void
 AsmParser::preProcess() {
   istringstream fileStr(fileContent);
-  string newFileContent;
 
-  for(unsigned int i = 0; !fileStr.eof(); ) {  
+  for(unsigned int i = 0; !fileStr.eof(); ) {
+    vector<string> lineOfCode;
     string word, line;
     getline(fileStr, line);
 
@@ -111,16 +111,19 @@ AsmParser::preProcess() {
 
         consts.insert(Constants::value_type(name,value));
       } else {
-        i++;
-        for(; (lineStr >> word) && !word.empty() ;) i++;
-
-        newFileContent += line;
-        newFileContent += '\n';
+        if (!word.empty()) {
+          lineOfCode.push_back(word);
+          i++;
+          for(; (lineStr >> word) && !word.empty(); ) {
+            lineOfCode.push_back(word);
+            i++;
+          }
+        }
       }
     }
+    
+    lines.push_back(lineOfCode);
   }
-
-  fileContent = newFileContent;
 
   DebugPrintfMaps(Labels, labels, "labels");
   DebugPrintfMaps(Constants, consts, "consts");
@@ -132,47 +135,46 @@ void
 AsmParser::parse() throw(WrongArgumentException, WrongIstructionException) {
   preProcess();
 
-  istringstream fileStr(fileContent);
-  string line;
-
-  for(int lineNum = 0;
-      !fileStr.eof() && getline(fileStr, line) && !line.empty();
-      lineNum++ )
-  {
-    istringstream lineStr(line);
-    string word;
-    lineStr >> word;
-    Istructions::iterator iter = istructions.find(word);
-
-    if (iter == istructions.end()) {
+  int lineNum = 0;
+  for(CodeLines::iterator line = lines.begin(); line != lines.end(); line++) {
+    if (line->empty()) continue;
+    
+    Istructions::iterator istr = istructions.find( line->at(0) );
+    
+    if (istr == istructions.end()) {
       stringstream streamError(string(""));
-      streamError << "Line " << lineNum;
-      throw WrongIstructionException(
-              streamError.str() + ": Not existing Istruction: " + word);
+      streamError << "Line " << lineNum << ": "
+                  << "Not existing Istruction: " << line->at(0);
+      throw WrongIstructionException( streamError.str() );
     }
 
-    int op = iter->second;
+    int op = istr->second;
     vector<int> args;
 
     try {
       for(int i = 0; i < ((op >> 30) & 3); i++) {
-        string arg;
-        lineStr >> arg;
-        args.push_back(processArgOp(op, arg, i));
+        args.push_back(processArgOp(op, line->at(i+1), i));
       }
-      
     } catch (WrongArgumentException e) {
       
       stringstream streamError(string(""));
-      streamError << "Line " << lineNum;
-      e.prefixMessage(streamError.str() + ": Wrong Argument! ");
+      streamError << "Line " << lineNum << ": Wrong Argument! ";
+      e.prefixMessage(streamError.str());
       throw e;
+    } catch (out_of_range ) {
+      
+      stringstream streamError(string(""));
+      streamError << "Line " << lineNum << ": wrong number of arguments: "
+                  << "expected more";
+      throw WrongArgumentException(streamError.str());
     }
     
     code.push_back(op);
     for(int i = 0; i < args.size(); i++) {
       code.push_back(args[i]);
     }
+    
+    lineNum++;
   }
 
   printf("Parsing Finished\n");

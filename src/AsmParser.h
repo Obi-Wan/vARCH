@@ -20,10 +20,12 @@ using namespace std;
 typedef map<string, unsigned int> Labels;
 typedef map<string, int> Istructions;
 typedef map<string, int> Constants;
+typedef vector< vector<string> > CodeLines;
 
 class AsmParser {
   const string fname;
   string fileContent;
+  CodeLines lines;
 
   Bloat code;
 
