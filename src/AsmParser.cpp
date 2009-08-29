@@ -174,6 +174,8 @@ AsmParser::parse() throw(WrongArgumentException, WrongIstructionException) {
       code.push_back(args[i]);
     }
   }
+
+  printf("Parsing Finished\n");
 }
 
 inline int

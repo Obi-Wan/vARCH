@@ -50,8 +50,8 @@ public:
 
   void assemble() {
     BinWriter writer((fname.substr(0,fname.size()-1) += "bin").data());
-    printf("Assembling\n");
     writer.saveBinFileContent(code);
+    printf("Assembled\n");
   }
 };
 
