@@ -31,6 +31,13 @@ public:
   virtual void prefixMessage(const string& _mess) { message = _mess + message; }
 };
 
+class MmuException : public BasicException {
+public:
+  MmuException() { }
+  MmuException(const char * _mess) : BasicException(_mess) { }
+  MmuException(const string& _mess) : BasicException(_mess) { }
+};
+
 class WrongIstructionException : public BasicException {
 public:
   WrongIstructionException() { }

@@ -6,8 +6,8 @@
  */
 
 #include "Mmu.h"
-#include <exception>
 #include <stdio.h>
+#include <sstream>
 
 Mmu::Mmu(const int _maxMem, int * _mem) : maxMem(_maxMem), mainMem(_mem) {
   base = 0;
@@ -31,9 +31,13 @@ Mmu::~Mmu() { }
  * @throws RuntimeException when address is wrong
  */
 void
-Mmu::storeToMem(int data, int addr) {
-  if ((addr >= limit) || (addr < 0))
-        throw new std::exception();//("StoreToMem Failed: wrong addr!");
+Mmu::storeToMem(int data, int addr) throw(MmuException) {
+  if ((addr >= limit) || (addr < 0)) {
+    stringstream errorMess(string(""));
+    errorMess << "StoreToMem Failed, wrong addr: " << addr
+              << " upper limit: " << limit << "\n";
+    throw MmuException(errorMess.str());
+  }
 
   mainMem[addr + base] = data;
 }
@@ -45,9 +49,13 @@ Mmu::storeToMem(int data, int addr) {
  * @throws RuntimeException when address is wrong
  */
 int
-Mmu::loadFromMem(const int addr) const {
-  if ((addr >= limit) || (addr < 0))
-        throw new std::exception();//("LoadFromMem Failed: wrong addr!");
+Mmu::loadFromMem(const int addr) const throw(MmuException) {
+  if ((addr >= limit) || (addr < 0)) {
+    stringstream errorMess(string(""));
+    errorMess << "LoadFromMem Failed, wrong addr: " << addr
+              << " upper limit: " << limit << "\n";
+    throw MmuException(errorMess.str());
+  }
 
   return mainMem[addr + base];
 }
@@ -60,11 +68,15 @@ Mmu::loadFromMem(const int addr) const {
  * @throws RuntimeException when one of the two is wrong
  */
 void
-Mmu::resetLimits(int base_new,int limit_new) {
+Mmu::resetLimits(int base_new,int limit_new) throw(MmuException) {
   if ((base_new < 0) || (base_new > maxMem) ||
       (limit_new < 0) || (limit_new > maxMem) ||
-      ((base_new + limit_new) > maxMem))
-        throw new std::exception();//("ReseLimits failed: Wrong Base or Limit!");
+      ((base_new + limit_new) > maxMem)) {
+    stringstream errorMess(string(""));
+    errorMess << "ReseLimits failed: Wrong Base or Limit. Base: " << base_new
+              << " Limit: " << limit_new << " HardLimit: " << maxMem << "\n";
+    throw MmuException(errorMess.str());
+  }
 
   base = base_new;
   limit = limit_new;

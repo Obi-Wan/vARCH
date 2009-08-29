@@ -8,6 +8,8 @@
 #ifndef _MMU_H
 #define	_MMU_H
 
+#include "../include/exceptions.h"
+
 class Mmu {
 public:
   Mmu(const int _maxMem, int * _mem);
@@ -16,9 +18,9 @@ public:
 
   int getMaxMem() { return maxMem; }
   
-  void storeToMem(int data, int addr);
-  int loadFromMem(const int addr) const;
-  void resetLimits(int base_new,int limit_new);
+  void storeToMem(int data, int addr) throw(MmuException);
+  int loadFromMem(const int addr) const throw(MmuException);
+  void resetLimits(int base_new,int limit_new) throw(MmuException);
   
 private:
   /** max lenth of istructions and data */
