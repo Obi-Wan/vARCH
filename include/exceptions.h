@@ -23,8 +23,12 @@ public:
 
   virtual ~BasicException() throw() { }
 
-  virtual const char * what() const throw() { return message.data(); }
+  virtual const char * what() const throw() { return message.c_str(); }
   const string& getMessage() const throw() { return message; }
+
+  virtual void setMessage(const string& _mess) { message = _mess; }
+  virtual void appendMessage(const string& _mess) { message += _mess; }
+  virtual void prefixMessage(const string& _mess) { message = _mess + message; }
 };
 
 class WrongIstructionException : public BasicException {
@@ -46,6 +50,20 @@ public:
   WrongFileException() { }
   WrongFileException(const char * _mess) : BasicException(_mess) { }
   WrongFileException(const string& _mess) : BasicException(_mess) { }
+};
+
+class DuplicateLabelException : public BasicException {
+public:
+  DuplicateLabelException() { }
+  DuplicateLabelException(const char * _mess) : BasicException(_mess) { }
+  DuplicateLabelException(const string& _mess) : BasicException(_mess) { }
+};
+
+class DuplicateConstException : public BasicException {
+public:
+  DuplicateConstException() { }
+  DuplicateConstException(const char * _mess) : BasicException(_mess) { }
+  DuplicateConstException(const string& _mess) : BasicException(_mess) { }
 };
 
 #endif	/* _EXCEPTIONS_H */

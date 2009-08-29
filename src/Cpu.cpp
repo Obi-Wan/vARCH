@@ -70,7 +70,7 @@ Cpu::coreStep() {
   resetFlags(newFlags);
   int currentIstr = memoryController.loadFromMem(progCounter++);
 
-  printf("nuova istruzione %d: num args: %d\n", progCounter,
+  printf("Istruzione nell'area di mem: %d num args: %d\n", progCounter-1,
          (currentIstr >> 30 ) & 3);
 
   int res = 0;
@@ -119,7 +119,7 @@ Cpu::istructsZeroArg(const int& istr, int& newFlags) throw(WrongIstructionExcept
       break;
 
     default:
-      throw new WrongIstructionException();
+      throw WrongIstructionException();
       break;
   }
   return 0;
@@ -180,7 +180,7 @@ Cpu::istructsOneArg(const int& istr, int& newFlags) throw(WrongIstructionExcepti
       break;
       
     default:
-      throw new WrongIstructionException();
+      throw WrongIstructionException();
       break;
   }
 
@@ -270,7 +270,7 @@ Cpu::istructsTwoArg(const int& istr, int& newFlags) throw(WrongIstructionExcepti
       break;
       
     default:
-      throw new WrongIstructionException();
+      throw WrongIstructionException();
       break;
   }
 
@@ -330,7 +330,7 @@ Cpu::istructsThreeArg(const int& istr, int& newFlags) throw(WrongIstructionExcep
       break;
 
     default:
-      throw new WrongIstructionException();
+      throw WrongIstructionException();
       break;
   }
   return 0;
@@ -360,7 +360,7 @@ Cpu::loadArg(const int& arg,const int& typeArg) throw(WrongArgumentException) {
     case REG_POST_DECR:
       return regsData[arg];
     default:
-      throw new WrongArgumentException();
+      throw WrongArgumentException();
       break;
   }
 }
@@ -389,7 +389,7 @@ Cpu::storeArg(const int& arg, const int& typeArg, int value) throw(WrongArgument
       regsData[arg] = --value;
       break;
     default:
-      throw new WrongArgumentException();
+      throw WrongArgumentException();
       break;
   }
 }

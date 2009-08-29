@@ -19,8 +19,8 @@ typedef vector<int> Bloat;
 class FileHandler {
 public:
   FileHandler(const char * filename, ios_base::openmode mode) throw(WrongFileException) {
+    if (!file) throw WrongFileException();
     file.open(filename, mode | ios_base::binary);
-    if (!file) throw new WrongFileException;
   }
   virtual ~FileHandler() { file.close(); }
 
