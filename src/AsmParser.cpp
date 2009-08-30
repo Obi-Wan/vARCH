@@ -40,6 +40,11 @@ AsmParser::init() {
   PUT_ISTR(JMP);
   PUT_ISTR(IFJ);
   PUT_ISTR(IFNJ);
+  PUT_ISTR(TCJ);
+  PUT_ISTR(TZJ);
+  PUT_ISTR(TOJ);
+  PUT_ISTR(TNJ);
+  PUT_ISTR(TSJ);
 
   PUT_ISTR(MOV);
   PUT_ISTR(ADD);

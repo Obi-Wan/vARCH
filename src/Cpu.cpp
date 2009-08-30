@@ -179,6 +179,21 @@ Cpu::istructsOneArg(const int& istr, int& newFlags) throw(WrongIstructionExcepti
       sP.push(progCounter);
       progCounter = temp;
       break;
+    case TCJ:
+      if (flags & F_CARRY) progCounter = temp;
+      break;
+    case TZJ:
+      if (flags & F_ZERO) progCounter = temp;
+      break;
+    case TOJ:
+      if (flags & F_OVERFLOW) progCounter = temp;
+      break;
+    case TNJ:
+      if (flags & F_NEGATIVE) progCounter = temp;
+      break;
+    case TSJ:
+      if (flags & F_SVISOR) progCounter = temp;
+      break;
       
     default:
       throw WrongIstructionException();

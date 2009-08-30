@@ -64,6 +64,11 @@ enum StdInstructions {
   JMP           = N_ARGS_ONE + JUMP,
   IFJ           = N_ARGS_ONE + JUMP + CONDITIONAL,
   IFNJ,
+  TCJ,
+  TZJ,
+  TOJ,
+  TNJ,
+  TSJ,
 
   MOV           = N_ARGS_TWO,
   ADD,
