@@ -8,6 +8,12 @@
 #ifndef _STDISTRUCTIONS_H
 #define	_STDISTRUCTIONS_H
 
+#include <map>
+#include <string>
+#include "../include/exceptions.h"
+
+using namespace std;
+
 #define N_ARGS_ZERO   0
 #define N_ARGS_ONE    (1 << 30)
 #define N_ARGS_TWO    (2 << 30)
@@ -39,6 +45,112 @@ enum TypeOfArgument {
   REG_POST_INCR,  // 110
   REG_POST_DECR,  // 111
 };
+
+typedef map<string, int> NameToValue;
+typedef map<int, string> ValueToName;
+
+static class IstructionSet {
+
+  NameToValue nameToValue;
+  ValueToName valueToName;
+
+  const string errorMsgName;
+  const string errorMsgValue;
+
+  void assignNew(const string& name) {
+    nameToValue.insert(NameToValue::value_type(name, currValue));
+    valueToName.insert(ValueToName::value_type(currValue, name));
+    currValue++;
+  }
+  void assignNew(const string& name, const int& newCurrVal) {
+    currValue = newCurrVal;
+    assignNew(name);
+  }
+
+  int currValue;
+
+public:
+  IstructionSet() : currValue(0)
+                  , errorMsgName("No istruction called: ")
+                  , errorMsgValue("No such istruction exists")
+  {
+    assignNew("SLEEP",N_ARGS_ZERO);
+    assignNew("PUSHA");
+    assignNew("POPA");
+    assignNew("RET");
+    assignNew("REBOOT",N_ARGS_ZERO + SYSTEM);
+    assignNew("HALT");
+
+    assignNew("NOT", N_ARGS_ONE);
+    assignNew("INCR");
+    assignNew("DECR");
+    assignNew("COMP2");
+    assignNew("LSH");
+    assignNew("RSH");
+
+    assignNew("STACK");
+    assignNew("PUSH");
+    assignNew("POP");
+    assignNew("JSR");
+
+    assignNew("JMP", N_ARGS_ONE + JUMP);
+    assignNew("IFJ", N_ARGS_ONE + JUMP + CONDITIONAL);
+    assignNew("IFNJ");
+    assignNew("TCJ");
+    assignNew("TZJ");
+    assignNew("TOJ");
+    assignNew("TNJ");
+    assignNew("TSJ");
+
+    assignNew("MOV", N_ARGS_TWO);
+    assignNew("ADD");
+    assignNew("MULT");
+    assignNew("SUB");
+    assignNew("DIV");
+    assignNew("QUOT");
+    assignNew("AND");
+    assignNew("OR");
+    assignNew("XOR");
+
+    assignNew("MMU", N_ARGS_TWO + SYSTEM);
+
+    assignNew("PUT", N_ARGS_TWO + COMUNICATION);
+    assignNew("GET");
+
+    assignNew("EQ", N_ARGS_TWO + CONDITIONAL);
+    assignNew("LO");
+    assignNew("MO");
+    assignNew("LE");
+    assignNew("ME");
+    assignNew("NEQ");
+
+    assignNew("BPUT", N_ARGS_THREE + COMUNICATION);
+    assignNew("BGET");
+
+    assignNew("IFEQJ", N_ARGS_THREE + JUMP + CONDITIONAL);
+    assignNew("IFNEQJ");
+    assignNew("IFLOJ");
+    assignNew("IFMOJ");
+    assignNew("IFLEJ");
+    assignNew("IFMEJ");
+
+  }
+
+  const int& getIstr(const char * name) const {
+    NameToValue::const_iterator istr = nameToValue.find(string(name));
+    if (istr == nameToValue.end())
+      throw WrongIstructionException(errorMsgName + name);
+
+    return istr->second;
+  }
+  const int& getIstr(const string& name) const {
+    NameToValue::const_iterator istr = nameToValue.find(name);
+    if (istr == nameToValue.end())
+      throw WrongIstructionException(errorMsgName + name);
+
+    return istr->second;
+  }
+} ISet;
 
 enum StdInstructions {
 

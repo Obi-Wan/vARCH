@@ -32,9 +32,6 @@ class AsmParser {
   Labels labels;
   Constants consts;
 
-  Istructions istructions;
-
-  void init();
   void preProcess();
   int processArgOp(int& op, const string& arg, const int& numArg);
   int parseReg(const string& reg);
@@ -42,8 +39,6 @@ public:
   AsmParser(const string& _fname) : fname(_fname) {
     TextLoader loader(fname.data());
     fileContent = loader.getTextFileContent();
-
-    init();
   }
 //  AsmParser(const AsmParser& orig);
   virtual ~AsmParser();
