@@ -67,13 +67,8 @@ Cpu::dumpRegistersAndMemory() const {
 int
 Cpu::coreStep() {
 
-  // Let's consider interrupts, if the given interrupt is enabled
-  if (
-          interruptsQueue.top().getPriority() > INT_GET(flags) &&
-          memoryController.loadFromMem( regsAddr[7] + 3 *
-                                        interruptsQueue.top().getDeviceId())
-      )
-  {
+  // Let's now consider interrupts
+  if (interruptsQueue.top().getPriority() > INT_GET(flags)) {
     int currentFlags = flags;
     flags += F_SVISOR;
     sP.pushAllRegs();
@@ -510,5 +505,8 @@ Cpu::setReg(const int& arg, const int& value) {
 
 void
 Cpu::interruptSignal(const int& priority, const int& device_id) {
-  interruptsQueue.push(InterruptsRecord(priority,device_id));
+  // Add the give interrupt to the queue of interruptions, just if it's enabled
+  if ( memoryController.loadFromMem( regsAddr[7] + 3 * device_id ) ) {
+    interruptsQueue.push( InterruptsRecord(priority, device_id) );
+  }
 }
