@@ -46,6 +46,28 @@ enum TypeOfArgument {
   REG_POST_DECR,  // 111
 };
 
+//enum Registers {
+//  REG_R01 =   (1 <  0),
+//  REG_R02 =   (1 <  1),
+//  REG_R03 =   (1 <  2),
+//  REG_R04 =   (1 <  3),
+//  REG_R05 =   (1 <  4),
+//  REG_R06 =   (1 <  5),
+//  REG_R07 =   (1 <  6),
+//  REG_R08 =   (1 <  7),
+//  REG_A01 =   (1 <  8),
+//  REG_A02 =   (1 <  9),
+//  REG_A03 =   (1 < 10),
+//  REG_A04 =   (1 < 11),
+//  REG_A05 =   (1 < 12),
+//  REG_A06 =   (1 < 13),
+//  REG_A07 =   (1 < 14),
+//  REG_A08 =   (1 < 15),
+//
+//  REG_SP  =   (1 < 16),
+//  REG_USP =   (1 < 17)
+//};
+
 typedef map<string, int> NameToValue;
 typedef map<int, string> ValueToName;
 
