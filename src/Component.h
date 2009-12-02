@@ -8,6 +8,10 @@
 #ifndef _COMPONENT_H
 #define	_COMPONENT_H
 
+#define DATA_READY_TRUE     1
+#define DATA_READY_FALSE    0
+#define DATA_READY_ERROR   -1
+
 class Component {
 public:
   Component();
@@ -29,9 +33,20 @@ public:
 
   void put(const int& signal);
   int get();
+
+  int isDataReady() { return dataReady; }
+
+  void initInterrupts(const int& priority, const int& id) {
+    interruptPriority = priority;
+    interruptId = id;
+  }
 private:
+  int dataReady;
 
   int simpleUnsafeResponse;
+
+  int interruptPriority;
+  int interruptId;
 };
 
 #endif	/* _COMPONENT_H */

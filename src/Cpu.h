@@ -8,6 +8,8 @@
 #ifndef _CPU_H
 #define	_CPU_H
 
+#include <queue>
+
 #include "Mmu.h"
 #include "Component.h"
 #include "Chipset.h"
@@ -15,14 +17,26 @@
 
 #define NUM_REGS 8
 
-#define F_CARRY     (1 << 0)
-#define F_OVERFLOW  (1 << 1)
-#define F_ZERO      (1 << 2)
-#define F_NEGATIVE  (1 << 3)
-#define F_EXTEND    (1 << 4)
-#define F_INT_MASK  (1 << 5)
-#define F_SVISOR    (1 << 6)
-#define F_TRACE     (1 << 7)
+// Signals bits
+#define F_CARRY       (1 << 0)
+#define F_OVERFLOW    (1 << 1)
+#define F_ZERO        (1 << 2)
+#define F_NEGATIVE    (1 << 3)
+#define F_EXTEND      (1 << 4)
+#define F_INT_MASK    (1 << 5)
+#define F_SVISOR      (1 << 6)
+#define F_TRACE       (1 << 7)
+
+// Interrupts priority conversion macros
+#define INT_PUT(x)    (( x & 0xf ) << 8)
+#define INT_GET(x)    (( x >> 8) & 0xf )
+// Some useful priorities
+#define INT_MAX_S_PR  0xf
+#define INT_MIN_S_PR  0x8
+#define INT_MAX_U_PR  0x7
+#define INT_MIN_U_PR  0x0
+
+using namespace std;
 
 class Chipset; /* just a class declaration */
 
@@ -36,6 +50,8 @@ public:
   void dumpRegistersAndMemory() const;
 
   int coreStep();
+
+  void interruptSignal(const int& priority, const int& device_id);
   
 private:
 
@@ -80,14 +96,14 @@ private:
       return cpu.memoryController.loadFromMem(--ref);
     }
 
-    void pushAll() {
+    void pushAllRegs() {
       int& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
       for(int i = 0; i < NUM_REGS; i++) {
         cpu.memoryController.storeToMem(cpu.regsData[i],ref++);
         cpu.memoryController.storeToMem(cpu.regsAddr[i],ref++);
       }
     }
-    void popAll() {
+    void popAllRegs() {
       int& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
       for(int i = NUM_REGS-1; i >= 0; i--) {
         cpu.regsAddr[i] = cpu.memoryController.loadFromMem(--ref);
@@ -98,7 +114,23 @@ private:
 
   /** The program counter */
   int progCounter;
+  
+  class InterruptsRecord : public pair<int,int> {
+  public:
+    InterruptsRecord(const int& _priority, const int& _device_id) :
+        pair<int,int>(_priority, _device_id) { }
 
+    int getPriority() const { return first; }
+    int getDeviceId() const { return second; }
+
+    bool operator<(const InterruptsRecord& o) const { return first < o.first; }
+  };
+
+  priority_queue<InterruptsRecord> interruptsQueue;
+
+  //|//////////////////////|//
+  //|  Functions           |//
+  //|//////////////////////|//
   int istructsOneArg(const int& istr, int& newFlags)
             throw(WrongIstructionException);
   int istructsZeroArg(const int& istr, int& newFlags)
@@ -119,7 +151,7 @@ private:
     _flags -= _flags & ( F_ZERO + F_CARRY + F_NEGATIVE + F_OVERFLOW );
   }
 
-  void restoreFlags(int& _flags) { flags = _flags; }
+  void restoreFlags(const int& _flags) { flags = _flags; }
 
   int clearFlags(int mask) {
     int oldFlags = flags;

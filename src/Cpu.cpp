@@ -30,7 +30,7 @@ void
 Cpu::init() {
   progCounter = 0;
   resetFlags(flags);
-  flags += F_SVISOR; // start in supervisor mode
+  flags += F_SVISOR | INT_PUT( INT_MAX_S_PR ); // start in supervisor mode
   resetRegs();
 }
 
@@ -67,6 +67,29 @@ Cpu::dumpRegistersAndMemory() const {
 int
 Cpu::coreStep() {
 
+  // Let's consider interrupts, if the given interrupt is enabled
+  if (
+          interruptsQueue.top().getPriority() > INT_GET(flags) &&
+          memoryController.loadFromMem( regsAddr[7] + 3 *
+                                        interruptsQueue.top().getDeviceId())
+      )
+  {
+    int currentFlags = flags;
+    flags += F_SVISOR;
+    sP.pushAllRegs();
+    sP.push(currentFlags);
+    sP.push(progCounter);
+
+    resetRegs();
+    progCounter = memoryController.loadFromMem(regsAddr[7] +
+            3 * interruptsQueue.top().getDeviceId() + 1);
+    restoreFlags( memoryController.loadFromMem(
+            regsAddr[7] + 3 * interruptsQueue.top().getDeviceId() + 2) );
+    
+    interruptsQueue.pop();
+  }
+
+  // Now proced with instruction execution
   int newFlags = flags;
   resetFlags(newFlags);
   int currentIstr = memoryController.loadFromMem(progCounter++);
@@ -110,13 +133,19 @@ Cpu::istructsZeroArg(const int& istr, int& newFlags) throw(WrongIstructionExcept
       return (flags & F_SVISOR) ? istr : SLEEP;
       
     case PUSHA:
-      sP.pushAll();
+      sP.pushAllRegs();
       break;
     case POPA:
-      sP.popAll();
+      sP.popAllRegs();
       break;
     case RET:
       progCounter = sP.pop();
+      break;
+    case RETEX:
+      flags += F_SVISOR;
+      progCounter = sP.pop();
+      newFlags = sP.pop();
+      sP.popAllRegs();
       break;
 
     default:
@@ -477,4 +506,9 @@ Cpu::setReg(const int& arg, const int& value) {
       }
       break;
   }
+}
+
+void
+Cpu::interruptSignal(const int& priority, const int& device_id) {
+  interruptsQueue.push(InterruptsRecord(priority,device_id));
 }

@@ -100,6 +100,7 @@ public:
     assignNew("PUSHA");
     assignNew("POPA");
     assignNew("RET");
+    assignNew("RETEX");
     assignNew("REBOOT",N_ARGS_ZERO + SYSTEM);
     assignNew("HALT");
 
@@ -180,6 +181,7 @@ enum StdInstructions {
   PUSHA,
   POPA,
   RET,
+  RETEX,
   REBOOT        = N_ARGS_ZERO + SYSTEM,
   HALT,
 

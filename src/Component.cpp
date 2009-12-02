@@ -7,7 +7,8 @@
 
 #include "Component.h"
 
-Component::Component() : simpleUnsafeResponse(0) { }
+Component::Component() : simpleUnsafeResponse(0), interruptId(-1),
+        interruptPriority(-1), dataReady(DATA_READY_FALSE) { }
 
 //Component::Component(const Component& orig) { }
 
@@ -19,13 +20,16 @@ Component::put(const int& signal) {
   switch (signal) {
     case COMP_TYPE:
       simpleUnsafeResponse = COMP_CHAR;
+      dataReady = DATA_READY_TRUE;
       break;
     case COMP_FEATURES:
+      dataReady = DATA_READY_ERROR;
       break;
   }
 }
 
 int
 Component::get() {
+  dataReady = DATA_READY_FALSE;
   return simpleUnsafeResponse;
 }
