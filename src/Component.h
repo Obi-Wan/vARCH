@@ -19,11 +19,11 @@ public:
   virtual ~Component();
 
   enum ComponentType {
-    COMP_CHAR,
-    COMP_BLOCK,
-    COMP_KEYBOARD,
-    COMP_RAM,
-    COMP_DISK,
+    COMP_CHAR     =     (1 <<  0),
+    COMP_BLOCK    =     (1 <<  1),
+    COMP_KEYBOARD =     (1 <<  2),
+    COMP_TIMER    =     (1 <<  3),
+    COMP_CONSOLE  =     (1 <<  4),
   };
 
   enum ComponentRequest {
@@ -40,11 +40,12 @@ public:
     interruptPriority = priority;
     interruptId = id;
   }
-private:
+protected:
   int dataReady;
 
   int simpleUnsafeResponse;
 
+private:
   int interruptPriority;
   int interruptId;
 };

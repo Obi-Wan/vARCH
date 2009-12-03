@@ -11,13 +11,19 @@
 #include "Chipset.h"
 #include "../include/std_istructions.h"
 #include "../include/asm_helpers.h"
+#include "SystemTimer.h"
 
 Chipset::Chipset(const int& _maxMem, int * _mainMem)
     : cpu(* (new Cpu(*this,*(new Mmu(_maxMem,_mainMem))))), mainMem(_mainMem)
       , maxMem(_maxMem) {
 
+  // let's init memory, and print some debug info
   initMem();
   cpu.dumpRegistersAndMemory();
+
+  // next we add the system timer to the components connected to the chipset
+  components.push_back( SystemTimer( SystemTimer::TIMER_0250_HZ |
+                                     SystemTimer::TIMER_0100_HZ    ));
 }
 
 //Chipset::Chipset(const Chipset& orig) { }
