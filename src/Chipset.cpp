@@ -12,6 +12,7 @@
 #include "../include/std_istructions.h"
 #include "../include/asm_helpers.h"
 #include "SystemTimer.h"
+#include "macros.h"
 
 Chipset::Chipset(const int& _maxMem, int * _mainMem)
     : cpu(* (new Cpu(*this,*(new Mmu(_maxMem,_mainMem))))), mainMem(_mainMem)
@@ -84,7 +85,7 @@ Chipset::initMem() {
 
 void
 Chipset::startClock() {
-  printf("Starting execution\n");
+  DebugPrintf(("Starting execution\n"));
 
   int result = 0;
   do {
@@ -97,7 +98,7 @@ Chipset::startClock() {
     }
   } while (result != HALT);
 
-  printf("Exiting\n");
+  DebugPrintf(("Exiting\n"));
 }
 
 
