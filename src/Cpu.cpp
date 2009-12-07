@@ -67,8 +67,11 @@ Cpu::dumpRegistersAndMemory() const {
 int
 Cpu::coreStep() {
 
+  //DebugPrintf(("Processing interrupts to see if they can stop execution\n"));
   // Let's now consider interrupts
-  if (interruptsQueue.top().getPriority() > INT_GET(flags)) {
+  if (!interruptsQueue.empty() &&
+          interruptsQueue.top().getPriority() > INT_GET(flags)) {
+    DebugPrintf(("we got an interrupt!"));
     int currentFlags = flags;
     flags += F_SVISOR;
     sP.pushAllRegs();
@@ -84,6 +87,7 @@ Cpu::coreStep() {
     interruptsQueue.pop();
   }
 
+  //DebugPrintf(("Proceding with instructions execution\n"));
   // Now proced with instruction execution
   int newFlags = flags;
   resetFlags(newFlags);
