@@ -19,10 +19,21 @@ using namespace std;
 
 typedef map<string, unsigned int> Labels;
 typedef map<string, int> Istructions;
-typedef map<string, int> Constants;
+typedef vector<int> Constants;
 typedef vector< vector<string> > CodeLines;
 
 class AsmParser {
+
+  enum ConstsType {
+    INT,
+    LONG,
+    CHAR,
+    STRING,
+    GLOBAL,
+  };
+  ConstsType getConstType(const string& type) const;
+  bool globalConsts;
+
   const string fname;
   string fileContent;
   CodeLines lines;
@@ -36,7 +47,7 @@ class AsmParser {
   int processArgOp(int& op, const string& arg, const int& numArg);
   int parseReg(const string& reg);
 public:
-  AsmParser(const string& _fname) : fname(_fname) {
+  AsmParser(const string& _fname) : fname(_fname), globalConsts(false) {
     TextLoader loader(fname.data());
     fileContent = loader.getTextFileContent();
   }

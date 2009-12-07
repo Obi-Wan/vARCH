@@ -20,46 +20,78 @@ inline void
 AsmParser::preProcess() {
   istringstream fileStr(fileContent);
 
-  for(unsigned int i = 0; !fileStr.eof(); ) {
+  // Scans over the lines
+  for(unsigned int bytePos = 0; !fileStr.eof(); ) {
     vector<string> lineOfCode;
     string word, line;
     getline(fileStr, line);
 
+    // let's skip blank/comment lines
     if (line[0] != ';' && !line.empty()) {
       istringstream lineStr(line);
       lineStr >> word;
 
-      if (word[word.size()-1] == ':') {
+      // First of all, let's test if it's a label or a type marker
+      if (word[0] == '.') {
+        if (word[word.size()-1] == ':') { // it's a label
 
-        string label = word.substr(0,word.size()-1);
+          string label = word.substr(1,word.size()-2);
 
-        if (labels.find(label) != labels.end()) {
-          throw DuplicateLabelException(
-                  "Label already defined here: " + labels.find(label)->second);
+          if (labels.find(label) != labels.end()) {
+            throw DuplicateLabelException(
+                    "Label already defined here: " + labels.find(label)->second);
+          }
+
+          labels.insert(Labels::value_type(label, bytePos));
+        } else { // it's a type marker
+          /* Now we try to figure out what kind of marker it is:
+           *  - if global is not declared, it should be something not related
+           *    to heap;
+           *  - otherwise print an error.
+           */
+          if (!globalConsts) {
+            switch (getConstType(word)) {
+              case GLOBAL:
+                globalConsts = true;
+                break;
+              default:
+                throw WrongIstructionException("No constants allowed here");
+            }
+          } else {
+            /* Ok, we are in the heap and these are constants */
+            switch (getConstType(word)) {
+              case INT: {
+                lineStr.ignore(256,'$');
+                int value;
+                lineStr >> value;
+                consts.push_back(value);
+                bytePos++;
+                break;
+              }
+              case CHAR:
+              case STRING: {
+                lineStr.ignore(256,'$');
+                string constString;
+                lineStr >> constString;
+
+                for (unsigned int i = 0; i < constString.size(); i++) {
+                  consts.push_back(constString[i] & 0xff );
+                  bytePos++;
+                }
+                break;
+              }
+              default:
+                throw WrongArgumentException("Only constants after a .global mark");
+            } // switch end
+          }
         }
-
-        labels.insert(Labels::value_type(label, i));
-      } else if (word == "DC") {
-        string name;
-        lineStr >> name;
-
-        if (consts.find(name) != consts.end()) {
-          throw DuplicateConstException(
-                  "Const already defined with the name: " + consts.find(name)->first);
-        }
-
-        lineStr.ignore(256,'$');
-        int value;
-        lineStr >> value;
-
-        consts.insert(Constants::value_type(name,value));
-      } else {
+      } else { // it's a command
         if (!word.empty()) {
           lineOfCode.push_back(word);
-          i++;
+          bytePos++;
           for(; (lineStr >> word) && !word.empty(); ) {
             lineOfCode.push_back(word);
-            i++;
+            bytePos++;
           }
         }
       }
@@ -69,7 +101,7 @@ AsmParser::preProcess() {
   }
 
   DebugPrintfMaps(Labels, labels, "labels");
-  DebugPrintfMaps(Constants, consts, "consts");
+  //DebugPrintfMaps(Constants, consts, "consts");
 
   printf("PreProcess Finished\n");
 }
@@ -111,6 +143,12 @@ AsmParser::parse() throw(WrongArgumentException, WrongIstructionException) {
     lineNum++;
   }
 
+  // pushing constants
+  for (unsigned int i = 0; i < consts.size(); i++) {
+    code.push_back(consts[i]);
+  }
+
+
   printf("Parsing Finished\n");
 }
 
@@ -124,10 +162,10 @@ AsmParser::processArgOp(int& op, const string& arg, const int& numArg) {
       istringstream(arg.substr(1, arg.size()-1)) >> argValue;
       break;
     case '.':
-      op += ARG(numArg, COST);
-      if (consts.find(arg.substr(1, arg.size()-1)) == consts.end())
-        throw WrongArgumentException("No costant named " + arg);
-      argValue = consts.find(arg.substr(1, arg.size()-1))->second;
+      op += ARG(numArg, ADDR);
+      if (labels.find(arg.substr(1, arg.size()-1)) == labels.end())
+        throw WrongArgumentException("No label named " + arg);
+      argValue = labels.find(arg.substr(1, arg.size()-1))->second;
       break;
     case '@':
       op += ARG(numArg, COST);
@@ -177,4 +215,23 @@ AsmParser::parseReg(const string& reg) {
       break;
   }
   throw WrongArgumentException("No register called: " + reg);
+}
+
+inline AsmParser::ConstsType
+AsmParser::getConstType(const string& type) const {
+  switch (type[1]) {
+    case 'i':
+      return INT;
+//    case 'l':
+//      return LONG;
+    case 'c':
+      return CHAR;
+    case 's':
+      return STRING;
+    case 'g':
+      return GLOBAL;
+    default:
+      throw WrongArgumentException(
+              "No constant type: " + type + " ");
+  }
 }

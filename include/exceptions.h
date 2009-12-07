@@ -66,12 +66,12 @@ public:
   DuplicateLabelException(const string& _mess) : BasicException(_mess) { }
 };
 
-class DuplicateConstException : public BasicException {
-public:
-  DuplicateConstException() { }
-  DuplicateConstException(const char * _mess) : BasicException(_mess) { }
-  DuplicateConstException(const string& _mess) : BasicException(_mess) { }
-};
+//class DuplicateConstException : public BasicException {
+//public:
+//  DuplicateConstException() { }
+//  DuplicateConstException(const char * _mess) : BasicException(_mess) { }
+//  DuplicateConstException(const string& _mess) : BasicException(_mess) { }
+//};
 
 #endif	/* _EXCEPTIONS_H */
 
