@@ -8,11 +8,7 @@
 #ifndef _CPU_H
 #define	_CPU_H
 
-#include <queue>
-
 #include "Mmu.h"
-#include "Component.h"
-#include "Chipset.h"
 #include "../include/exceptions.h"
 
 #define NUM_REGS 8
@@ -36,11 +32,9 @@
 #define INT_MAX_U_PR  0x7
 #define INT_MIN_U_PR  0x0
 
-using namespace std;
-
 class Chipset; /* just a class declaration */
 
-class Cpu : public Component {
+class Cpu {
 public:
   Cpu(Chipset&, Mmu&);
   virtual ~Cpu();
@@ -50,8 +44,6 @@ public:
   void dumpRegistersAndMemory() const;
 
   int coreStep();
-
-  void interruptSignal(const int& priority, const int& device_id);
   
 private:
 
@@ -114,19 +106,6 @@ private:
 
   /** The program counter */
   int progCounter;
-  
-  class InterruptsRecord : public pair<int,int> {
-  public:
-    InterruptsRecord(const int& _priority, const int& _device_id) :
-        pair<int,int>(_priority, _device_id) { }
-
-    int getPriority() const { return first; }
-    int getDeviceId() const { return second; }
-
-    bool operator<(const InterruptsRecord& o) const { return first < o.first; }
-  };
-
-  priority_queue<InterruptsRecord> interruptsQueue;
 
   //|//////////////////////|//
   //|  Functions           |//

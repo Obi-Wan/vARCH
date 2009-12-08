@@ -15,9 +15,7 @@
 
 using namespace std;
 
-class Cpu;
-
-class Chipset {
+class Chipset : public InterruptHandler {
 public:
   Chipset(const int& _maxMem, int * _mainMem);
   virtual ~Chipset();

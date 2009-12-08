@@ -6,6 +6,7 @@
  */
 
 #include "Cpu.h"
+#include "Chipset.h"
 #include "../include/std_istructions.h"
 #include "../include/asm_helpers.h"
 #include "../include/macros.h"
@@ -69,22 +70,22 @@ Cpu::coreStep() {
 
   //DebugPrintf(("Processing interrupts to see if they can stop execution\n"));
   // Let's now consider interrupts
-  if (!interruptsQueue.empty() &&
-          interruptsQueue.top().getPriority() > INT_GET(flags)) {
-    DebugPrintf(("we got an interrupt!"));
-    int currentFlags = flags;
-    flags += F_SVISOR;
-    sP.pushAllRegs();
-    sP.push(currentFlags);
-    sP.push(progCounter);
+  if (chipset.hasInterruptReady()) {
+    const InterruptHandler::InterruptsRecord &intRecord = chipset.getTopInterrupt();
+    if (intRecord.getPriority() > INT_GET(flags)) {
+      DebugPrintf(("we got an interrupt!"));
+      int currentFlags = flags;
+      flags += F_SVISOR;
+      sP.push(currentFlags);
+      sP.push(progCounter);
 
-    resetRegs();
-    progCounter = memoryController.loadFromMem(regsAddr[7] +
-            3 * interruptsQueue.top().getDeviceId() + 1);
-    restoreFlags( memoryController.loadFromMem(
-            regsAddr[7] + 3 * interruptsQueue.top().getDeviceId() + 2) );
-    
-    interruptsQueue.pop();
+      progCounter = memoryController.loadFromMem(regsAddr[7] +
+              2 * intRecord.getDeviceId());
+      restoreFlags( memoryController.loadFromMem(
+              regsAddr[7] + 2 * intRecord.getDeviceId() + 1) );
+
+      chipset.topInterruptServed();
+    }
   }
 
   //DebugPrintf(("Proceding with instructions execution\n"));
@@ -144,7 +145,6 @@ Cpu::istructsZeroArg(const int& istr, int& newFlags) throw(WrongIstructionExcept
       flags += F_SVISOR;
       progCounter = sP.pop();
       newFlags = sP.pop();
-      sP.popAllRegs();
       break;
 
     default:
@@ -504,13 +504,5 @@ Cpu::setReg(const int& arg, const int& value) {
         throw WrongArgumentException();
       }
       break;
-  }
-}
-
-void
-Cpu::interruptSignal(const int& priority, const int& device_id) {
-  // Add the give interrupt to the queue of interruptions, just if it's enabled
-  if ( memoryController.loadFromMem( regsAddr[7] + 3 * device_id ) ) {
-    interruptsQueue.push( InterruptsRecord(priority, device_id) );
   }
 }

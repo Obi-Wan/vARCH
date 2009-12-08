@@ -89,9 +89,18 @@ Chipset::startClock() {
 
   int result = 0;
   do {
+
+    // Let's trigger events
+    for (unsigned int i = 0; i < components.size(); i++) {
+      components[i].checkInterruptEvents();
+    }
+
+    // Let's execute the next istruction
     result = cpu.coreStep();
+    // Sleep for a while
     usleep(100);
 
+    // Reset if REBOOT istruction got.
     if (result == REBOOT) {
       initMem();
       cpu.init();

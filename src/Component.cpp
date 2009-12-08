@@ -7,8 +7,7 @@
 
 #include "Component.h"
 
-Component::Component() : simpleUnsafeResponse(0), interruptId(-1),
-        interruptPriority(-1), dataReady(DATA_READY_FALSE) { }
+Component::Component() : simpleUnsafeResponse(0), dataReady(DATA_READY_FALSE) { }
 
 //Component::Component(const Component& orig) { }
 
