@@ -25,6 +25,8 @@ Chipset::Chipset(const int& _maxMem, int * _mainMem)
   // next we add the system timer to the components connected to the chipset
   components.push_back( SystemTimer( SystemTimer::TIMER_0250_HZ |
                                      SystemTimer::TIMER_0100_HZ    ));
+  // then we add a charterminal
+  components.push_back( CharTerminal() );
 }
 
 //Chipset::Chipset(const Chipset& orig) { }
@@ -112,7 +114,7 @@ Chipset::startClock() {
 
 
 void
-Chipset::addComponent(const Component& comp) {
+Chipset::addComponent(Component& comp) {
   components.push_back(comp);
 }
 

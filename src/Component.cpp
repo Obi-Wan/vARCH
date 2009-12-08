@@ -16,7 +16,7 @@ Component::~Component() { }
 
 void
 Component::put(const int& signal) {
-  switch (signal) {
+  switch (signal & REQUEST_TYPE_MASK) {
     case COMP_TYPE:
       simpleUnsafeResponse = COMP_CHAR;
       dataReady = DATA_READY_TRUE;

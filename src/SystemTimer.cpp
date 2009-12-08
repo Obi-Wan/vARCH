@@ -26,7 +26,7 @@ SystemTimer::put(const int& signal) {
       dataReady = DATA_READY_TRUE;
       break;
     case COMP_SET_FEATURES:
-      setTimer(signal & REQUEST_ARG_MASK);
+      setTimer(static_cast<TimerFeatures>(signal & REQUEST_ARG_MASK));
       simpleUnsafeResponse = true;
       dataReady = DATA_READY_TRUE;
       break;

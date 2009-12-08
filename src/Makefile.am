@@ -6,6 +6,7 @@ varch_SOURCES = Mmu.cpp \
 		Chipset.cpp \
 		FileHandler.cpp \
 		SystemTimer.cpp \
+		CharTerminal.cpp \
 		vArch.cpp
 
 vasm_SOURCES =  FileHandler.cpp \

@@ -119,33 +119,33 @@ private:
   int istructsThreeArg(const int& istr, int& newFlags)
             throw(WrongIstructionException);
 
+  /* Arguments functions */
   int loadArg(const int& arg,const int& typeArg)
             throw(WrongArgumentException);
   void storeArg(const int& arg, const int& typeArg, int value)
             throw(WrongArgumentException);
 
+  /* Regs functions */
+  int getReg(const int& arg);
+  void setReg(const int& arg, const int& value);
+
   void resetRegs() { for( int i = 0; i < NUM_REGS; i++) regsData[i] = regsAddr[i] = 0; }
 
+  /* Flags functions */
   void resetFlags(int& _flags) {
     _flags -= _flags & ( F_ZERO + F_CARRY + F_NEGATIVE + F_OVERFLOW );
   }
-
   void restoreFlags(const int& _flags) { flags = _flags; }
-
   int clearFlags(int mask) {
     int oldFlags = flags;
     flags -= flags & mask;
     return oldFlags;
   }
-
   int setFlags(int mask) {
     int oldFlags = flags;
     flags |= mask;
     return oldFlags;
   }
-
-  int getReg(const int& arg);
-  void setReg(const int& arg, const int& value);
 };
 
 #endif	/* _CPU_H */

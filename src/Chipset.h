@@ -22,7 +22,7 @@ public:
 
   void startClock();
 
-  void addComponent(const Component &);
+  void addComponent(Component &);
   //  void addCpu(Cpu &);
   const Cpu& getCpu(int num = 0) const;
 
