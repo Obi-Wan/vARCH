@@ -18,7 +18,7 @@ CharTerminal::CharTerminal() { }
 
 void
 CharTerminal::put(const int& signal) {
-  switch (signal & REQUEST_TYPE_MASK) {
+  switch (REQUEST_SHIFT(signal) & REQUEST_TYPE_MASK) {
     case COMP_TYPE:
       simpleUnsafeResponse = COMP_CONSOLE;
       dataReady = DATA_READY_TRUE;

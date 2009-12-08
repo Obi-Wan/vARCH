@@ -14,8 +14,10 @@
 #define DATA_READY_FALSE    0
 #define DATA_READY_ERROR   -1
 
-#define REQUEST_TYPE_MASK   0xff000000
+#define REQUEST_TYPE_MASK   0x000000ff
 #define REQUEST_ARG_MASK    0x00ffffff
+
+#define REQUEST_SHIFT(x)    (x >> 23)
 
 class Component : public InterruptDevice {
 public:
@@ -32,7 +34,7 @@ public:
   };
 
   enum ComponentRequest {
-    COMP_TYPE     =     (REQUEST_ARG_MASK + 1),
+    COMP_TYPE,
     COMP_GET_FEATURES,
     COMP_SET_FEATURES,
   };

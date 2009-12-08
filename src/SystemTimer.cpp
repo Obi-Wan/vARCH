@@ -16,7 +16,7 @@ SystemTimer::SystemTimer(const int& features) : timerFeatures(features) { }
 
 void
 SystemTimer::put(const int& signal) {
-  switch (signal & REQUEST_TYPE_MASK) {
+  switch (REQUEST_SHIFT(signal) & REQUEST_TYPE_MASK) {
     case COMP_TYPE:
       simpleUnsafeResponse = COMP_TIMER | COMP_CHAR;
       dataReady = DATA_READY_TRUE;
