@@ -6,12 +6,12 @@
  */
 
 #include <unistd.h>
-#include <stdio.h>
 
 #include "Chipset.h"
 #include "../include/std_istructions.h"
 #include "../include/asm_helpers.h"
 #include "SystemTimer.h"
+#include "CharTerminal.h"
 #include "macros.h"
 
 Chipset::Chipset(const int& _maxMem, int * _mainMem)
@@ -75,7 +75,7 @@ Chipset::initMem() {
       mainMem[i] = biosLoad[i];
     }
   } catch (WrongFileException) {
-    printf("Failed to load bios from file\n");
+    WarningPrintf(("Failed to load bios from file\n"));
     for (i = 0; !(bios[i-1] == HALT && (bios[i] == 0 || bios[i+1] == 0)); i++) {
       mainMem[i] = bios[i];
     }

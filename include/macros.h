@@ -11,6 +11,7 @@
 //#define DEBUG
 
 #ifdef DEBUG
+  #define WARNING
 #include <iostream>
 #include <cstdio>
 
@@ -26,6 +27,18 @@ using namespace std;
 #else
 #define DebugPrintf( x )
 #define DebugPrintfMaps( mapType, mapObj, mapName )
+#endif
+
+#define WARNING
+
+#ifdef WARNING
+#include <cstdio>
+
+using namespace std;
+
+#define WarningPrintf( x ) do { printf("Warning: "); printf x; } while(0)
+#else
+#define WarningPrintf( x )
 #endif
 
 #endif	/* _MACROS_H */
