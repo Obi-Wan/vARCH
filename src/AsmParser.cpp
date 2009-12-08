@@ -72,7 +72,7 @@ AsmParser::preProcess() {
               case STRING: {
                 lineStr.ignore(256,'$');
                 string constString;
-                lineStr >> constString;
+                getline(lineStr, constString);
 
                 for (unsigned int i = 0; i < constString.size(); i++) {
                   consts.push_back(constString[i] & 0xff );
