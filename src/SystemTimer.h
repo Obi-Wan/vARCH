@@ -8,8 +8,9 @@
 #ifndef _SYSTEMTIMER_H
 #define	_SYSTEMTIMER_H
 
-#include "Component.h"
+#include <sys/time.h>
 
+#include "Component.h"
 
 class SystemTimer : public Component {
 public:
@@ -26,9 +27,19 @@ public:
 //  virtual ~SystemTimer();
 
   void put(const int& signal);
+
+  void checkInterruptEvents();
+
+  void setTimer(const TimerFeatures&);
+  void stopTimer() { timerTimout = 0; }
 private:
 
   int timerFeatures;
+
+  int timerTimout;
+  long int timePassed;
+
+  suseconds_t lastTimeCheck;
 };
 
 #endif	/* _SYSTEMTIMER_H */
