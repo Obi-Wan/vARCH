@@ -21,7 +21,7 @@ Component::put(const int& signal) {
       simpleUnsafeResponse = COMP_CHAR;
       dataReady = DATA_READY_TRUE;
       break;
-    case COMP_FEATURES:
+    case COMP_GET_FEATURES:
       dataReady = DATA_READY_ERROR;
       break;
   }

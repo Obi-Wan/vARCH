@@ -14,6 +14,9 @@
 #define DATA_READY_FALSE    0
 #define DATA_READY_ERROR   -1
 
+#define REQUEST_TYPE_MASK   0xff000000
+#define REQUEST_ARG_MASK    0x00ffffff
+
 class Component : public InterruptDevice {
 public:
   Component();
@@ -29,8 +32,9 @@ public:
   };
 
   enum ComponentRequest {
-    COMP_TYPE,
-    COMP_FEATURES,
+    COMP_TYPE     =     (REQUEST_ARG_MASK + 1),
+    COMP_GET_FEATURES,
+    COMP_SET_FEATURES,
   };
 
   void put(const int& signal);

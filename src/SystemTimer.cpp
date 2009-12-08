@@ -16,12 +16,12 @@ SystemTimer::SystemTimer(const int& features) : timerFeatures(features) { }
 
 void
 SystemTimer::put(const int& signal) {
-  switch (signal) {
+  switch (signal & REQUEST_TYPE_MASK) {
     case COMP_TYPE:
       simpleUnsafeResponse = COMP_TIMER | COMP_CHAR;
       dataReady = DATA_READY_TRUE;
       break;
-    case COMP_FEATURES:
+    case COMP_GET_FEATURES:
       simpleUnsafeResponse = timerFeatures;
       dataReady = DATA_READY_TRUE;
       break;
