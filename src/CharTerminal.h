@@ -12,7 +12,7 @@
 
 #define CHAR_MASK 0xff
 
-class CharTerminal : Component {
+class CharTerminal : public Component {
 public:
   CharTerminal();
 //  CharTerminal(const CharTerminal& orig);
