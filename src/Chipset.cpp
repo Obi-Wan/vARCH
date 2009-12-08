@@ -23,10 +23,10 @@ Chipset::Chipset(const int& _maxMem, int * _mainMem)
   cpu.dumpRegistersAndMemory();
 
   // next we add the system timer to the components connected to the chipset
-  components.push_back( SystemTimer( SystemTimer::TIMER_0250_HZ |
+  components.push_back( new SystemTimer( SystemTimer::TIMER_0250_HZ |
                                      SystemTimer::TIMER_0100_HZ    ));
   // then we add a charterminal
-  components.push_back( CharTerminal() );
+  components.push_back( new CharTerminal() );
 }
 
 //Chipset::Chipset(const Chipset& orig) { }
@@ -94,7 +94,7 @@ Chipset::startClock() {
 
     // Let's trigger events
     for (unsigned int i = 0; i < components.size(); i++) {
-      components[i].checkInterruptEvents();
+      components[i]->checkInterruptEvents();
     }
 
     // Let's execute the next istruction
@@ -114,7 +114,7 @@ Chipset::startClock() {
 
 
 void
-Chipset::addComponent(Component& comp) {
+Chipset::addComponent(Component* comp) {
   components.push_back(comp);
 }
 
@@ -131,10 +131,18 @@ Chipset::getCpu(int num) const {
 
 void
 Chipset::singlePutToComponent(const int& numComp, const int& signal) {
-  components[numComp].put(signal);
+  if (numComp > components.size()) {
+    WarningPrintf(("accessing a non existent component"));
+  } else {
+    components[numComp]->put(signal);
+  }
 }
 
 int
 Chipset::singleGetFromComponent(const int& numComp) {
-  components[numComp].get();
+  if (numComp > components.size()) {
+    WarningPrintf(("accessing a non existent component"));
+  } else {
+    components[numComp]->get();
+  }
 }

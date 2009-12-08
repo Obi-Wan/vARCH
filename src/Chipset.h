@@ -22,7 +22,7 @@ public:
 
   void startClock();
 
-  void addComponent(Component &);
+  void addComponent(Component *);
   //  void addCpu(Cpu &);
   const Cpu& getCpu(int num = 0) const;
 
@@ -37,7 +37,7 @@ private:
 
   static const int bios[];
 
-  vector<Component> components;
+  vector<Component *> components;
 
   void initMem();
 

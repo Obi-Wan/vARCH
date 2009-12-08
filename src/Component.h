@@ -39,7 +39,7 @@ public:
     COMP_SET_FEATURES,
   };
 
-  void put(const int& signal);
+  virtual void put(const int& signal);
   int get();
 
   int isDataReady() { return dataReady; }
