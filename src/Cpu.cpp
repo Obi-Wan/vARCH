@@ -450,22 +450,20 @@ Cpu::storeArg(const int& arg, const int& typeArg, int value) throw(WrongArgument
 inline int
 Cpu::getReg(const int& arg) {
   int type = arg / OFFSET_REGS;
-  int spec = arg % OFFSET_REGS;
-  DebugPrintf(("arg: %d type: %d, spec: %d\n",arg,type,spec));
+  DebugPrintf(("arg: %d type: %d, spec: %d\n",arg,type,arg % OFFSET_REGS));
   switch (type) {
-    case 0:
-      return regsData[spec];
-    case 1:
-      return regsAddr[spec];
-    case 2:
-      if (!spec) {
-        return sP.getStackPointer();
-      } else {
+    case DATA_REGS:
+      return regsData[ arg % OFFSET_REGS ];
+    case ADDR_REGS:
+      return regsAddr[ arg % OFFSET_REGS ];
+    case STCK_PTRS:
+      if (arg == USER_STACK_POINTER) {
         return (flags & F_SVISOR) ? sP.getUStackPointer() : sP.getStackPointer();
+      } else if (arg == STACK_POINTER) {
+        return sP.getStackPointer();
       }
-    case 3:
-      return regsAddr[NUM_REGS-1];
-    case 4:
+      throw WrongArgumentException("No such stack pointer");
+    case STATE_REGISTER:
       return (flags & F_SVISOR) ? flags : int(flags);
     default:
       throw WrongArgumentException("No such register");
@@ -476,36 +474,34 @@ Cpu::getReg(const int& arg) {
 inline void
 Cpu::setReg(const int& arg, const int& value) {
   int type = arg / OFFSET_REGS;
-  int spec = arg % OFFSET_REGS;
-  DebugPrintf( ("arg: %d type: %d, spec: %d\n",arg,type,spec) );
+  DebugPrintf( ("arg: %d type: %d, spec: %d\n",arg,type,arg % OFFSET_REGS) );
   switch (type) {
-    case 0:
-      regsData[spec] = value;
+    case DATA_REGS:
+      regsData[ arg % OFFSET_REGS ] = value;
       break;
-    case 1:
-      regsAddr[spec] = value;
+    case ADDR_REGS:
+      regsAddr[ arg % OFFSET_REGS ] = value;
       break;
-    case 2:
-      if (spec) {
-        sP.setStackPointer(value);
-      } else {
+    case STCK_PTRS:
+      if (arg == USER_STACK_POINTER) {
         if (flags & F_SVISOR) {
           sP.setUStackPointer(value);
         } else {
           sP.setStackPointer(value);
         }
+        break;
+      } else if (arg == STACK_POINTER) {
+        sP.setStackPointer(value);
+        break;
       }
-      break;
-    case 3:
-      regsAddr[NUM_REGS-1] = value;
-      break;
-    case 4:
+      throw WrongArgumentException("No such stack pointer");
+    case STATE_REGISTER:
       if (flags & F_SVISOR) {
         flags = value;
+        break;
       } else {
-        throw WrongArgumentException();
+        throw WrongArgumentException("Not Allowed to modify SR");
       }
-      break;
     default:
       throw WrongArgumentException("No such register");
   }
