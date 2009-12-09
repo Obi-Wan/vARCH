@@ -175,11 +175,11 @@ AsmParser::processArgOp(int& op, const string& arg, const int& numArg) {
       break;
     case '%':
       op += ARG(numArg, REG);
-      argValue = parseReg(arg.substr(1, arg.size()-1)) - 1;
+      argValue = parseReg(arg.substr(1, arg.size()-1));
       break;
     case '(':
       op += ARG(numArg, ADDR_IN_REG);
-      argValue = parseReg(arg.substr(1, arg.size()-2)) - 1;
+      argValue = parseReg(arg.substr(1, arg.size()-2));
       break;
     case '>':
       op += ARG(numArg, ADDR);
@@ -193,28 +193,31 @@ AsmParser::processArgOp(int& op, const string& arg, const int& numArg) {
 
 inline int
 AsmParser::parseReg(const string& reg) {
-  int temp = 0;
+  int answer = 0;
   switch (reg[0]) {
     case 'R':
-      istringstream(reg.substr(1, reg.size()-1)) >> temp;
-      return temp;
+      istringstream(reg.substr(1, reg.size()-1)) >> answer;
+      answer -= 1;
+      break;
     case 'A':
-      istringstream(reg.substr(1, reg.size()-1)) >> temp;
-      return (temp += OFFSET_REGS);
+      istringstream(reg.substr(1, reg.size()-1)) >> answer;
+      answer += OFFSET_REGS - 1;
+      break;
+    case 'U':
+      answer = USER_STACK_POINTER;
+      break;
     case 'S':
       if (reg[1] == 'P') {
-        return STACK_POINTER;
+        answer = STACK_POINTER;
+        break;
       } else if (reg[1] == 'R') {
-        return STATE_REGISTER;
-      } else {
+        answer = STATE_REGISTER;
         break;
       }
-    case 'U':
-      return USER_STACK_POINTER;
     default:
-      break;
+      throw WrongArgumentException("No register called: " + reg);
   }
-  throw WrongArgumentException("No register called: " + reg);
+  return answer;
 }
 
 inline AsmParser::ConstsType

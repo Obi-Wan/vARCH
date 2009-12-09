@@ -458,7 +458,7 @@ Cpu::getReg(const int& arg) {
     case 1:
       return regsAddr[spec];
     case 2:
-      if (spec) {
+      if (!spec) {
         return sP.getStackPointer();
       } else {
         return (flags & F_SVISOR) ? sP.getUStackPointer() : sP.getStackPointer();
