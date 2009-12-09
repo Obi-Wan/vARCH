@@ -9,36 +9,38 @@
 #define	_MACROS_H
 
 //#define DEBUG
-
-#ifdef DEBUG
-  #define WARNING
-#include <iostream>
-#include <cstdio>
-
-using namespace std;
-
-#define DebugPrintf( x ) do { printf x; } while(0)
-#define DebugPrintfMaps( mapType, mapObj, mapName ) do { \
-  cout << "DEBUG: " << mapName << "\n"; \
-  for(mapType::iterator i = mapObj.begin(); i != mapObj.end(); i++) { \
-    cout << "first: \"" << i->first << "\", second: " << i->second << "\n"; \
-  }\
-} while(0)
-#else
-#define DebugPrintf( x )
-#define DebugPrintfMaps( mapType, mapObj, mapName )
-#endif
-
 #define WARNING
 
-#ifdef WARNING
-#include <cstdio>
+#ifdef DEBUG
+  #ifndef WARNING
+    #define WARNING
+  #endif
+  #include <iostream>
+#endif
 
-using namespace std;
+#if defined(DEBUG) || defined(WARNING)
+  #include <cstdio>
 
-#define WarningPrintf( x ) do { printf("Warning: "); printf x; } while(0)
+  using namespace std;
+#endif
+
+#ifdef DEBUG
+  #define DebugPrintf( x ) do { printf("Debug: "); printf x; } while(0)
+  #define DebugPrintfMaps( mapType, mapObj, mapName ) do { \
+    cout << "DEBUG: " << mapName << "\n"; \
+    for(mapType::iterator i = mapObj.begin(); i != mapObj.end(); i++) { \
+      cout << "first: \"" << i->first << "\", second: " << i->second << "\n"; \
+    }\
+  } while(0)
 #else
-#define WarningPrintf( x )
+  #define DebugPrintf( x )
+  #define DebugPrintfMaps( mapType, mapObj, mapName )
+#endif
+
+#ifdef WARNING
+  #define WarningPrintf( x ) do { printf("Warning: "); printf x; } while(0)
+#else
+  #define WarningPrintf( x )
 #endif
 
 #endif	/* _MACROS_H */
