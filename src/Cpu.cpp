@@ -467,6 +467,8 @@ Cpu::getReg(const int& arg) {
       return regsAddr[NUM_REGS-1];
     case 4:
       return (flags & F_SVISOR) ? flags : int(flags);
+    default:
+      throw WrongArgumentException("No such register");
   }
 }
 
@@ -504,5 +506,7 @@ Cpu::setReg(const int& arg, const int& value) {
         throw WrongArgumentException();
       }
       break;
+    default:
+      throw WrongArgumentException("No such register");
   }
 }
