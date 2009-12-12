@@ -8,19 +8,10 @@
 #ifndef _ASMPARSER_H
 #define	_ASMPARSER_H
 
-#include <string>
-#include <map>
-
 #include "FileHandler.h"
 #include "../include/std_istructions.h"
 #include "../include/asm_helpers.h"
-
-using namespace std;
-
-typedef map<string, unsigned int> Labels;
-typedef map<string, int> Istructions;
-typedef vector<int> Constants;
-typedef vector< vector<string> > CodeLines;
+#include "../include/parser_definitions.h"
 
 class AsmParser {
 
@@ -35,24 +26,29 @@ class AsmParser {
   bool globalConsts;
 
   const string fname;
-  string fileContent;
   CodeLines lines;
+  CodeLines linesIntermed;
 
   Bloat code;
 
   Labels labels;
   Constants consts;
 
+  void preParser(const string& fileContent);
+  void synthaxParser();
+
   void preProcess();
+  void storeLabel(const string& word, const int& bytePos)
+          throw(DuplicateLabelException);
   int processArgOp(int& op, const string& arg, const int& numArg);
   int parseReg(const string& reg);
+
+  void lineParsingKernel( const CodeLines::const_iterator& line, Bloat& code)
+          throw(WrongArgumentException, WrongIstructionException);
 public:
-  AsmParser(const string& _fname) : fname(_fname), globalConsts(false) {
-    TextLoader loader(fname.data());
-    fileContent = loader.getTextFileContent();
-  }
+  AsmParser(const string& _fname);
 //  AsmParser(const AsmParser& orig);
-  virtual ~AsmParser();
+//  virtual ~AsmParser();
 
   void parse() throw(WrongArgumentException, WrongIstructionException);
 

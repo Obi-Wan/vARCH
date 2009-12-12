@@ -12,92 +12,113 @@
 
 using namespace std;
 
+AsmParser::AsmParser(const string& _fname) : fname(_fname), globalConsts(false) {
+  TextLoader loader(fname.data());
+  preParser(loader.getTextFileContent());
+}
+
 //AsmParser::AsmParser(const AsmParser& orig) { }
 
-AsmParser::~AsmParser() { }
+//AsmParser::~AsmParser() { }
 
 inline void
-AsmParser::preProcess() {
+AsmParser::preParser(const string& fileContent) {
   istringstream fileStr(fileContent);
-
   // Scans over the lines
-  for(unsigned int bytePos = 0; !fileStr.eof(); ) {
+  for(unsigned int lineNum = 0; !fileStr.eof(); lineNum++) {
     vector<string> lineOfCode;
     string word, line;
+    
     getline(fileStr, line);
+    // Don't store comments or blank lines
+    if (line[0] == ';' || line.empty()) continue;
 
-    // let's skip blank/comment lines
-    if (line[0] != ';' && !line.empty()) {
-      istringstream lineStr(line);
-      lineStr >> word;
-
-      // First of all, let's test if it's a label or a type marker
-      if (word[0] == '.') {
-        if (word[word.size()-1] == ':') { // it's a label
-
-          string label = word.substr(1,word.size()-2);
-
-          if (labels.find(label) != labels.end()) {
-            throw DuplicateLabelException(
-                    "Label already defined here: " + labels.find(label)->second);
-          }
-
-          labels.insert(Labels::value_type(label, bytePos));
-        } else { // it's a type marker
-          /* Now we try to figure out what kind of marker it is:
-           *  - if global is not declared, it should be something not related
-           *    to heap;
-           *  - otherwise print an error.
-           */
-          if (!globalConsts) {
-            switch (getConstType(word)) {
-              case GLOBAL:
-                globalConsts = true;
-                break;
-              default:
-                throw WrongIstructionException("No constants allowed here");
-            }
-          } else {
-            /* Ok, we are in the heap and these are constants */
-            switch (getConstType(word)) {
-              case INT: {
-                lineStr.ignore(256,'$');
-                int value;
-                lineStr >> value;
-                consts.push_back(value);
-                bytePos++;
-                break;
-              }
-              case CHAR:
-              case STRING: {
-                lineStr.ignore(256,'$');
-                string constString;
-                getline(lineStr, constString);
-
-                for (unsigned int i = 0; i < constString.size(); i++) {
-                  consts.push_back(constString[i] & 0xff );
-                  bytePos++;
-                }
-                break;
-              }
-              default:
-                throw WrongArgumentException("Only constants after a .global mark");
-            } // switch end
-          }
-        }
-      } else { // it's a command
-        if (!word.empty()) {
+    istringstream lineStr(line);
+    lineStr >> word;
+    if (!word.empty()) {
+      lineOfCode.push_back(word);
+      // now if it's a constant we save it all together
+      if ((word[0] == '.') && (word[word.size()-1] != ':') &&
+              (getConstType(word) != GLOBAL)) {
+        lineStr.ignore(256,'$');
+        string constString;
+        getline(lineStr, constString);
+        lineOfCode.push_back(constString);
+      // otherwise let's add it direcly without processing
+      } else {
+        for(; (lineStr >> word) && !word.empty(); ) {
           lineOfCode.push_back(word);
-          bytePos++;
-          for(; (lineStr >> word) && !word.empty(); ) {
-            lineOfCode.push_back(word);
-            bytePos++;
-          }
         }
       }
     }
-    
-    lines.push_back(lineOfCode);
+
+    linesIntermed.push_back(CodeLines::value_type(lineNum,lineOfCode));
+  }
+  DebugPrintf(("preParser finished, code lines are:\n"));
+  DebugPrintfCodeLines(linesIntermed, "lines2" );
+}
+
+inline void
+AsmParser::synthaxParser() {
+  //FIXME it's just useless now
+}
+
+inline void
+AsmParser::storeLabel(const string& word, const int& bytePos)
+            throw(DuplicateLabelException)
+{
+  string label = word.substr(1,word.size()-2);
+
+  if (labels.find(label) != labels.end()) {
+    throw DuplicateLabelException(
+            "Label already defined here: " + labels.find(label)->second);
+  }
+  labels.insert(Labels::value_type(label, bytePos));
+}
+
+inline void
+AsmParser::preProcess() {
+  unsigned int bytePos = 0;
+  for(CodeLines::const_iterator line = linesIntermed.begin(); line != linesIntermed.end(); line++ ) {
+    const string& word = line->second[0];
+    if (word[0] == '.') {
+      if (word[word.size()-1] == ':') { // it's a label
+        storeLabel(word, bytePos);
+      } else { // it's a type marker
+        if (!globalConsts) {
+          if (getConstType(word) == GLOBAL) {
+            globalConsts = true;
+          } else {
+            throw WrongIstructionException("No constants allowed here");
+          }
+        } else { /* Ok, we are processing constants */
+          switch (getConstType(word)) {
+            case INT: {
+              istringstream argStr( line->second[1] );
+              int value;
+              argStr >> value;
+              consts.push_back(value);
+              bytePos++;
+              break;
+            }
+            case CHAR:
+            case STRING: {
+              const string& temp = line->second[1];
+              for (unsigned int i = 0; i < temp.size(); i++) {
+                consts.push_back(temp[i] & 0xff );
+                bytePos++;
+              }
+              break;
+            }
+            default:
+              throw WrongArgumentException("Only constants after a .global mark");
+          } // switch end
+        }
+      }
+    } else {
+      lines.push_back(CodeLines::value_type(line->first, line->second));
+      bytePos += line->second.size();
+    }
   }
 
   DebugPrintfMaps(Labels, labels, "labels");
@@ -110,37 +131,8 @@ void
 AsmParser::parse() throw(WrongArgumentException, WrongIstructionException) {
   preProcess();
 
-  int lineNum = 0;
-  for(CodeLines::iterator line = lines.begin(); line != lines.end(); line++) {
-    if (line->empty()) continue;
-    
-    try {
-      int op = ISet.getIstr(line->at(0));
-
-      vector<int> args;
-      for(int i = 0; i < ((op >> 30) & 3); i++) {
-        args.push_back(processArgOp(op, line->at(i+1), i));
-      }
-    
-      code.push_back(op);
-      for(int i = 0; i < args.size(); i++) {
-        code.push_back(args[i]);
-      }
-    } catch (WrongIstructionException e) {
-
-      stringstream streamError(string(""));
-      streamError << "Line " << lineNum << ": ";
-      e.prefixMessage(streamError.str());
-      throw e;
-    } catch (out_of_range ) {
-      
-      stringstream streamError(string(""));
-      streamError << "Line " << lineNum << ": wrong number of arguments: "
-                  << "expected more";
-      throw WrongArgumentException(streamError.str());
-    }
-    
-    lineNum++;
+  for(CodeLines::const_iterator line = lines.begin(); line != lines.end(); line++) {
+    lineParsingKernel(line, code);
   }
 
   // pushing constants
@@ -148,8 +140,38 @@ AsmParser::parse() throw(WrongArgumentException, WrongIstructionException) {
     code.push_back(consts[i]);
   }
 
-
   printf("Parsing Finished\n");
+}
+
+inline void
+AsmParser::lineParsingKernel( const CodeLines::const_iterator& line, Bloat& code)
+              throw(WrongArgumentException, WrongIstructionException)
+{
+  try {
+    int op = ISet.getIstr(line->second.at(0));
+
+    vector<int> args;
+    for(int i = 0; i < ((op >> 30) & 3); i++) {
+      args.push_back(processArgOp(op, line->second.at(i+1), i));
+    }
+
+    code.push_back(op);
+    for(int i = 0; i < args.size(); i++) {
+      code.push_back(args[i]);
+    }
+  } catch (WrongIstructionException e) {
+
+    stringstream streamError(string(""));
+    streamError << "Line " << line->first << ": ";
+    e.prefixMessage(streamError.str());
+    throw e;
+  } catch (out_of_range ) {
+
+    stringstream streamError(string(""));
+    streamError << "Line " << line->first << ": wrong number of arguments: "
+                << "expected more";
+    throw WrongArgumentException(streamError.str());
+  }
 }
 
 inline int
