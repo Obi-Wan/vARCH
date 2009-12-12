@@ -24,6 +24,9 @@ using namespace std;
 #define COMUNICATION  (1 << 27)
 #define SYSTEM        (1 << 26)
 
+// ARGS SECTION
+#define RELATIVE_ARG  (1 << 5)
+
 /* These bits occupy variably the positions from (1 << 25) to
  *    (1 << 23)
  *    (1 << 20)
@@ -34,16 +37,28 @@ using namespace std;
 enum TypeOfArgument {
   
   /* Here the (1 << 1) bit stays for ADDR, and the (1 << 0) for REG */
-  COST = 0,       // 000
-  REG,            // 001
-  ADDR,           // 010
-  ADDR_IN_REG,    // 011
+  COST = 0,               // 0000
+  REG,                    // 0001
+  ADDR,                   // 0010
+  ADDR_IN_REG,            // 0011
 
   /* Here the (1 << 1) bit stays for INCR/DECR, and the (1 << 0) for PRE/POST */
-  REG_PRE_INCR,   // 100
-  REG_PRE_DECR,   // 101
-  REG_POST_INCR,  // 110
-  REG_POST_DECR,  // 111
+  REG_PRE_INCR,           // 0100
+  REG_PRE_DECR,           // 0101
+  REG_POST_INCR,          // 0110
+  REG_POST_DECR,          // 0111
+
+  /* Here the (1 << 1) bit stays for INCR/DECR, and the (1 << 0) for PRE/POST */
+  ADDR_PRE_INCR,          // 1000
+  ADDR_PRE_DECR,          // 1001
+  ADDR_POST_INCR,         // 1010
+  ADDR_POST_DECR,         // 1011
+
+  /* Here the (1 << 1) bit stays for INCR/DECR, and the (1 << 0) for PRE/POST */
+  ADDR_IN_REG_PRE_INCR,   // 1100
+  ADDR_IN_REG_PRE_DECR,   // 1101
+  ADDR_IN_REG_POST_INCR,  // 1110
+  ADDR_IN_REG_POST_DECR,  // 1111
 };
 
 //enum Registers {

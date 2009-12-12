@@ -382,33 +382,54 @@ Cpu::istructsThreeArg(const int& istr, int& newFlags) throw(WrongIstructionExcep
 
 int
 Cpu::loadArg(const int& arg,const int& typeArg) throw(WrongArgumentException) {
-  switch (typeArg) {
+  const int relative = (typeArg & 0x10) ? (progCounter -1) : 0;
+  switch (typeArg & 0xf) {
     case COST:
       DebugPrintf(("COST: %d\n", arg));
       return arg;
-      break;
-    case ADDR:
-      DebugPrintf(("ADDR: %d\n", arg));
-      return memoryController.loadFromMem(arg);
-      break;
-    case ADDR_IN_REG:
-      DebugPrintf(("ADDR_IN_REG: %d\n", arg));
-      return memoryController.loadFromMem(getReg(arg));
-      break;
+//    case ADDR:
+//      DebugPrintf(("ADDR: %d\n", arg));
+//      return memoryController.loadFromMem(arg + relative);
+//    case ADDR_IN_REG:
+//      DebugPrintf(("ADDR_IN_REG: %d\n", arg));
+//      return memoryController.loadFromMem(getReg(arg) + relative);
 
     case REG_PRE_INCR:
       DebugPrintf(("REG_PRE_INCR: %d\n", arg));
       return (getReg(arg) +1);
-      break;
     case REG_PRE_DECR:
       DebugPrintf(("REG_PRE_DECR: %d\n", arg));
-      return (getReg(arg) +1);
-      break;
+      return (getReg(arg) -1);
     case REG:
     case REG_POST_INCR:
     case REG_POST_DECR:
       DebugPrintf(("REG / REG_POST_*: %d\n", arg));
       return getReg(arg);
+
+    case ADDR_PRE_INCR:
+      DebugPrintf(("ADDR_PRE_INCR: %d\n", arg));
+      return (memoryController.loadFromMem(arg + relative) +1);
+    case ADDR_PRE_DECR:
+      DebugPrintf(("ADDR_PRE_DECR: %d\n", arg));
+      return (memoryController.loadFromMem(arg + relative) -1);
+    case ADDR:
+    case ADDR_POST_INCR:
+    case ADDR_POST_DECR:
+      DebugPrintf(("ADDR / ADDR_POST_*: %d\n", arg));
+      return memoryController.loadFromMem(arg + relative);
+
+    case ADDR_IN_REG_PRE_INCR:
+      DebugPrintf(("ADDR_IN_REG_PRE_INCR: %d\n", arg));
+      return (memoryController.loadFromMem(getReg(arg) + relative) +1);
+    case ADDR_IN_REG_PRE_DECR:
+      DebugPrintf(("ADDR_IN_REG_PRE_DECR: %d\n", arg));
+      return (memoryController.loadFromMem(getReg(arg) + relative) -1);
+    case ADDR_IN_REG:
+    case ADDR_IN_REG_POST_INCR:
+    case ADDR_IN_REG_POST_DECR:
+      DebugPrintf(("ADDR_IN_REG / ADDR_IN_REG_POST_*: %d\n", arg));
+      return memoryController.loadFromMem(getReg(arg) + relative);
+      
     default:
       throw WrongArgumentException("Failed in loading");
       break;
@@ -417,15 +438,16 @@ Cpu::loadArg(const int& arg,const int& typeArg) throw(WrongArgumentException) {
 
 void
 Cpu::storeArg(const int& arg, const int& typeArg, int value) throw(WrongArgumentException) {
-  switch (typeArg) {
-    case ADDR:
-      DebugPrintf(("ADDR: %d\n", arg));
-      memoryController.storeToMem(value, arg);
-      break;
-    case ADDR_IN_REG:
-      DebugPrintf(("ADDR_IN_REG: %d\n", arg));
-      memoryController.storeToMem(value, getReg(arg));
-      break;
+  const int relative = (typeArg & 0x10) ? (progCounter -1) : 0;
+  switch (typeArg & 0xf) {
+//    case ADDR:
+//      DebugPrintf(("ADDR: %d\n", arg));
+//      memoryController.storeToMem(value, arg + relative);
+//      break;
+//    case ADDR_IN_REG:
+//      DebugPrintf(("ADDR_IN_REG: %d\n", arg));
+//      memoryController.storeToMem(value, getReg(arg) + relative);
+//      break;
 
     case REG:
     case REG_PRE_INCR:
@@ -440,6 +462,36 @@ Cpu::storeArg(const int& arg, const int& typeArg, int value) throw(WrongArgument
     case REG_POST_DECR:
       DebugPrintf(("REG_POST_DECR: %d\n", arg));
       setReg(arg, --value);
+      break;
+
+    case ADDR:
+    case ADDR_PRE_INCR:
+    case ADDR_PRE_DECR:
+      DebugPrintf(("ADDR / ADDR_PRE_*: %d\n", arg));
+      memoryController.storeToMem(value, arg + relative);
+      break;
+    case ADDR_POST_INCR:
+      DebugPrintf(("ADDR_POST_INCR: %d\n", arg));
+      memoryController.storeToMem(++value, arg + relative);
+      break;
+    case ADDR_POST_DECR:
+      DebugPrintf(("ADDR_POST_DECR: %d\n", arg));
+      memoryController.storeToMem(--value, arg + relative);
+      break;
+
+    case ADDR_IN_REG:
+    case ADDR_IN_REG_PRE_INCR:
+    case ADDR_IN_REG_PRE_DECR:
+      DebugPrintf(("ADDR_IN_REG / ADDR_IN_REG_PRE_*: %d\n", arg));
+      memoryController.storeToMem(value, getReg(arg) + relative);
+      break;
+    case ADDR_IN_REG_POST_INCR:
+      DebugPrintf(("ADDR_IN_REG_POST_INCR: %d\n", arg));
+      memoryController.storeToMem(++value, getReg(arg) + relative);
+      break;
+    case ADDR_IN_REG_POST_DECR:
+      DebugPrintf(("ADDR_IN_REG_POST_DECR: %d\n", arg));
+      memoryController.storeToMem(--value, getReg(arg) + relative);
       break;
     default:
       throw WrongArgumentException("Failed in storing");
