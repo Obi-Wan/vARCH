@@ -28,13 +28,25 @@
   #define DebugPrintf( x ) do { printf("Debug: "); printf x; } while(0)
   #define DebugPrintfMaps( mapType, mapObj, mapName ) do { \
     cout << "DEBUG: " << mapName << "\n"; \
-    for(mapType::iterator i = mapObj.begin(); i != mapObj.end(); i++) { \
+    for(mapType::const_iterator i = mapObj.begin(); i != mapObj.end(); i++) { \
       cout << "first: \"" << i->first << "\", second: " << i->second << "\n"; \
+    }\
+  } while(0)
+  #define DebugPrintfCodeLines( obj, name ) do { \
+    cout << "DEBUG: " << name << "\n"; \
+    for(CodeLines::const_iterator i = obj.begin(); i != obj.end(); i++) { \
+      cout << "Line: " << i->first << ", segments: "; \
+      for(vector<string>::const_iterator j = i->second.begin(); \
+          j != i->second.end(); j++) { \
+        cout << *j << " "; \
+      } \
+      cout << "\n"; \
     }\
   } while(0)
 #else
   #define DebugPrintf( x )
   #define DebugPrintfMaps( mapType, mapObj, mapName )
+  #define DebugPrintfCodeLines( obj, name )
 #endif
 
 #ifdef WARNING
