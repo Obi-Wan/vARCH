@@ -10,5 +10,6 @@ varch_SOURCES = Mmu.cpp \
 		vArch.cpp
 
 vasm_SOURCES =  FileHandler.cpp \
+                FunctionRecord.cpp \
                 AsmParser.cpp \
                 vAsm.cpp
