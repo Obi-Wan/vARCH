@@ -17,7 +17,7 @@ BinLoader::getBinFileContent() {
   
   while ( file.read((char *)&temp, sizeof(int)) ) {
     bloat.push_back(temp);
-    DebugPrintf(("int: %d\n",temp));
+//    DebugPrintf(("int: %d\n",temp));
   }
 
   return bloat;
@@ -29,7 +29,7 @@ TextLoader::getTextFileContent() {
   
   while ( getline(file, line) ) {
     str.append(line += '\n');
-    DebugPrintf(("line: %s\n",line.c_str()));
+//    DebugPrintf(("line: %s\n",line.c_str()));
   }
 
   return str;
@@ -39,6 +39,6 @@ void
 BinWriter::saveBinFileContent(const Bloat& bloat) {
   for(int i = 0; i < bloat.size(); i++) {
     file.write((const char *)&bloat[i], sizeof(Bloat::value_type));
-    DebugPrintf(("int: %d\n",bloat[i]));
+//    DebugPrintf(("int: %d\n",bloat[i]));
   }
 }
