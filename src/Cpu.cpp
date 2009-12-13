@@ -383,7 +383,7 @@ Cpu::istructsThreeArg(const int& istr, int& newFlags) throw(WrongIstructionExcep
   return 0;
 }
 
-int
+inline int
 Cpu::loadArg(const int& arg,const int& typeArg) throw(WrongArgumentException) {
   const int relative = (typeArg & 0x10) ? (progCounter -1) : 0;
   DebugPrintf(("Relative: %d\n", relative));
@@ -440,7 +440,7 @@ Cpu::loadArg(const int& arg,const int& typeArg) throw(WrongArgumentException) {
   }
 }
 
-void
+inline void
 Cpu::storeArg(const int& arg, const int& typeArg, int value) throw(WrongArgumentException) {
   const int relative = (typeArg & 0x10) ? (progCounter -1) : 0;
   DebugPrintf(("Relative: %d\n", relative));
