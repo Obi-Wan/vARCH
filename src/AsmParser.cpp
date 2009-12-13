@@ -6,11 +6,7 @@
  */
 
 #include "AsmParser.h"
-
-#include <sstream>
 #include "../include/macros.h"
-
-using namespace std;
 
 AsmParser::AsmParser(const string& _fname) : fname(_fname), globalConsts(false) {
   TextLoader loader(fname.data());

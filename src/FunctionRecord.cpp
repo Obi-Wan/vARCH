@@ -5,10 +5,7 @@
  * Created on 10 dicembre 2009, 21.26
  */
 
-#include <sstream>
 #include "FunctionRecord.h"
-
-using namespace std;
 
 //FunctionRecord::FunctionRecord() { }
 
