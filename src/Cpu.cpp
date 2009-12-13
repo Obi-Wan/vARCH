@@ -158,6 +158,7 @@ int
 Cpu::istructsOneArg(const int& istr, int& newFlags) throw(WrongIstructionException) {
 
   int typeArg = GET_ARG_1(istr);
+  DebugPrintf(("Loaded arg 1: 0x%X\n", typeArg));
   int arg = memoryController.loadFromMem(progCounter++);
   int temp = loadArg(arg, typeArg);
 
@@ -240,10 +241,12 @@ int
 Cpu::istructsTwoArg(const int& istr, int& newFlags) throw(WrongIstructionException) {
 
   int typeArg1 = GET_ARG_1(istr);
+  DebugPrintf(("Loaded arg 1: 0x%X\n", typeArg1));
   int arg1 = memoryController.loadFromMem(progCounter++);
   int temp1 = loadArg(arg1, typeArg1);
 
   int typeArg2 = GET_ARG_2(istr);
+  DebugPrintf(("Loaded arg 2: 0x%X\n", typeArg2));
   int arg2 = memoryController.loadFromMem(progCounter++);
   int temp2 = loadArg(arg2, typeArg2);
 
@@ -383,10 +386,11 @@ Cpu::istructsThreeArg(const int& istr, int& newFlags) throw(WrongIstructionExcep
 int
 Cpu::loadArg(const int& arg,const int& typeArg) throw(WrongArgumentException) {
   const int relative = (typeArg & 0x10) ? (progCounter -1) : 0;
+  DebugPrintf(("Relative: %d\n", relative));
   switch (typeArg & 0xf) {
     case COST:
       DebugPrintf(("COST: %d\n", arg));
-      return arg;
+      return (arg + relative);
 //    case ADDR:
 //      DebugPrintf(("ADDR: %d\n", arg));
 //      return memoryController.loadFromMem(arg + relative);
@@ -439,6 +443,7 @@ Cpu::loadArg(const int& arg,const int& typeArg) throw(WrongArgumentException) {
 void
 Cpu::storeArg(const int& arg, const int& typeArg, int value) throw(WrongArgumentException) {
   const int relative = (typeArg & 0x10) ? (progCounter -1) : 0;
+  DebugPrintf(("Relative: %d\n", relative));
   switch (typeArg & 0xf) {
 //    case ADDR:
 //      DebugPrintf(("ADDR: %d\n", arg));

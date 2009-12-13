@@ -25,7 +25,7 @@ using namespace std;
 #define SYSTEM        (1 << 26)
 
 // ARGS SECTION
-#define RELATIVE_ARG  (1 << 5)
+#define RELATIVE_ARG  (1 << 4)
 
 /* These bits occupy variably the positions from (1 << 25) to
  *    (1 << 23)

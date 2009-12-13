@@ -11,14 +11,14 @@
 #define NAME_OF( x ) #x
 
 #define ARG_1( x ) (x << 21)
-#define ARG_2( x ) (x << 18)
-#define ARG_3( x ) (x << 15)
+#define ARG_2( x ) (x << 16)
+#define ARG_3( x ) (x << 11)
 
 #define ARG( y, x ) (x << (21 - (5 * y)))
 
 #define GET_ARG_1( x ) ((x >> 21) & 0x1f)
-#define GET_ARG_2( x ) ((x >> 18) & 0x1f)
-#define GET_ARG_3( x ) ((x >> 15) & 0x1f)
+#define GET_ARG_2( x ) ((x >> 16) & 0x1f)
+#define GET_ARG_3( x ) ((x >> 11) & 0x1f)
 
 #define OFFSET_REGS   0x100
 #define DATA_REGS     0
