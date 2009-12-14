@@ -158,8 +158,8 @@ int
 Cpu::istructsOneArg(const int& istr, int& newFlags) throw(WrongIstructionException) {
 
   int typeArg = GET_ARG_1(istr);
-  DebugPrintf(("Loaded arg 1: 0x%X\n", typeArg));
   int arg = memoryController.loadFromMem(progCounter++);
+  DebugPrintf(("Type arg 1: 0x%X arg: 0x%X\n", typeArg, arg));
   int temp = loadArg(arg, typeArg);
 
   const int polishedIstr = istr - ARG_1(typeArg);
@@ -241,13 +241,13 @@ int
 Cpu::istructsTwoArg(const int& istr, int& newFlags) throw(WrongIstructionException) {
 
   int typeArg1 = GET_ARG_1(istr);
-  DebugPrintf(("Loaded arg 1: 0x%X\n", typeArg1));
   int arg1 = memoryController.loadFromMem(progCounter++);
+  DebugPrintf(("Type arg 1: 0x%X arg: 0x%X\n", typeArg1, arg1));
   int temp1 = loadArg(arg1, typeArg1);
 
   int typeArg2 = GET_ARG_2(istr);
-  DebugPrintf(("Loaded arg 2: 0x%X\n", typeArg2));
   int arg2 = memoryController.loadFromMem(progCounter++);
+  DebugPrintf(("Type arg 2: 0x%X arg: 0x%X\n", typeArg2, arg2));
   int temp2 = loadArg(arg2, typeArg2);
 
   const int polishedIstr = istr - ARG_1(typeArg1) - ARG_2(typeArg2);
@@ -391,12 +391,6 @@ Cpu::loadArg(const int& arg,const int& typeArg) throw(WrongArgumentException) {
     case COST:
       DebugPrintf(("COST: %d\n", arg));
       return (arg + relative);
-//    case ADDR:
-//      DebugPrintf(("ADDR: %d\n", arg));
-//      return memoryController.loadFromMem(arg + relative);
-//    case ADDR_IN_REG:
-//      DebugPrintf(("ADDR_IN_REG: %d\n", arg));
-//      return memoryController.loadFromMem(getReg(arg) + relative);
 
     case REG_PRE_INCR:
       DebugPrintf(("REG_PRE_INCR: %d\n", arg));
@@ -445,15 +439,6 @@ Cpu::storeArg(const int& arg, const int& typeArg, int value) throw(WrongArgument
   const int relative = (typeArg & 0x10) ? (progCounter -1) : 0;
   DebugPrintf(("Relative: %d\n", relative));
   switch (typeArg & 0xf) {
-//    case ADDR:
-//      DebugPrintf(("ADDR: %d\n", arg));
-//      memoryController.storeToMem(value, arg + relative);
-//      break;
-//    case ADDR_IN_REG:
-//      DebugPrintf(("ADDR_IN_REG: %d\n", arg));
-//      memoryController.storeToMem(value, getReg(arg) + relative);
-//      break;
-
     case REG:
     case REG_PRE_INCR:
     case REG_PRE_DECR:
