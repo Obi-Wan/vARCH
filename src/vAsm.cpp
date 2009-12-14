@@ -25,6 +25,7 @@ main(int argc, char** argv) {
   try {
     parser.parse();
     parser.assemble();
+    parser.flush();
   } catch (BasicException e) {
     printf("Error: %s\n", e.what());
   }

@@ -14,28 +14,100 @@
 //FunctionRecord::~FunctionRecord() { }
 
 inline void
-FunctionRecord::storeLabel(const string& word, const int& bytePos)
+FunctionRecord::storeLabel(const string& word, const int& bytePos, const int& lineNum)
             throw(DuplicateLabelException)
 {
   string label = word.substr(1,word.size()-2);
 
   if (localLabels.find(label) != localLabels.end()) {
-    throw DuplicateLabelException(
-            "Label already defined here: " + localLabels.find(label)->second);
+    stringstream streamError(string(""));
+    streamError << "Line " << lineNum << ": Label already defined at line: "
+                << localLabels.find(label)->second.lineNumber;
+    throw DuplicateLabelException(streamError.str());
   }
-  localLabels.insert(Labels::value_type(label, bytePos));
+  localLabels.insert(Labels::value_type(label, Label(word, lineNum, bytePos)));
+}
+
+void
+FunctionRecord::preProcess() throw(WrongIstructionException, WrongArgumentException) {
+  unsigned int bytePos = 0;
+  bool localConsts = false;
+
+  DebugPrintf(("Preproces of: %s\n", name.c_str()));
+  for(CodeLines::const_iterator line = linesIntermed.begin();
+          line != linesIntermed.end(); line++ ) {
+    const string& word = line->chunks.at(0);
+    if (word[0] == '.') {
+      if (word[word.size()-1] == ':') { // it's a label
+        storeLabel(word, bytePos, line->lineNumber);
+      } else { // it's a type marker
+        if (!localConsts) {
+          if (Marker::getMarkerType(word) == Marker::LOCAL) {
+            localConsts = true;
+          } else {
+            DebugPrintf(("marker: %s\n", word.c_str()));
+            throw WrongIstructionException("No constants allowed here");
+          }
+        } else { /* Ok, we are processing constants */
+          switch (Marker::getMarkerType(word)) {
+            case Marker::INT: {
+              istringstream argStr( line->chunks.at(1) );
+              int value;
+              argStr >> value;
+              consts.push_back(value);
+              bytePos++;
+              break;
+            }
+            case Marker::CHAR:
+            case Marker::STRING: {
+              const string& temp = line->chunks.at(1);
+              for (unsigned int i = 0; i < temp.size(); i++) {
+                consts.push_back(temp[i] & 0xff );
+                bytePos++;
+              }
+              break;
+            }
+            default:
+              throw WrongArgumentException("Only constants after a .global mark");
+          } // switch end
+        }
+      }
+    } else {
+      lines.push_back(*line);
+      bytePos += line->bytes;
+    }
+  }
+
+  DebugPrintfLabels( localLabels, "localLabels");
+}
+
+void
+FunctionRecord::assemble() {
+  unsigned int bytePos = 0;
+  DebugPrintf(("Function %s assembled\n", name.c_str()));
+  for(CodeLines::const_iterator line = lines.begin(); line != lines.end(); line++) {
+    lineAssembleKernel(line, code, bytePos);
+    bytePos += line->bytes;
+  }
+  DebugPrintf(("Istructions bytes: %d\n", bytePos));
+  for (unsigned int i = 0; i < consts.size(); i++) {
+    code.push_back(consts[i]);
+  }
+  DebugPrintf(("Total bytes: %d\n", (int)code.size()));
 }
 
 inline void
-FunctionRecord::lineParsingKernel( const CodeLines::const_iterator& line, Bloat& code)
+FunctionRecord::lineAssembleKernel( const CodeLines::const_iterator& line,
+                                  Bloat& code, int bytePos)
               throw(WrongArgumentException, WrongIstructionException)
 {
   try {
-    int op = ISet.getIstr(line->second.at(0));
+    int op = ISet.getIstr(line->chunks.at(0));
 
     vector<int> args;
     for(int i = 0; i < ((op >> 30) & 3); i++) {
-      args.push_back(processArgOp(op, line->second.at(i+1), i));
+      // Pre incrementing bytePos, since args will be after op, but op was not counted now
+      args.push_back(processArgOp(op, line->chunks.at(i+1), i, ++bytePos));
     }
 
     code.push_back(op);
@@ -45,51 +117,76 @@ FunctionRecord::lineParsingKernel( const CodeLines::const_iterator& line, Bloat&
   } catch (WrongIstructionException e) {
 
     stringstream streamError(string(""));
-    streamError << "Line " << line->first << ": ";
+    streamError << "Line " << line->lineNumber << ": ";
     e.prefixMessage(streamError.str());
     throw e;
   } catch (out_of_range ) {
 
     stringstream streamError(string(""));
-    streamError << "Line " << line->first << ": wrong number of arguments: "
+    streamError << "Line " << line->lineNumber << ": wrong number of arguments: "
                 << "expected more";
     throw WrongArgumentException(streamError.str());
   }
 }
 
 inline int
-FunctionRecord::processArgOp(int& op, const string& arg, const int& numArg) {
-
+FunctionRecord::processArgOp(int& op, const string& arg, const int& numArg,
+                             const int& bytePos)
+{
   int argValue = 0;
   switch (arg[0]) {
-    case '$':
+    case '$': {
       op += ARG(numArg, COST);
       istringstream(arg.substr(1, arg.size()-1)) >> argValue;
       break;
-    case '.':
-      op += ARG(numArg, ADDR);
-      if (localLabels.find(arg.substr(1, arg.size()-1)) == localLabels.end())
-        throw WrongArgumentException("No label named " + arg);
-      argValue = localLabels.find(arg.substr(1, arg.size()-1))->second;
+    }
+    case '.': {
+      Labels::const_iterator iter = localLabels.find(arg.substr(1, arg.size()-1));
+      if (iter != localLabels.end()) {
+        op += ARG(numArg, ADDR + RELATIVE_ARG);
+        argValue = iter->second.byte - bytePos;
+      } else {
+        iter = globalLabels.find(arg.substr(1, arg.size()-1));
+        if (iter != globalLabels.end()) {
+          op += ARG(numArg, ADDR);
+          argValue = iter->second.byte;
+        } else {
+          throw WrongArgumentException("No label named " + arg);
+        }
+      }
       break;
-    case '@':
-      op += ARG(numArg, COST);
-      if (localLabels.find(arg.substr(1, arg.size()-1)) == localLabels.end())
-        throw WrongArgumentException("No label named " + arg);
-      argValue = localLabels.find(arg.substr(1, arg.size()-1))->second;
+    }
+    case '@': {
+      Labels::const_iterator iter = localLabels.find(arg.substr(1, arg.size()-1));
+      if (iter != localLabels.end()) {
+        op += ARG(numArg, COST + RELATIVE_ARG);
+        argValue = iter->second.byte - bytePos;
+      } else {
+        iter = globalLabels.find(arg.substr(1, arg.size()-1));
+        if (iter != globalLabels.end()) {
+          op += ARG(numArg, COST);
+          argValue = iter->second.byte;
+        } else {
+          throw WrongArgumentException("No label named " + arg);
+        }
+      }
       break;
-    case '%':
+    }
+    case '%': {
       op += ARG(numArg, REG);
       argValue = parseReg(arg.substr(1, arg.size()-1));
       break;
-    case '(':
+    }
+    case '(': {
       op += ARG(numArg, ADDR_IN_REG);
       argValue = parseReg(arg.substr(1, arg.size()-2));
       break;
-    case '>':
+    }
+    case '>': {
       op += ARG(numArg, ADDR);
       istringstream(arg.substr(1, arg.size()-1)) >> argValue;
       break;
+    }
     default:
       throw WrongArgumentException("Invalid Argument: " + arg);
   }

@@ -11,5 +11,6 @@ varch_SOURCES = Mmu.cpp \
 
 vasm_SOURCES =  FileHandler.cpp \
                 FunctionRecord.cpp \
+                CodeOrganizer.cpp \
                 AsmParser.cpp \
                 vAsm.cpp

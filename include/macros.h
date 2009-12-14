@@ -32,19 +32,27 @@
       cout << "first: \"" << i->first << "\", second: " << i->second << "\n"; \
     }\
   } while(0)
+  #define DebugPrintfLabels( mapObj, mapName ) do { \
+    cout << "DEBUG: " << mapName << "\n"; \
+    for(Labels::const_iterator i = mapObj.begin(); i != mapObj.end(); i++) { \
+      cout << "name: \"" << i->first << "\", line: " << i->second.lineNumber \
+           << " bytePos: " << i->second.byte << "\n"; \
+    }\
+  } while(0)
   #define DebugPrintfCodeLines( obj, name ) do { \
     cout << "DEBUG: " << name << "\n"; \
     for(CodeLines::const_iterator i = obj.begin(); i != obj.end(); i++) { \
-      cout << "Line: " << i->first << ", segments: "; \
-      for(vector<string>::const_iterator j = i->second.begin(); \
-          j != i->second.end(); j++) { \
+      cout << "Line: " << i->lineNumber << ", segments: "; \
+      for(vector<string>::const_iterator j = i->chunks.begin(); \
+          j != i->chunks.end(); j++) { \
         cout << *j << " "; \
       } \
-      cout << "\n"; \
+      cout << "\nnumber of bytes: " << i->bytes << "\n"; \
     }\
   } while(0)
 #else
   #define DebugPrintf( x )
+  #define DebugPrintfLabels( mapObj, mapName )
   #define DebugPrintfMaps( mapType, mapObj, mapName )
   #define DebugPrintfCodeLines( obj, name )
 #endif
