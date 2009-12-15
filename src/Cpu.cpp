@@ -229,7 +229,7 @@ Cpu::istructsOneArg(const int& istr, int& newFlags) throw(WrongIstructionExcepti
       break;
   }
 
-  if (polishedIstr < STACK || polishedIstr == POP) {
+  if (polishedIstr < STACK || polishedIstr == POP || typeArg & 0xC) {
     newFlags += SET_ARITM_FLAGS(temp);
     storeArg(arg, typeArg, temp);
   }
@@ -321,14 +321,14 @@ Cpu::istructsTwoArg(const int& istr, int& newFlags) throw(WrongIstructionExcepti
       break;
   }
 
-  if (polishedIstr <= XOR || polishedIstr == GET) {
+  if (polishedIstr <= XOR || polishedIstr == GET || typeArg2 & 0xC) {
 
     newFlags += SET_ARITM_FLAGS(temp2);
     storeArg(arg2, typeArg2, temp2); /* Operations that do modify args */
+  }
 
-    if (typeArg1 & 4) { /* in case the first arg was modified */
-      storeArg(arg1, typeArg1, temp1);
-    }
+  if (typeArg1 & 0xC) { /* in case the first arg was modified */
+    storeArg(arg1, typeArg1, temp1);
   }
 
   return 0;
@@ -380,6 +380,19 @@ Cpu::istructsThreeArg(const int& istr, int& newFlags) throw(WrongIstructionExcep
       throw WrongIstructionException();
       break;
   }
+
+  if (typeArg1 & 0xC) { /* in case the first arg was modified */
+    storeArg(arg1, typeArg1, temp1);
+  }
+
+  if (typeArg2 & 0xC) { /* in case the second arg was modified */
+    storeArg(arg2, typeArg2, temp2);
+  }
+
+  if (typeArg1 & 0xC) { /* in case the third arg was modified */
+    storeArg(arg3, typeArg3, temp3);
+  }
+
   return 0;
 }
 
