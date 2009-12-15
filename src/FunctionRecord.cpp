@@ -199,6 +199,7 @@ FunctionRecord::processArgOp(int& op, const string& arg, const int& numArg,
     default:
       throw WrongArgumentException("Invalid Argument: " + cleanArg);
   }
+  DebugPrintf(("Got type arg: 0x%02X value: %d\n", GET_ARG(numArg, op), argValue));
   return argValue;
 }
 
@@ -213,15 +214,19 @@ FunctionRecord::detectArgsOptions(const string& arg, string& cleanArg,
   if (arg[0] == '+') {
     options = (1 << 5) + 0;
     cleanArg = arg.substr(1,arg.size()-1);
+    DebugPrintf(("Detected pre increment, cleaned arg: %s\n", cleanArg.c_str()));
   } else if (arg[0] == '-') {
     options = (1 << 5) + 1;
     cleanArg = arg.substr(1,arg.size()-1);
+    DebugPrintf(("Detected pre decrement, cleaned arg: %s\n", cleanArg.c_str()));
   } else if (arg[arg.size()-1] == '+') {
     options = (1 << 5) + 2;
     cleanArg = arg.substr(0,arg.size()-1);
+    DebugPrintf(("Detected post increment, cleaned arg: %s\n", cleanArg.c_str()));
   } else if (arg[arg.size()-1] == '-') {
     options = (1 << 5) + 3;
     cleanArg = arg.substr(0,arg.size()-1);
+    DebugPrintf(("Detected post decrement, cleaned arg: %s\n", cleanArg.c_str()));
   }
 
   // integrity check
@@ -234,6 +239,7 @@ FunctionRecord::detectArgsOptions(const string& arg, string& cleanArg,
 
   // Now that it's been cleaned by potentially
   if (cleanArg[0] == 'r') {
+    DebugPrintf(("Detected relative\n"));
     options += (1 << 4);
     cleanArg = cleanArg.substr(1,cleanArg.size()-1);
   }
