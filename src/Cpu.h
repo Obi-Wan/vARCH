@@ -37,7 +37,6 @@ class Chipset; /* just a class declaration */
 class Cpu {
 public:
   Cpu(Chipset&, Mmu&);
-  virtual ~Cpu();
 
   void init();
 

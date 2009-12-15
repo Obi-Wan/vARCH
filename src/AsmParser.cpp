@@ -18,7 +18,7 @@ AsmParser::AsmParser(const string& _fname) : fname(_fname) {
 
 //AsmParser::~AsmParser() { }
 
-void
+inline void
 AsmParser::addAllChunks(istringstream& inputLine, LineOfCode& outputLine) {
   string word;
   for(; (inputLine >> word) && !word.empty(); ) {

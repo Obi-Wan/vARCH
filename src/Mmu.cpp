@@ -19,8 +19,6 @@ Mmu::Mmu(const Mmu& orig) : maxMem(orig.maxMem), mainMem(orig.mainMem) {
   limit = orig.limit;
 }
 
-Mmu::~Mmu() { }
-
 
 
 /** Stores data to memory

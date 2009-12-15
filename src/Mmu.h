@@ -14,7 +14,6 @@ class Mmu {
 public:
   Mmu(const int _maxMem, int * _mem);
   Mmu(const Mmu& orig);
-  virtual ~Mmu();
 
   int getMaxMem() { return maxMem; }
   

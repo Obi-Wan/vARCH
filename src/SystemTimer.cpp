@@ -9,11 +9,6 @@
 
 SystemTimer::SystemTimer(const int& features) : timerFeatures(features) { }
 
-//SystemTimer::SystemTimer(const SystemTimer& orig) { }
-
-//SystemTimer::~SystemTimer() { }
-
-
 void
 SystemTimer::put(const int& signal) {
   switch (REQUEST_SHIFT(signal) & REQUEST_TYPE_MASK) {

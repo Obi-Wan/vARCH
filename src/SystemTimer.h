@@ -23,8 +23,6 @@ public:
   };
 
   SystemTimer(const int& features);
-//  SystemTimer(const SystemTimer& orig);
-//  virtual ~SystemTimer();
 
   void put(const int& signal);
 

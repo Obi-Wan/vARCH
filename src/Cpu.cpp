@@ -23,10 +23,6 @@ Cpu::Cpu(Chipset& _chipset, Mmu& mC)
   init();
 }
 
-//Cpu::Cpu(const Cpu& orig) { }
-
-Cpu::~Cpu() { }
-
 void
 Cpu::init() {
   progCounter = 0;
@@ -123,7 +119,7 @@ Cpu::coreStep() {
   return res;
 }
 
-int
+inline int
 Cpu::istructsZeroArg(const int& istr, int& newFlags) throw(WrongIstructionException) {
   switch (istr) {
     case SLEEP:
@@ -154,7 +150,7 @@ Cpu::istructsZeroArg(const int& istr, int& newFlags) throw(WrongIstructionExcept
   return 0;
 }
 
-int
+inline int
 Cpu::istructsOneArg(const int& istr, int& newFlags) throw(WrongIstructionException) {
 
   int typeArg = GET_ARG_1(istr);
@@ -237,7 +233,7 @@ Cpu::istructsOneArg(const int& istr, int& newFlags) throw(WrongIstructionExcepti
   return 0;
 }
 
-int
+inline int
 Cpu::istructsTwoArg(const int& istr, int& newFlags) throw(WrongIstructionException) {
 
   int typeArg1 = GET_ARG_1(istr);
@@ -334,7 +330,7 @@ Cpu::istructsTwoArg(const int& istr, int& newFlags) throw(WrongIstructionExcepti
   return 0;
 }
 
-int
+inline int
 Cpu::istructsThreeArg(const int& istr, int& newFlags) throw(WrongIstructionException) {
 
   int typeArg1 = GET_ARG_1(istr);
@@ -442,7 +438,7 @@ Cpu::loadArg(const int& arg,const int& typeArg) throw(WrongArgumentException) {
       return memoryController.loadFromMem(getReg(arg) + relative);
       
     default:
-      throw WrongArgumentException("Failed in loading");
+      throw WrongArgumentException("Failed in loading: wrong argument type");
       break;
   }
 }
@@ -497,7 +493,7 @@ Cpu::storeArg(const int& arg, const int& typeArg, int value) throw(WrongArgument
       memoryController.storeToMem(--value, getReg(arg) + relative);
       break;
     default:
-      throw WrongArgumentException("Failed in storing");
+      throw WrongArgumentException("Failed in storing: wrong argument type");
       break;
   }
 }

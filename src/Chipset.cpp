@@ -60,13 +60,13 @@ Chipset::bios[] = {
 //  MOV + ARG_1(REG) + ARG_2(ADDR),                   REG_DATA_2, 23,
 //  HALT, 0, 0 };
 
-Bloat
+inline Bloat
 Chipset::loadBiosFromFile(const char * file) {
   BinLoader handler(file);
   return handler.getBinFileContent();
 }
 
-void
+inline void
 Chipset::initMem() {
   int i = 0;
   try {
