@@ -218,10 +218,10 @@ FunctionRecord::detectArgsOptions(const string& arg, string& cleanArg,
     cleanArg = arg.substr(1,arg.size()-1);
   } else if (arg[arg.size()-1] == '+') {
     options = (1 << 5) + 2;
-    cleanArg = arg.substr(0,arg.size()-2);
+    cleanArg = arg.substr(0,arg.size()-1);
   } else if (arg[arg.size()-1] == '-') {
     options = (1 << 5) + 3;
-    cleanArg = arg.substr(0,arg.size()-2);
+    cleanArg = arg.substr(0,arg.size()-1);
   }
 
   // integrity check
