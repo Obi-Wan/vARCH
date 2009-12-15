@@ -31,7 +31,7 @@ public:
   }
 //  static MarkersType getMarkerType(const string& type);
 
-  void preProcess() throw(WrongIstructionException, WrongArgumentException);
+  void parseLocalSymbols() throw(WrongIstructionException, WrongArgumentException);
   void assemble();
 
   unsigned int getBytes() const { return bytes; }
@@ -56,8 +56,9 @@ private:
                            int bytePos)
           throw(WrongArgumentException, WrongIstructionException);
   int processArgOp( int& op, const string& arg, const int& numArg,
-                    const int& bytePos);
-  int parseReg(const string& reg);
+                    const int& bytePos)
+          throw(WrongArgumentException);
+  int parseReg(const string& reg) throw(WrongArgumentException);
 };
 
 typedef vector<FunctionRecord *> Functions;

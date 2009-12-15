@@ -135,9 +135,11 @@ struct Label {
   string name;
   unsigned int lineNumber;
   unsigned int byte;
+  int offset;
 
-  Label(const string& _n, const unsigned int& _l, const unsigned int& _b) :
-        name(_n), lineNumber(_l), byte(_b) { }
+  Label(const string& _n, const unsigned int& _l, const unsigned int& _b,
+        const int& _o) :
+        name(_n), lineNumber(_l), byte(_b), offset(_o) { }
 };
 
 typedef map<string, Label> Labels;

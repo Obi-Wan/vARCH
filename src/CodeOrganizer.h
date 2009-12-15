@@ -21,7 +21,8 @@ public:
   void assignGlobalSymbols();
   void assemble(Bloat& code);
 
-  void storeLabel(const string& word, const int& bytePos, const int& lineNum)
+  void storeLabel(const string& word, const unsigned int& bytePos,
+                  const unsigned int& lineNum, const int& offset = 0)
           throw(DuplicateLabelException);
 
   const Labels& getLabels() const { return labels; }

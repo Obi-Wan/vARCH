@@ -15,7 +15,8 @@
 
 
 void
-CodeOrganizer::storeLabel(const string& word, const int& bytePos, const int& lineNum)
+CodeOrganizer::storeLabel(const string& word, const unsigned int& bytePos,
+                          const unsigned int& lineNum, const int& offset /*= 0*/)
             throw(DuplicateLabelException)
 {
   string label = word.substr(1,word.size()-2);
@@ -26,7 +27,7 @@ CodeOrganizer::storeLabel(const string& word, const int& bytePos, const int& lin
                 << labels.find(label)->second.lineNumber;
     throw DuplicateLabelException(streamError.str());
   }
-  labels.insert(Labels::value_type(label, Label(word, lineNum, bytePos)));
+  labels.insert(Labels::value_type(label, Label(word, lineNum, bytePos, offset)));
 }
 
 void
@@ -108,12 +109,12 @@ CodeOrganizer::assignGlobalSymbols() {
   DebugPrintf(("Starting assigning global symbols\n"));
   unsigned int bytePos = 0;
   if (main != NULL) {
-    storeLabel(".main:", bytePos, 0);
+    storeLabel(".main:", bytePos, /*line num*/ 0, /*offset*/ 0);
     bytePos += main->getBytes();
     DebugPrintf(("main present. bytePos at: %d\n", bytePos));
   }
   for (unsigned int i = 0; i < functions.size(); i++) {
-    storeLabel("." +functions[i]->getName()+":", bytePos, -1); // TODO FIXME
+    storeLabel("." +functions[i]->getName()+":", bytePos, /*LineNum*/-1, /*Offset*/0);
     bytePos += functions[i]->getBytes();
     DebugPrintf(("counted function: %s. bytePos at: %d\n",
                   functions[i]->getName().c_str(), bytePos));
@@ -156,10 +157,10 @@ CodeOrganizer::assignGlobalSymbols() {
 void
 CodeOrganizer::parseFunctions() {
   if (main) {
-    main->preProcess();
+    main->parseLocalSymbols();
   }
   for (unsigned int i = 0; i < functions.size(); i++) {
-    functions[i]->preProcess();
+    functions[i]->parseLocalSymbols();
   }
 }
 
@@ -168,6 +169,7 @@ CodeOrganizer::assemble(Bloat& code) {
   if (main) {
     main->assemble();
     code.insert(code.end(), main->getCode().begin(), main->getCode().end());
+    DebugPrintf(("Main assembled\n"));
   }
   for(unsigned int i = 0; i < functions.size(); i++) {
     functions[i]->assemble();
@@ -176,5 +178,6 @@ CodeOrganizer::assemble(Bloat& code) {
   for (unsigned int i = 0; i < consts.size(); i++) {
     code.push_back(consts[i]);
   }
+  DebugPrintf(("Completed assembling\n"));
 }
 

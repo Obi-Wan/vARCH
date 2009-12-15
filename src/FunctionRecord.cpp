@@ -25,15 +25,15 @@ FunctionRecord::storeLabel(const string& word, const int& bytePos, const int& li
                 << localLabels.find(label)->second.lineNumber;
     throw DuplicateLabelException(streamError.str());
   }
-  localLabels.insert(Labels::value_type(label, Label(word, lineNum, bytePos)));
+  localLabels.insert(Labels::value_type(label, Label(word, lineNum, bytePos, 0)));
 }
 
 void
-FunctionRecord::preProcess() throw(WrongIstructionException, WrongArgumentException) {
+FunctionRecord::parseLocalSymbols() throw(WrongIstructionException, WrongArgumentException) {
   unsigned int bytePos = 0;
   bool localConsts = false;
 
-  DebugPrintf(("Preproces of: %s\n", name.c_str()));
+  DebugPrintf(("Parsing Symbols of: %s\n", name.c_str()));
   for(CodeLines::const_iterator line = linesIntermed.begin();
           line != linesIntermed.end(); line++ ) {
     const string& word = line->chunks.at(0);
@@ -132,6 +132,7 @@ FunctionRecord::lineAssembleKernel( const CodeLines::const_iterator& line,
 inline int
 FunctionRecord::processArgOp(int& op, const string& arg, const int& numArg,
                              const int& bytePos)
+                             throw(WrongArgumentException)
 {
   int argValue = 0;
   switch (arg[0]) {
@@ -194,7 +195,7 @@ FunctionRecord::processArgOp(int& op, const string& arg, const int& numArg,
 }
 
 inline int
-FunctionRecord::parseReg(const string& reg) {
+FunctionRecord::parseReg(const string& reg) throw(WrongArgumentException) {
   int answer = 0;
   switch (reg[0]) {
     case 'R':
