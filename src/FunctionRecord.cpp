@@ -130,7 +130,7 @@ FunctionRecord::lineAssembleKernel( const CodeLines::const_iterator& line,
 }
 
 // This helps just to keep clean/readable code
-#define MANAGE_OPTIONS( x ) (options ? (( x << 2 ) + 0x1f & options) : x )
+#define MANAGE_OPTIONS( x ) (options ? (( 0xC & ( x << 2 )) | (0x1f & options)) : x )
 
 inline int
 FunctionRecord::processArgOp(int& op, const string& arg, const int& numArg,
