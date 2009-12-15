@@ -129,69 +129,114 @@ FunctionRecord::lineAssembleKernel( const CodeLines::const_iterator& line,
   }
 }
 
+// This helps just to keep clean/readable code
+#define MANAGE_OPTIONS( x ) (options ? (( x << 2 ) + 0x1f & options) : x )
+
 inline int
 FunctionRecord::processArgOp(int& op, const string& arg, const int& numArg,
                              const int& bytePos)
                              throw(WrongArgumentException)
 {
   int argValue = 0;
-  switch (arg[0]) {
+
+  string cleanArg = arg;
+  int options = 0;
+  detectArgsOptions(arg, cleanArg, options);
+
+  switch (cleanArg[0]) {
     case '$': {
-      op += ARG(numArg, COST);
-      istringstream(arg.substr(1, arg.size()-1)) >> argValue;
+      op += ARG(numArg, MANAGE_OPTIONS(COST) );
+      istringstream(cleanArg.substr(1, cleanArg.size()-1)) >> argValue;
       break;
     }
     case '.': {
-      Labels::const_iterator iter = localLabels.find(arg.substr(1, arg.size()-1));
+      Labels::const_iterator iter = localLabels.find(cleanArg.substr(1, cleanArg.size()-1));
       if (iter != localLabels.end()) {
         op += ARG(numArg, ADDR + RELATIVE_ARG);
         argValue = iter->second.byte - bytePos;
       } else {
-        iter = globalLabels.find(arg.substr(1, arg.size()-1));
+        iter = globalLabels.find(cleanArg.substr(1, cleanArg.size()-1));
         if (iter != globalLabels.end()) {
           op += ARG(numArg, ADDR);
           argValue = iter->second.byte;
         } else {
-          throw WrongArgumentException("No label named " + arg);
+          throw WrongArgumentException("No label named " + cleanArg);
         }
       }
       break;
     }
     case '@': {
-      Labels::const_iterator iter = localLabels.find(arg.substr(1, arg.size()-1));
+      Labels::const_iterator iter = localLabels.find(cleanArg.substr(1, cleanArg.size()-1));
       if (iter != localLabels.end()) {
         op += ARG(numArg, COST + RELATIVE_ARG);
         argValue = iter->second.byte - bytePos;
       } else {
-        iter = globalLabels.find(arg.substr(1, arg.size()-1));
+        iter = globalLabels.find(cleanArg.substr(1, cleanArg.size()-1));
         if (iter != globalLabels.end()) {
           op += ARG(numArg, COST);
           argValue = iter->second.byte;
         } else {
-          throw WrongArgumentException("No label named " + arg);
+          throw WrongArgumentException("No label named " + cleanArg);
         }
       }
       break;
     }
     case '%': {
-      op += ARG(numArg, REG);
-      argValue = parseReg(arg.substr(1, arg.size()-1));
+      op += ARG(numArg, MANAGE_OPTIONS(REG) );
+      argValue = parseReg(cleanArg.substr(1, cleanArg.size()-1));
       break;
     }
     case '(': {
-      op += ARG(numArg, ADDR_IN_REG);
-      argValue = parseReg(arg.substr(1, arg.size()-2));
+      op += ARG(numArg, MANAGE_OPTIONS(ADDR_IN_REG) );
+      argValue = parseReg(cleanArg.substr(1, cleanArg.size()-2));
       break;
     }
     case '>': {
-      op += ARG(numArg, ADDR);
-      istringstream(arg.substr(1, arg.size()-1)) >> argValue;
+      op += ARG(numArg, MANAGE_OPTIONS(ADDR) );
+      istringstream(cleanArg.substr(1, cleanArg.size()-1)) >> argValue;
       break;
     }
     default:
-      throw WrongArgumentException("Invalid Argument: " + arg);
+      throw WrongArgumentException("Invalid Argument: " + cleanArg);
   }
   return argValue;
+}
+
+#undef MANAGE_OPTIONS
+
+inline void
+FunctionRecord::detectArgsOptions(const string& arg, string& cleanArg,
+                                  int& options)
+                throw(WrongArgumentException) {
+  // the 6th bit just tells us that it's going to be an arg with options
+  // It will be then filtered
+  if (arg[0] == '+') {
+    options = (1 << 5) + 0;
+    cleanArg = arg.substr(1,arg.size()-1);
+  } else if (arg[0] == '-') {
+    options = (1 << 5) + 1;
+    cleanArg = arg.substr(1,arg.size()-1);
+  } else if (arg[arg.size()-1] == '+') {
+    options = (1 << 5) + 2;
+    cleanArg = arg.substr(0,arg.size()-2);
+  } else if (arg[arg.size()-1] == '-') {
+    options = (1 << 5) + 3;
+    cleanArg = arg.substr(0,arg.size()-2);
+  }
+
+  // integrity check
+  if ((cleanArg[0] == '+') || (cleanArg[0] == '-') ||
+          (cleanArg[cleanArg.size()-1] == '+') ||
+          (cleanArg[cleanArg.size()-1] == '-'))
+  {
+    throw WrongArgumentException("Ambiguos pre/post intement/decrement");
+  }
+
+  // Now that it's been cleaned by potentially
+  if (cleanArg[0] == 'r') {
+    options += (1 << 4);
+    cleanArg = cleanArg.substr(1,cleanArg.size()-1);
+  }
 }
 
 inline int

@@ -59,6 +59,8 @@ private:
                     const int& bytePos)
           throw(WrongArgumentException);
   int parseReg(const string& reg) throw(WrongArgumentException);
+  void detectArgsOptions(const string& arg, string& polishedArg, int& options)
+          throw(WrongArgumentException);
 };
 
 typedef vector<FunctionRecord *> Functions;
