@@ -1,0 +1,155 @@
+In order to install it, remeber to run autoreconf, since it is an Autotools-spawned project.
+-------------------------------------------------------------------------------
+
+This is a virtual machine / interpreter of bytecode for a virtual architecture I ideated for learning purposes.
+It's not intended for preformance of flexibility use cases. It's just a simple and easy to learn architecture.
+
+For the ease of development I also created a simple assembler and it should offer some facility, over the "directly write binary code" :)
+Explanation on how to write the asm code is after the examples.
+
+If you intend to contribute to development, you should ask for documentation/answers to me directly. I had no time for documentation.
+
+What I will report here are samples of the Asm language: they need to be assembled and then either moved to the name "bios.bin" of soft link the binary to that name.
+
+A simple program for calculating the first n factorials:
+
+biosFactorial.s
+----------------
+
+; calculate the factorial by definition of the first 5 numbers
+.init:
+	STACK	$50
+	MOV	$1	%R8
+.start:
+; the counter is post incremented after the copy
+	MOV	%R8+	%R1
+	MOV	$1	%R2
+.iter:
+	MULT	%R1-	%R2
+	MO	%R1	$1
+	IFNJ	@save
+	JMP	@iter
+.save:
+	PUSH	%R2
+	MO	%R8	.maxnum
+	IFJ	@end
+	JMP	@start
+.end:
+	HALT
+.global
+.maxnum:
+        .int	$12
+
+--------------------------------
+Another simple program that shows how to give shape to subroutines.
+Arguments passing is quite broken, but it's not the purpose of the example.
+It also exploits a missing feature to ease the work of outputting text: it should launch the signal to the peripheral and than wait for the ready state, before sending another character to display, but it's just pretending that a terminal can work syncronously with the cpu.
+
+biosSubroutine.s
+----------------
+
+.function   main
+.init:
+    STACK   @stack
+    MOV     @string1    %R1
+.testCond:
+    EQ      (R1)        .endChar
+    IFJ     @end
+; push the char to print on the stack
+    PUSH    (R1)
+; call the printing subroutine
+    JSR     @print
+; rebase stack pointer, since the pushed value is no more useful
+    SUB     $1          %SP
+    ADD     $1          %R1
+    JMP     @testCond
+.end:
+    HALT
+.end        main
+
+; subroutine to call
+.function   print
+;.print:
+; let's push the regs we're going to use
+    PUSH    %R1
+    PUSH    %R2
+    MOV     .printCmd   %R1
+; get the stack pointer
+    MOV     %SP         %R2
+; point to the argument passed on the stack
+    SUB     $4          %R2
+; add it to the base comand for printing
+    ADD     (R2)        %R1
+    PUT     %R1         $1
+; pop regs back
+    POP     %R2
+    POP     %R1
+    RET
+    .local
+    .printCmd:
+            .int        $16777216
+.end        print
+
+.global
+; string to write
+.string1:
+    .string     $prova yeah
+    .int        $10
+    .int        $13
+.endChar:
+    .int        $13
+
+; placeholder for the minimal-safe stack pointer
+.stack:
+
+-----------------------------------
+
+A description:
+
+There are 8 data registers R1, R2, .. , R8, and 8 general purpose address registers A1, A2, .. , A8. Then a specific register for te stack pointer SP, and USP for the priviledged executor that wants to access unprivileged stack pointer. (Issuing SP when privileged, an issuing SP when unprivileged gives to different stack pointers)
+
+As noted here before, there are two kinds of execution: privileged and unprivileged. The bit identifying this is in the status register ( SR ).
+This is inspired to M68k.
+
+Accessing data and registers is achieved in many ways with different meanings:
+
+- prefixing registers with % (eg. %R1, %A3, %SP ..) which accessed the content of the registers.
+
+- surrounding registers with round parenthesys ( and ), (eg. (A1), (SP) ..) which accesses the address in memory, pointed by the content of the register.
+
+- using . (dot) prefixed labels which accesses the content of the address in memory marked by the label.
+
+- using @ (at) prefixed labels which accesses the pointer to the label.
+
+- prefixing constants with $ which uses those as numerical constants
+
+- prefizing constants with > which uses them as addresses (and addresses the memory address pointed by the constant)
+
+There are then other useful methods for reducing code size and speeding up execution with a compact code:
+
+- prefixing (or postfixing) registers with + or - which in turn pre(post) increments or decrements the accessed data (note: if accessing a register with % it will modify the content of the register, if accessing with (Reg#) it will modify data pointed by the content of the register )
+
+- putting a lowercase  r  before registers access, and if present, after pre increment/decrement signs (eg. right: r%R2 , r(A5), +r(R4) .. , wrong: r+(A2), %rR1, .. )
+
+------
+A word about subroutines and constants:
+
+I implemented a specific way of instructing the assembler about subroutines, you need to specify subroutine name after the  .function  marker, and specify end of the subroutine with  .end  marker. It could be useful to specify the name of the subroutine after the  .end  marker for readability since it is not processed.
+
+It's possible to specify local/private constants for function calls only after the marker  .local  which will also state that the subroutine has no more code, just constants till the  .end  marker.
+
+A section of free code is processed as the body of the main.
+
+The  .global  marker states the end of code in the asm file parsed and states also the area where global/public constants should be located.
+
+Subroutines, when assembled do export their name as a global label and they can be accessed through . and @ facilities.
+To call a subroutine just issue a 
+
+	JSR	@name_of_subroutine
+Since JSR stands for "Jump to SubRoutine".
+
+------------------
+
+If you feel this description incomplete, let me know.
+
+I hope you enjoy this playground for learning.
