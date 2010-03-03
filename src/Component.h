@@ -14,11 +14,6 @@
 #define DATA_READY_FALSE    0
 #define DATA_READY_ERROR   -1
 
-#define REQUEST_TYPE_MASK   0x000000ff
-#define REQUEST_ARG_MASK    0x00ffffff
-
-#define REQUEST_SHIFT(x)    (x >> 23)
-
 class Component : public InterruptDevice {
 public:
   Component();
@@ -39,7 +34,7 @@ public:
     COMP_SET_FEATURES,
   };
 
-  virtual void put(const int& signal);
+  virtual void put(const short int& request, const int& arg);
   int get();
 
   int isDataReady() { return dataReady; }

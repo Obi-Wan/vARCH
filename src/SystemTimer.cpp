@@ -10,8 +10,8 @@
 SystemTimer::SystemTimer(const int& features) : timerFeatures(features) { }
 
 void
-SystemTimer::put(const int& signal) {
-  switch (REQUEST_SHIFT(signal) & REQUEST_TYPE_MASK) {
+SystemTimer::put(const short int& request, const int& arg) {
+  switch (request) {
     case COMP_TYPE:
       simpleUnsafeResponse = COMP_TIMER | COMP_CHAR;
       dataReady = DATA_READY_TRUE;
@@ -21,7 +21,7 @@ SystemTimer::put(const int& signal) {
       dataReady = DATA_READY_TRUE;
       break;
     case COMP_SET_FEATURES:
-      setTimer(static_cast<TimerFeatures>(signal & REQUEST_ARG_MASK));
+      setTimer(static_cast<TimerFeatures>(arg));
       simpleUnsafeResponse = true;
       dataReady = DATA_READY_TRUE;
       break;

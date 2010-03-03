@@ -11,9 +11,13 @@
 #include "Component.h"
 #include "Cpu.h"
 #include "FileHandler.h"
+#include "../include/masks.h"
 #include <vector>
 
 using namespace std;
+
+#define EXTRACT_REQUEST(x) (EXTRACT_HIGHER_DWORD_FROM_QWORD(x))
+#define EXTRACT_DEVICE(x)  (EXTRACT_LOWER__DWORD_FROM_QWORD(x))
 
 class Chipset : public InterruptHandler {
 public:

@@ -18,7 +18,7 @@ public:
 //  CharTerminal(const CharTerminal& orig);
 //  virtual ~CharTerminal();
 
-  void put(const int& signal);
+  void put(const short int& request, const int& arg);
 private:
 
 };

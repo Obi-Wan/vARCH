@@ -15,8 +15,8 @@ Component::~Component() { }
 
 
 void
-Component::put(const int& signal) {
-  switch (REQUEST_SHIFT(signal) & REQUEST_TYPE_MASK) {
+Component::put(const short int& request, const int& arg) {
+  switch (request) {
     case COMP_TYPE:
       simpleUnsafeResponse = COMP_CHAR;
       dataReady = DATA_READY_TRUE;

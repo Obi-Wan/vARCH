@@ -18,21 +18,21 @@ CharTerminal::CharTerminal() { }
 
 
 void
-CharTerminal::put(const int& signal) {
-  DebugPrintf(("CharTerminal: ricevuto un segnale %d\n", signal));
-  switch (REQUEST_SHIFT(signal) & REQUEST_TYPE_MASK) {
+CharTerminal::put(const short int& request, const int& arg) {
+  DebugPrintf(("CharTerminal: ricevuto un segnale %d\n", request));
+  switch (request) {
     case COMP_TYPE:
       simpleUnsafeResponse = COMP_CONSOLE;
       dataReady = DATA_READY_TRUE;
       break;
     case COMP_SET_FEATURES:
-      printf("%c",signal & CHAR_MASK);
+      printf("%c",arg & CHAR_MASK);
       simpleUnsafeResponse = true;
       dataReady = DATA_READY_TRUE;
       break;
     default:
 //      WarningPrintf(("No signal recognized"));
-      Component::put(signal);
+      Component::put(request, arg);
       break;
   }
 }

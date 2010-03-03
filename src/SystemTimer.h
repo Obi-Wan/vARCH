@@ -24,7 +24,7 @@ public:
 
   SystemTimer(const int& features);
 
-  void put(const int& signal);
+  void put(const short int& request, const int& arg);
 
   void checkInterruptEvents();
 

@@ -130,18 +130,23 @@ Chipset::getCpu(int num) const {
 }
 
 void
-Chipset::singlePutToComponent(const int& numComp, const int& signal) {
-  if (numComp > components.size()) {
-    WarningPrintf(("accessing a non existent component"));
+Chipset::singlePutToComponent(const int& signal, const int& arg) {
+  DebugPrintf(("Signal  in dec %d in ex %x\n", signal, signal));
+  short int request = EXTRACT_REQUEST(signal);
+  DebugPrintf(("Request in dec %d in ex %x\n", request, request));
+  short int device  = EXTRACT_DEVICE(signal);
+  DebugPrintf(("Device in dec %d in ex %x\n", device, device));
+  if (device > components.size()) {
+    WarningPrintf(("accessing a non existent component: %d\n", device));
   } else {
-    components[numComp]->put(signal);
+    components[device]->put(request, arg);
   }
 }
 
 int
 Chipset::singleGetFromComponent(const int& numComp) {
   if (numComp > components.size()) {
-    WarningPrintf(("accessing a non existent component"));
+    WarningPrintf(("accessing a non existent component: %d\n", numComp));
   } else {
     components[numComp]->get();
   }
