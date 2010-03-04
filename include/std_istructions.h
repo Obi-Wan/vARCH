@@ -21,8 +21,8 @@ using namespace std;
 
 #define JUMP          (1 << 29)
 #define CONDITIONAL   (1 << 28)
-#define COMUNICATION  (1 << 27)
-#define SYSTEM        (1 << 26)
+#define SYSTEM        (1 << 27) /* Also old COMUNICATION */
+#define FLOAT         (1 << 26)
 
 // ARGS SECTION
 #define RELATIVE_ARG  (1 << 4)
@@ -90,8 +90,8 @@ enum StdInstructions {
   PUSHA,
   POPA,
   RET,
-  RETEX,
-  REBOOT        = N_ARGS_ZERO + SYSTEM,
+  RETEX         = N_ARGS_ZERO + SYSTEM,
+  REBOOT,
   HALT,
 
   NOT           = N_ARGS_ONE,
@@ -127,7 +127,7 @@ enum StdInstructions {
 
   MMU           = N_ARGS_TWO + SYSTEM,
 
-  PUT           = N_ARGS_TWO + COMUNICATION,
+  PUT,
   GET,
   
   EQ            = N_ARGS_TWO + CONDITIONAL,
@@ -137,7 +137,7 @@ enum StdInstructions {
   ME,
   NEQ,
   
-  BPUT          = N_ARGS_THREE + COMUNICATION,
+  BPUT          = N_ARGS_THREE + SYSTEM,
   BGET,
   
   IFEQJ         = N_ARGS_THREE + JUMP + CONDITIONAL,
@@ -148,8 +148,6 @@ enum StdInstructions {
   IFMEJ,
 
 };
-
-#define WRONG_ARG 0xFFFFFFFF
 
 #endif	/* _STDISTRUCTIONS_H */
 
