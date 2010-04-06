@@ -50,7 +50,12 @@ AsmParser::preParser(const string& fileContent) {
       // first case: not a label
       if (word[word.size()-1] != ':') {
         const Marker::MarkersType marker = Marker::getMarkerType(word);
-        if (marker < Marker::GLOBAL) {
+        if (marker == Marker::STRING) {
+          lineStream.ignore(256,'"');
+          string constString;
+          getline(lineStream, constString);
+          lineOfCode.chunks.push_back(constString.substr(0,constString.size()-1));
+        } else if (marker < Marker::GLOBAL) {
           lineStream.ignore(256,'$');
           string constString;
           getline(lineStream, constString);
