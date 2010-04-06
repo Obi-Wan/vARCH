@@ -177,24 +177,31 @@ public:
   static MarkersType getMarkerType(const string& type) {
     switch (type[1]) {
       case 'i':
-        return INT;
+	if (type.compare(".int")) return INT;
+	else break;
       case 'l':
-        if (!type.substr(1,type.size()-1).compare("long")) {
+        if (!type.compare(".long")) {
           return LONG;
-        } else if (!type.substr(1,type.size()-1).compare("local")) {
+        } else if (!type.compare(".local")) {
           return LOCAL;
-        }
-        break;
+        } else {
+          break;
+	}
       case 'c':
-        return CHAR;
+	if (type.compare(".char")) return CHAR;
+	else break;
       case 's':
-        return STRING;
+	if (type.compare(".string")) return STRING;
+	else break;
       case 'g':
-        return GLOBAL;
+	if (type.compare(".global")) return GLOBAL;
+	else break;
       case 'f':
-        return FUNCTION;
+	if (type.compare(".function")) return FUNCTION;
+	else break;
       case 'e':
-        return END;
+	if (type.compare(".end")) return END;
+	else break;
       default:
         break;
     }
