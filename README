@@ -52,6 +52,9 @@ biosSubroutine.s
 .init:
     STACK   @stack
     MOV     @string1    %R1
+; prepare destination comand
+    MOV     .printCmd   %R2
+    ADD     $1          %R2
 .testCond:
     EQ      (R1)        .endChar
     IFJ     @end
@@ -72,28 +75,25 @@ biosSubroutine.s
 ;.print:
 ; let's push the regs we're going to use
     PUSH    %R1
-    PUSH    %R2
-    MOV     .printCmd   %R1
 ; get the stack pointer
-    MOV     %SP         %R2
+    MOV     %SP         %R1
 ; point to the argument passed on the stack
-    SUB     $4          %R2
-; add it to the base comand for printing
-    ADD     (R2)        %R1
-    PUT     %R1         $1
+    SUB     .stckPosArg %R1
+    PUT     (R1)        %R2
 ; pop regs back
-    POP     %R2
     POP     %R1
     RET
     .local
-    .printCmd:
-            .int        $16777216
+    .stckPosArg:
+            .int        $3
 .end        print
 
 .global
 ; string to write
+.printCmd:
+    .int        $131072
 .string1:
-    .string     $prova yeah
+    .string     "prova yeah"
     .int        $10
     .int        $13
 .endChar:
