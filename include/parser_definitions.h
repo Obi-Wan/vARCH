@@ -9,6 +9,7 @@
 #define	_PARSER_DEFINITIONS_H
 
 #include "asm_helpers.h"
+#include "std_istructions.h"
 
 #include <string>
 #include <vector>
@@ -50,8 +51,8 @@ public:
     assignNew("PUSHA");
     assignNew("POPA");
     assignNew("RET");
-    assignNew("RETEX");
-    assignNew("REBOOT",N_ARGS_ZERO + SYSTEM);
+    assignNew("RETEX",N_ARGS_ZERO + SYSTEM);
+    assignNew("REBOOT");
     assignNew("HALT");
 
     assignNew("NOT", N_ARGS_ONE);
@@ -87,7 +88,7 @@ public:
 
     assignNew("MMU", N_ARGS_TWO + SYSTEM);
 
-    assignNew("PUT", N_ARGS_TWO + COMUNICATION);
+    assignNew("PUT");
     assignNew("GET");
 
     assignNew("EQ", N_ARGS_TWO + CONDITIONAL);
@@ -97,7 +98,7 @@ public:
     assignNew("ME");
     assignNew("NEQ");
 
-    assignNew("BPUT", N_ARGS_THREE + COMUNICATION);
+    assignNew("BPUT", N_ARGS_THREE + SYSTEM);
     assignNew("BGET");
 
     assignNew("IFEQJ", N_ARGS_THREE + JUMP + CONDITIONAL);
@@ -106,6 +107,18 @@ public:
     assignNew("IFMOJ");
     assignNew("IFLEJ");
     assignNew("IFMEJ");
+
+    /* Float instructions */
+    assignNew("FNOT", N_ARGS_ONE + FLOAT);
+    assignNew("FINCR");
+    assignNew("FDECR");
+
+    assignNew("FMOV", N_ARGS_TWO + FLOAT);
+    assignNew("FADD");
+    assignNew("FMULT");
+    assignNew("FSUB");
+    assignNew("FDIV");
+    assignNew("FQUOT");
 
   }
 
