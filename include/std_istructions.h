@@ -149,5 +149,18 @@ enum StdInstructions {
 
 };
 
+enum FloatIstructions {
+  FNOT           = N_ARGS_ONE + FLOAT,
+  FINCR,
+  FDECR,
+
+  FMOV           = N_ARGS_TWO + FLOAT,
+  FADD,
+  FMULT,
+  FSUB,
+  FDIV,
+  FQUOT,
+};
+
 #endif	/* _STDISTRUCTIONS_H */
 
