@@ -14,20 +14,20 @@ print <<<EOT
 DIGIT    [0-9]
 LETTER   [a-zA-Z]
 PUNCT    [-!"#$%&'()*+,./:;<=>?@[\\\\\\]^_`{|}~]
-LETT_DIG (LETTER|DIG)
-KEYBKEYS ([ \\ta-zA-Z0-9]|[-!#$%&'()*+,./:;<=>?@[\\\\\\]^_`{|}~])
+LETT_DIG ({LETTER}|{DIGIT})
+ID       {LETTER}{LETT_DIG}*
+KEYBKEYS ([ \\t]|{LETT_DIG}|[-!#$%&'()*+,./:;<=>?@[\\\\\\]^_`{|}~])
 
-LABEL    \\.{LETTER}+\\:
-AT_LABEL \\@{LETTER}+
-TO_LABEL \\.{LETTER}+
+LABEL    \\.{ID}+\\:
+AT_LABEL \\@{ID}+
+TO_LABEL \\.{ID}+
 
-REGISTER \\%[RA][1-8]
-ADDR_REG \\([RA][1-8]\\)
+REGISTER \\%([RA][1-8]|[U]?SP)
+ADDR_REG \\(([RA][1-8]|[U]?SP)\\)
 
 INTEGER  \\\${DIGIT}+
 FLOAT    \\\$({DIGIT}+\\.{DIGIT}*|.{DIGIT}+)
 STRING   \\"{KEYBKEYS}+\\"
-ID       {LETTER}{LETT_DIG}*
 
 %%
 
