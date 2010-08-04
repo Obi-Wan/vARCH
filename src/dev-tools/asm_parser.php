@@ -76,7 +76,7 @@ print <<<EOT
              fprintf( yyout, "INSTRUCTION(%s) ", yytext );
            }
      
- \.int|\.string|\.local|\.global {
+ \.int|\.long|\.char|\.string|\.local|\.global|\.function|\.end {
              fprintf( yyout, "KEYWORD(%s) ", yytext );
            }
      
