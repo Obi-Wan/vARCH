@@ -174,10 +174,10 @@ public:
     END,
   };
 
-  static MarkersType getMarkerType(const string& type) {
+  static MarkersType getMarkerType(const string& type) throw(WrongArgumentException) {
     switch (type[1]) {
       case 'i':
-	if (type.compare(".int")) return INT;
+	if (!type.compare(".int")) return INT;
 	else break;
       case 'l':
         if (!type.compare(".long")) {
@@ -188,25 +188,25 @@ public:
           break;
 	}
       case 'c':
-	if (type.compare(".char")) return CHAR;
+	if (!type.compare(".char")) return CHAR;
 	else break;
       case 's':
-	if (type.compare(".string")) return STRING;
+	if (!type.compare(".string")) return STRING;
 	else break;
       case 'g':
-	if (type.compare(".global")) return GLOBAL;
+	if (!type.compare(".global")) return GLOBAL;
 	else break;
       case 'f':
-	if (type.compare(".function")) return FUNCTION;
+	if (!type.compare(".function")) return FUNCTION;
 	else break;
       case 'e':
-	if (type.compare(".end")) return END;
+	if (!type.compare(".end")) return END;
 	else break;
       default:
         break;
     }
     throw WrongArgumentException(
-                "No constant type: " + type + " ");
+                "No constant type: \"" + type + "\"");
   }
 };
 
