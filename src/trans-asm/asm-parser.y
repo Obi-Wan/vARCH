@@ -6,12 +6,14 @@ void yyerror (YYLTYPE *locp, int *errorCode, char const *);
 }
 
 %code requires {
-#include "../../include/parser_definitions.h"
+#include "parser_definitions.h"
 #include "asm-parse-def.h"
 
 int yyparse(int * errcode);
 }
 
+%output "asm-parser.cpp"
+%defines "asm-parser.h"
 %locations
 %define api.pure
 %error-verbose

@@ -1,6 +1,6 @@
 /**/
 %top{
-#include "asm-parser.tab.h"
+#include "asm-parser.h"
 #include <cstdlib>
 
 using namespace std;

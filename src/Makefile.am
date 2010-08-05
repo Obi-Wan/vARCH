@@ -1,4 +1,4 @@
-bin_PROGRAMS = varch vasm
+bin_PROGRAMS = varch vasm trans-vasm
 
 varch_SOURCES = Mmu.cpp \
 		Component.cpp \
@@ -14,3 +14,7 @@ vasm_SOURCES =  FileHandler.cpp \
                 CodeOrganizer.cpp \
                 AsmParser.cpp \
                 vAsm.cpp
+
+trans_vasm_SOURCES = FileHandler.cpp \
+		trans-asm/asm-lexer.cpp \
+		trans-asm/asm-parser.cpp
