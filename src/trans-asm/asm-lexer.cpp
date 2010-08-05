@@ -1,7 +1,7 @@
 #line 2 "asm-lexer.cpp"
 #line 3 "asm-lexer.l"
 #include "asm-parser.h"
-#include <stdlib.h>
+#include <cstdlib>
 
 using namespace std;
 

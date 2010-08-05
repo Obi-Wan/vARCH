@@ -5,7 +5,7 @@
 #line 6 "asm-lexer.h"
 #line 3 "asm-lexer.l"
 #include "asm-parser.h"
-#include <stdlib.h>
+#include <cstdlib>
 
 using namespace std;
 

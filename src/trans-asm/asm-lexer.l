@@ -33,6 +33,7 @@ ADDR_REG  r?\(([RA][1-8]|[U]?SP)\)
 %option outfile="asm-lexer.cpp" header-file="asm-lexer.h"
 
 %{
+
 #define MAX_STR_CONST 256
 
 char string_buf[MAX_STR_CONST];
