@@ -18,6 +18,12 @@
   #include <iostream>
 #endif
 
+#ifdef WARNING
+#  ifndef INFO
+#    define INFO
+#  endif
+#endif
+
 #if defined(DEBUG) || defined(WARNING)
   #include <cstdio>
 
@@ -61,6 +67,12 @@
   #define WarningPrintf( x ) do { printf("Warning: "); printf x; } while(0)
 #else
   #define WarningPrintf( x )
+#endif
+
+#ifdef INFO
+  #define InfoPrintf( x ) do { printf("Info: "); printf x; } while(0)
+#else
+  #define InfoPrintf( x )
 #endif
 
 #endif	/* _MACROS_H */
