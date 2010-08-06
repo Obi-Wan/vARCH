@@ -1,1 +1,2 @@
+AM_YFLAGS = -d
 SUBDIRS = src
