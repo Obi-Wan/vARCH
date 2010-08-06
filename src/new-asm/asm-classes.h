@@ -11,6 +11,7 @@
 
 #include "asm_helpers.h"
 #include "std_istructions.h"
+#include "macros.h"
 #include "masks.h"
 #include "exceptions.h"
 #include "../src/FileHandler.h"
@@ -264,8 +265,8 @@ class TableOfSymbols {
    LabelsMap defLabels;
 public:
   void addLabel(asm_label_statement* lab) {
-    printf("TableOfSymbols: adding label at position %03d: %s\n",
-           lab->offset, lab->label.c_str());
+    DebugPrintf(("TableOfSymbols: adding label at position %03d: %s\n",
+           lab->offset, lab->label.c_str()));
     defLabels.insert( LabelsMap::value_type( lab->label, labelRecord(lab) ) );
   }
 
