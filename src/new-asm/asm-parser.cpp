@@ -503,10 +503,10 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    72,    72,    74,    76,    78,    80,    82,    84,    86,
-      91,    93,    98,   100,   105,   106,   110,   118,   120,   125,
-     127,   132,   133,   134,   135,   136,   137,   141,   142,   146,
-     147,   151,   153,   158,   159,   163,   164,   165,   166,   167
+       0,    74,    74,    76,    78,    80,    82,    84,    86,    88,
+      93,    95,   100,   102,   107,   108,   112,   120,   122,   127,
+     129,   134,   135,   136,   137,   138,   139,   143,   144,   148,
+     149,   153,   155,   160,   161,   165,   166,   167,   168,   169
 };
 #endif
 
@@ -1620,35 +1620,35 @@ yyreduce:
 
 /* Line 1455 of yacc.c  */
 #line 132 "asm-parser.y"
-    { (yyval.arg) = new asm_immediate_arg( (yyvsp[(1) - (1)].integer) , COST ) ;}
+    { (yyval.arg) = new asm_immediate_arg( yylloc, (yyvsp[(1) - (1)].integer) , COST ) ;}
     break;
 
   case 22:
 
 /* Line 1455 of yacc.c  */
 #line 133 "asm-parser.y"
-    { (yyval.arg) = new asm_immediate_arg( (yyvsp[(1) - (1)].integer) , ADDR ) ;}
+    { (yyval.arg) = new asm_immediate_arg( yylloc, (yyvsp[(1) - (1)].integer) , ADDR ) ;}
     break;
 
   case 23:
 
 /* Line 1455 of yacc.c  */
 #line 134 "asm-parser.y"
-    { (yyval.arg) = new asm_immediate_arg( (yyvsp[(1) - (1)].real) ) ;}
+    { (yyval.arg) = new asm_immediate_arg( yylloc, (yyvsp[(1) - (1)].real) ) ;}
     break;
 
   case 24:
 
 /* Line 1455 of yacc.c  */
 #line 135 "asm-parser.y"
-    { (yyval.arg) = new asm_label_arg( (yyvsp[(1) - (1)].label) , COST ) ;}
+    { (yyval.arg) = new asm_label_arg( yylloc, (yyvsp[(1) - (1)].label) , COST ) ;}
     break;
 
   case 25:
 
 /* Line 1455 of yacc.c  */
 #line 136 "asm-parser.y"
-    { (yyval.arg) = new asm_label_arg( (yyvsp[(1) - (1)].label) , ADDR ) ;}
+    { (yyval.arg) = new asm_label_arg( yylloc, (yyvsp[(1) - (1)].label) , ADDR ) ;}
     break;
 
   case 26:

@@ -53,9 +53,9 @@ struct asm_arg {
 
   YYLTYPE position;
 
-  asm_arg(const TypeOfArgument& _type) : type(_type), relOffset(0),
-                                          relative(false) { }
-  asm_arg() : relOffset(0), relative(false) { }
+  asm_arg(const YYLTYPE& pos, const TypeOfArgument& _type)
+            : type(_type), relOffset(0), relative(false), position(pos) { }
+  asm_arg(const YYLTYPE& pos) : relOffset(0), relative(false), position(pos) { }
   virtual const string toString() const { return ""; }
   virtual const int getCode() const { }
   virtual const ObjType getType() const { return ASM_ARG; }
@@ -68,12 +68,12 @@ struct asm_immediate_arg : asm_arg {
     float fval;
   } content;
 
-  asm_immediate_arg() { }
-  asm_immediate_arg(const int _val, const TypeOfArgument& type)
-      : asm_arg(type) {
+  asm_immediate_arg(const YYLTYPE& pos) : asm_arg(pos) { }
+  asm_immediate_arg(const YYLTYPE& pos, const int _val, const TypeOfArgument& type)
+      : asm_arg(pos, type) {
     content.val = _val;
   }
-  asm_immediate_arg(const float _fval) : asm_arg(COST) {
+  asm_immediate_arg(const YYLTYPE& pos, const float _fval) : asm_arg(pos,COST) {
     content.fval = _fval;
   }
 
@@ -86,10 +86,10 @@ struct asm_label_arg : asm_arg {
   string label;
   int pointedPosition;
 
-  asm_label_arg(const string& _lab, const TypeOfArgument& _type)
-    : asm_arg(_type), label(_lab) { }
-  asm_label_arg(const char * _lab, const TypeOfArgument& _type)
-    : asm_arg(_type), label(_lab) { }
+  asm_label_arg(const YYLTYPE& pos, const string& _lab, const TypeOfArgument& _type)
+    : asm_arg(pos, _type), label(_lab) { }
+  asm_label_arg(const YYLTYPE& pos, const char * _lab, const TypeOfArgument& _type)
+    : asm_arg(pos, _type), label(_lab) { }
 
   const string toString() const { return string("label: ").append(label); }
   const int getCode() const { return pointedPosition; }

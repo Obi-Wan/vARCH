@@ -129,11 +129,11 @@ stmts
       ;
 
 arg
-      : INTEGER         { $$ = new asm_immediate_arg( $1 , COST ) }
-      | CONTENT_CONST   { $$ = new asm_immediate_arg( $1 , ADDR ) }
-      | REAL            { $$ = new asm_immediate_arg( $1 ) }
-      | POSITION_LABEL  { $$ = new asm_label_arg( $1 , COST ) }
-      | CONTENT_LABEL   { $$ = new asm_label_arg( $1 , ADDR ) }
+      : INTEGER         { $$ = new asm_immediate_arg( yylloc, $1 , COST ) }
+      | CONTENT_CONST   { $$ = new asm_immediate_arg( yylloc, $1 , ADDR ) }
+      | REAL            { $$ = new asm_immediate_arg( yylloc, $1 ) }
+      | POSITION_LABEL  { $$ = new asm_label_arg( yylloc, $1 , COST ) }
+      | CONTENT_LABEL   { $$ = new asm_label_arg( yylloc, $1 , ADDR ) }
       | REGISTER        { $$ = $1 }
       ;
 

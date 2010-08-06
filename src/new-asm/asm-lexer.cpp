@@ -664,14 +664,14 @@ char string_buf[MAX_STR_CONST];
 char *string_buf_ptr;
 
 int getRegNum(const char * str);
-void createRegArg(asm_arg *& arg, const char * str, const TypeOfArgument& type,
-                  const int& offset, const bool rel);
-void createConstIntArg(asm_arg *& arg, const int _val);
-void createConstRealArg(asm_arg *& arg, const float _val);
-void createSpecialRegArg(asm_arg *& arg, const enum Registers& reg);
-void createSpecialAddrRegArg(asm_arg *& arg, const enum Registers& reg,
-                              const bool rel);
-
+void createRegArg(asm_arg *& arg, YYLTYPE *& loc, const char * str,
+              const TypeOfArgument& type, const int& offset, const bool rel);
+void createConstIntArg(asm_arg *& arg, YYLTYPE *& loc, const int _val);
+void createConstRealArg(asm_arg *& arg, YYLTYPE *& loc, const float _val);
+void createSpecialRegArg(asm_arg *& arg, YYLTYPE *& loc,
+              const enum Registers& reg);
+void createSpecialAddrRegArg(asm_arg *& arg, YYLTYPE *& loc,
+              const enum Registers& reg, const bool rel);
 
 #define YY_USER_ACTION							\
    do {									\
@@ -1060,7 +1060,7 @@ case 17:
 YY_RULE_SETUP
 #line 92 "asm-lexer.l"
 {
-            createSpecialRegArg(yylval->arg, STATE_REGISTER);
+            createSpecialRegArg(yylval->arg, yylloc, STATE_REGISTER);
             return REGISTER;
           }
 	YY_BREAK
@@ -1068,7 +1068,7 @@ case 18:
 YY_RULE_SETUP
 #line 96 "asm-lexer.l"
 {
-            createSpecialRegArg(yylval->arg, STACK_POINTER);
+            createSpecialRegArg(yylval->arg, yylloc, STACK_POINTER);
             return REGISTER;
           }
 	YY_BREAK
@@ -1076,7 +1076,7 @@ case 19:
 YY_RULE_SETUP
 #line 100 "asm-lexer.l"
 {
-            createSpecialRegArg(yylval->arg, USER_STACK_POINTER);
+            createSpecialRegArg(yylval->arg, yylloc, USER_STACK_POINTER);
             return REGISTER;
           }
 	YY_BREAK
@@ -1084,7 +1084,7 @@ case 20:
 YY_RULE_SETUP
 #line 104 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+2, REG, 0, false);
+            createRegArg(yylval->arg, yylloc, yytext+2, REG, 0, false);
             return REGISTER;
           }
 	YY_BREAK
@@ -1092,7 +1092,7 @@ case 21:
 YY_RULE_SETUP
 #line 108 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+2, REG, OFFSET_REGS, false);
+            createRegArg(yylval->arg, yylloc, yytext+2, REG, OFFSET_REGS,false);
             return REGISTER;
           }
 	YY_BREAK
@@ -1100,196 +1100,204 @@ case 22:
 YY_RULE_SETUP
 #line 112 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+3, REG_PRE_INCR, 0, false);
+            createRegArg(yylval->arg, yylloc, yytext+3, REG_PRE_INCR,
+                          0, false);
             return REGISTER;
           }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 116 "asm-lexer.l"
+#line 117 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+3, REG_PRE_INCR, OFFSET_REGS, false);
+            createRegArg(yylval->arg, yylloc, yytext+3, REG_PRE_INCR,
+                          OFFSET_REGS, false);
             return REGISTER;
           }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 120 "asm-lexer.l"
+#line 122 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+3, REG_PRE_DECR, 0, false);
+            createRegArg(yylval->arg, yylloc, yytext+3, REG_PRE_DECR,
+                          0, false);
             return REGISTER;
           }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 124 "asm-lexer.l"
+#line 127 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+3, REG_PRE_DECR, OFFSET_REGS, false);
+            createRegArg(yylval->arg, yylloc, yytext+3, REG_PRE_DECR,
+                          OFFSET_REGS, false);
             return REGISTER;
           }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 128 "asm-lexer.l"
+#line 132 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+2, REG_POST_INCR, 0, false);
+            createRegArg(yylval->arg, yylloc, yytext+2, REG_POST_INCR,
+                          0, false);
             return REGISTER;
           }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 132 "asm-lexer.l"
+#line 137 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+2, REG_POST_INCR, OFFSET_REGS, false);
+            createRegArg(yylval->arg, yylloc, yytext+2, REG_POST_INCR,
+                          OFFSET_REGS, false);
             return REGISTER;
           }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 136 "asm-lexer.l"
+#line 142 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+2, REG_POST_DECR, 0, false);
+            createRegArg(yylval->arg, yylloc, yytext+2, REG_POST_DECR,
+                          0, false);
             return REGISTER;
           }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 140 "asm-lexer.l"
+#line 147 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+2, REG_POST_DECR, OFFSET_REGS, false);
+            createRegArg(yylval->arg, yylloc, yytext+2, REG_POST_DECR,
+                          OFFSET_REGS, false);
             return REGISTER;
           }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 145 "asm-lexer.l"
+#line 153 "asm-lexer.l"
 {
-            createSpecialAddrRegArg(yylval->arg, STATE_REGISTER,
+            createSpecialAddrRegArg(yylval->arg, yylloc, STATE_REGISTER,
                                     (*yytext) == 'r');
             return REGISTER;
           }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 150 "asm-lexer.l"
+#line 158 "asm-lexer.l"
 {
-            createSpecialAddrRegArg(yylval->arg, STACK_POINTER,
+            createSpecialAddrRegArg(yylval->arg, yylloc, STACK_POINTER,
                                     (*yytext) == 'r');
             return REGISTER;
           }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 155 "asm-lexer.l"
+#line 163 "asm-lexer.l"
 {
-            createSpecialAddrRegArg(yylval->arg, USER_STACK_POINTER,
+            createSpecialAddrRegArg(yylval->arg, yylloc, USER_STACK_POINTER,
                                     (*yytext) == 'r');
             return REGISTER;
           }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 160 "asm-lexer.l"
+#line 168 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG, 0, (*yytext) == 'r');
             return REGISTER;
           }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 165 "asm-lexer.l"
+#line 173 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG, OFFSET_REGS, (*yytext) == 'r');
             return REGISTER;
           }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 170 "asm-lexer.l"
+#line 178 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 4 : 3),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 4 : 3),
                           ADDR_IN_REG_PRE_INCR, 0, (*yytext) == 'r');
             return REGISTER;
           }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 175 "asm-lexer.l"
+#line 183 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 4 : 3),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 4 : 3),
                           ADDR_IN_REG_PRE_INCR, OFFSET_REGS, (*yytext) == 'r');
             return REGISTER;
           }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 180 "asm-lexer.l"
+#line 188 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 4 : 3),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 4 : 3),
                           ADDR_IN_REG_PRE_DECR, 0, (*yytext) == 'r');
             return REGISTER;
           }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 185 "asm-lexer.l"
+#line 193 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 4 : 3),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 4 : 3),
                           ADDR_IN_REG_PRE_DECR, OFFSET_REGS, (*yytext) == 'r');
             return REGISTER;
           }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 190 "asm-lexer.l"
+#line 198 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG_POST_INCR, 0, (*yytext) == 'r');
             return REGISTER;
           }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 195 "asm-lexer.l"
+#line 203 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG_POST_INCR, OFFSET_REGS, (*yytext) == 'r');
             return REGISTER;
           }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 200 "asm-lexer.l"
+#line 208 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG_POST_DECR, 0, (*yytext) == 'r');
             return REGISTER;
           }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 205 "asm-lexer.l"
+#line 213 "asm-lexer.l"
 {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG_POST_DECR, OFFSET_REGS, (*yytext) == 'r');
             return REGISTER;
           }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 211 "asm-lexer.l"
+#line 219 "asm-lexer.l"
 yylval->id = yytext; return ID;
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 213 "asm-lexer.l"
+#line 221 "asm-lexer.l"
 BEGIN(COMMENT);
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 215 "asm-lexer.l"
+#line 223 "asm-lexer.l"
 {
             string_buf_ptr = string_buf;
             BEGIN(STRING_CONTEXT);
@@ -1298,7 +1306,7 @@ YY_RULE_SETUP
 case 46:
 /* rule 46 can match eol */
 YY_RULE_SETUP
-#line 220 "asm-lexer.l"
+#line 228 "asm-lexer.l"
 {
             yylloc->first_line++;
             yylloc->first_column = 1;
@@ -1309,7 +1317,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 228 "asm-lexer.l"
+#line 236 "asm-lexer.l"
 {
             fprintf( stderr, "Lexing Error, unknown symbol: %s\n", yytext );
             exit(1);
@@ -1317,17 +1325,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 232 "asm-lexer.l"
+#line 240 "asm-lexer.l"
 /* eat up whitespace */
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 233 "asm-lexer.l"
+#line 241 "asm-lexer.l"
 return COMA;
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 235 "asm-lexer.l"
+#line 243 "asm-lexer.l"
 {
             fprintf( stderr, "Lexing Error, unknown symbol: %s\n", yytext );
             exit(1);
@@ -1338,7 +1346,7 @@ YY_RULE_SETUP
 case 51:
 /* rule 51 can match eol */
 YY_RULE_SETUP
-#line 242 "asm-lexer.l"
+#line 250 "asm-lexer.l"
 {
             yylloc->first_line++;
             yylloc->first_column = 1;
@@ -1349,45 +1357,45 @@ YY_RULE_SETUP
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 249 "asm-lexer.l"
+#line 257 "asm-lexer.l"
 BEGIN(INITIAL);
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 250 "asm-lexer.l"
+#line 258 "asm-lexer.l"
 /* eat up */
 	YY_BREAK
 
 
 case 54:
 YY_RULE_SETUP
-#line 254 "asm-lexer.l"
+#line 262 "asm-lexer.l"
 *string_buf_ptr++ = '\n';
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 255 "asm-lexer.l"
+#line 263 "asm-lexer.l"
 *string_buf_ptr++ = '\t';
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 256 "asm-lexer.l"
+#line 264 "asm-lexer.l"
 *string_buf_ptr++ = '\r';
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 257 "asm-lexer.l"
+#line 265 "asm-lexer.l"
 *string_buf_ptr++ = '\b';
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 258 "asm-lexer.l"
+#line 266 "asm-lexer.l"
 *string_buf_ptr++ = '\f';
 	YY_BREAK
 case 59:
 /* rule 59 can match eol */
 YY_RULE_SETUP
-#line 260 "asm-lexer.l"
+#line 268 "asm-lexer.l"
 {
             *string_buf_ptr++ = yytext[0];
             *string_buf_ptr++ = yytext[1];
@@ -1395,7 +1403,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 265 "asm-lexer.l"
+#line 273 "asm-lexer.l"
 {
             char *yptr = yytext;
             while ( *yptr )
@@ -1404,7 +1412,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 271 "asm-lexer.l"
+#line 279 "asm-lexer.l"
 {
             BEGIN(INITIAL);
             *string_buf_ptr = '\0';
@@ -1415,10 +1423,10 @@ YY_RULE_SETUP
 
 case 62:
 YY_RULE_SETUP
-#line 279 "asm-lexer.l"
+#line 287 "asm-lexer.l"
 ECHO;
 	YY_BREAK
-#line 1422 "asm-lexer.cpp"
+#line 1430 "asm-lexer.cpp"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(STRING_CONTEXT):
 case YY_STATE_EOF(COMMENT):
@@ -2428,7 +2436,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 279 "asm-lexer.l"
+#line 287 "asm-lexer.l"
 
 
 
@@ -2439,39 +2447,42 @@ int getRegNum(const char * str) {
   return num;
 }
 
-void createRegArg(asm_arg *& arg, const char * str, const TypeOfArgument& type,
-                  const int& offset, const bool rel)
+void createRegArg(asm_arg *& arg, YYLTYPE *& loc, const char * str,
+                  const TypeOfArgument& type, const int& offset, const bool rel)
 {
-  asm_immediate_arg * tempArg = new asm_immediate_arg();
+  asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
   tempArg->relative = rel;
   tempArg->type = type;
   tempArg->content.val = getRegNum(str) + offset;
   arg = tempArg;
 }
-void createSpecialRegArg(asm_arg *& arg, const enum Registers& reg) {
-  asm_immediate_arg * tempArg = new asm_immediate_arg();
+void createSpecialRegArg(asm_arg *& arg, YYLTYPE *& loc,
+                  const enum Registers& reg)
+{
+  asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
   tempArg->type = REG;
   tempArg->content.regNum = reg;
   tempArg->relative = false;
   arg = tempArg;
 }
-void createSpecialAddrRegArg(asm_arg *& arg, const enum Registers& reg,
-                              const bool rel) {
-  asm_immediate_arg * tempArg = new asm_immediate_arg();
+void createSpecialAddrRegArg(asm_arg *& arg, YYLTYPE *& loc,
+                  const enum Registers& reg, const bool rel)
+{
+  asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
   tempArg->type = ADDR_IN_REG;
   tempArg->content.regNum = reg;
   tempArg->relative = rel;
   arg = tempArg;
 }
-void createConstIntArg(asm_arg *& arg, const int _val) {
-  asm_immediate_arg * tempArg = new asm_immediate_arg();
+void createConstIntArg(asm_arg *& arg, YYLTYPE *& loc, const int _val) {
+  asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
   tempArg->type = COST;
   tempArg->content.val = _val;
   tempArg->relative = false;
   arg = tempArg;
 }
-void createConstRealArg(asm_arg *& arg, const float _val) {
-  asm_immediate_arg * tempArg = new asm_immediate_arg();
+void createConstRealArg(asm_arg *& arg, YYLTYPE *& loc, const float _val) {
+  asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
   tempArg->type = COST;
   tempArg->content.fval = _val;
   tempArg->relative = false;

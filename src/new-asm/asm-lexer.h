@@ -332,7 +332,7 @@ extern int yylex \
 #undef YY_DECL
 #endif
 
-#line 279 "asm-lexer.l"
+#line 287 "asm-lexer.l"
 
 
 #line 339 "asm-lexer.h"

@@ -40,14 +40,14 @@ char string_buf[MAX_STR_CONST];
 char *string_buf_ptr;
 
 int getRegNum(const char * str);
-void createRegArg(asm_arg *& arg, const char * str, const TypeOfArgument& type,
-                  const int& offset, const bool rel);
-void createConstIntArg(asm_arg *& arg, const int _val);
-void createConstRealArg(asm_arg *& arg, const float _val);
-void createSpecialRegArg(asm_arg *& arg, const enum Registers& reg);
-void createSpecialAddrRegArg(asm_arg *& arg, const enum Registers& reg,
-                              const bool rel);
-
+void createRegArg(asm_arg *& arg, YYLTYPE *& loc, const char * str,
+              const TypeOfArgument& type, const int& offset, const bool rel);
+void createConstIntArg(asm_arg *& arg, YYLTYPE *& loc, const int _val);
+void createConstRealArg(asm_arg *& arg, YYLTYPE *& loc, const float _val);
+void createSpecialRegArg(asm_arg *& arg, YYLTYPE *& loc,
+              const enum Registers& reg);
+void createSpecialAddrRegArg(asm_arg *& arg, YYLTYPE *& loc,
+              const enum Registers& reg, const bool rel);
 
 #define YY_USER_ACTION							\
    do {									\
@@ -90,120 +90,128 @@ SLEEP|PUSHA|POPA|RET|RETEX|REBOOT|HALT|NOT|INCR|DECR|COMP2|LSH|RSH|STACK|PUSH|PO
 {AT_LABEL}  yylval->label = yytext+1; return POSITION_LABEL;
 
 \%{SREG} {
-            createSpecialRegArg(yylval->arg, STATE_REGISTER);
+            createSpecialRegArg(yylval->arg, yylloc, STATE_REGISTER);
             return REGISTER;
           }
 \%{STK_PTR} {
-            createSpecialRegArg(yylval->arg, STACK_POINTER);
+            createSpecialRegArg(yylval->arg, yylloc, STACK_POINTER);
             return REGISTER;
           }
 \%{USTK_PTR} {
-            createSpecialRegArg(yylval->arg, USER_STACK_POINTER);
+            createSpecialRegArg(yylval->arg, yylloc, USER_STACK_POINTER);
             return REGISTER;
           }
 \%{DREG} {
-            createRegArg(yylval->arg, yytext+2, REG, 0, false);
+            createRegArg(yylval->arg, yylloc, yytext+2, REG, 0, false);
             return REGISTER;
           }
 \%{AREG} {
-            createRegArg(yylval->arg, yytext+2, REG, OFFSET_REGS, false);
+            createRegArg(yylval->arg, yylloc, yytext+2, REG, OFFSET_REGS,false);
             return REGISTER;
           }
 \+\%{DREG} {
-            createRegArg(yylval->arg, yytext+3, REG_PRE_INCR, 0, false);
+            createRegArg(yylval->arg, yylloc, yytext+3, REG_PRE_INCR,
+                          0, false);
             return REGISTER;
           }
 \+\%{AREG} {
-            createRegArg(yylval->arg, yytext+3, REG_PRE_INCR, OFFSET_REGS, false);
+            createRegArg(yylval->arg, yylloc, yytext+3, REG_PRE_INCR,
+                          OFFSET_REGS, false);
             return REGISTER;
           }
 \-\%{DREG} {
-            createRegArg(yylval->arg, yytext+3, REG_PRE_DECR, 0, false);
+            createRegArg(yylval->arg, yylloc, yytext+3, REG_PRE_DECR,
+                          0, false);
             return REGISTER;
           }
 \-\%{AREG} {
-            createRegArg(yylval->arg, yytext+3, REG_PRE_DECR, OFFSET_REGS, false);
+            createRegArg(yylval->arg, yylloc, yytext+3, REG_PRE_DECR,
+                          OFFSET_REGS, false);
             return REGISTER;
           }
 \%{DREG}\+ {
-            createRegArg(yylval->arg, yytext+2, REG_POST_INCR, 0, false);
+            createRegArg(yylval->arg, yylloc, yytext+2, REG_POST_INCR,
+                          0, false);
             return REGISTER;
           }
 \%{AREG}\+ {
-            createRegArg(yylval->arg, yytext+2, REG_POST_INCR, OFFSET_REGS, false);
+            createRegArg(yylval->arg, yylloc, yytext+2, REG_POST_INCR,
+                          OFFSET_REGS, false);
             return REGISTER;
           }
 \%{DREG}\- {
-            createRegArg(yylval->arg, yytext+2, REG_POST_DECR, 0, false);
+            createRegArg(yylval->arg, yylloc, yytext+2, REG_POST_DECR,
+                          0, false);
             return REGISTER;
           }
 \%{AREG}\- {
-            createRegArg(yylval->arg, yytext+2, REG_POST_DECR, OFFSET_REGS, false);
+            createRegArg(yylval->arg, yylloc, yytext+2, REG_POST_DECR,
+                          OFFSET_REGS, false);
             return REGISTER;
           }
 
 r?\({SREG}\) {
-            createSpecialAddrRegArg(yylval->arg, STATE_REGISTER,
+            createSpecialAddrRegArg(yylval->arg, yylloc, STATE_REGISTER,
                                     (*yytext) == 'r');
             return REGISTER;
           }
 r?\({STK_PTR}\) {
-            createSpecialAddrRegArg(yylval->arg, STACK_POINTER,
+            createSpecialAddrRegArg(yylval->arg, yylloc, STACK_POINTER,
                                     (*yytext) == 'r');
             return REGISTER;
           }
 r?\({USTK_PTR}\) {
-            createSpecialAddrRegArg(yylval->arg, USER_STACK_POINTER,
+            createSpecialAddrRegArg(yylval->arg, yylloc, USER_STACK_POINTER,
                                     (*yytext) == 'r');
             return REGISTER;
           }
 r?\({DREG}\) {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG, 0, (*yytext) == 'r');
             return REGISTER;
           }
 r?\({AREG}\) {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG, OFFSET_REGS, (*yytext) == 'r');
             return REGISTER;
           }
 \+r?\({DREG}\) {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 4 : 3),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 4 : 3),
                           ADDR_IN_REG_PRE_INCR, 0, (*yytext) == 'r');
             return REGISTER;
           }
 \+r?\({AREG}\) {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 4 : 3),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 4 : 3),
                           ADDR_IN_REG_PRE_INCR, OFFSET_REGS, (*yytext) == 'r');
             return REGISTER;
           }
 \-r?\({DREG}\) {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 4 : 3),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 4 : 3),
                           ADDR_IN_REG_PRE_DECR, 0, (*yytext) == 'r');
             return REGISTER;
           }
 \-r?\({AREG}\) {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 4 : 3),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 4 : 3),
                           ADDR_IN_REG_PRE_DECR, OFFSET_REGS, (*yytext) == 'r');
             return REGISTER;
           }
 r?\({DREG}\)\+ {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG_POST_INCR, 0, (*yytext) == 'r');
             return REGISTER;
           }
 r?\({AREG}\)\+ {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG_POST_INCR, OFFSET_REGS, (*yytext) == 'r');
             return REGISTER;
           }
 r?\({DREG}\)\- {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG_POST_DECR, 0, (*yytext) == 'r');
             return REGISTER;
           }
 r?\({AREG}\)\- {
-            createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
+            createRegArg(yylval->arg, yylloc, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG_POST_DECR, OFFSET_REGS, (*yytext) == 'r');
             return REGISTER;
           }
@@ -285,39 +293,42 @@ int getRegNum(const char * str) {
   return num;
 }
 
-void createRegArg(asm_arg *& arg, const char * str, const TypeOfArgument& type,
-                  const int& offset, const bool rel)
+void createRegArg(asm_arg *& arg, YYLTYPE *& loc, const char * str,
+                  const TypeOfArgument& type, const int& offset, const bool rel)
 {
-  asm_immediate_arg * tempArg = new asm_immediate_arg();
+  asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
   tempArg->relative = rel;
   tempArg->type = type;
   tempArg->content.val = getRegNum(str) + offset;
   arg = tempArg;
 }
-void createSpecialRegArg(asm_arg *& arg, const enum Registers& reg) {
-  asm_immediate_arg * tempArg = new asm_immediate_arg();
+void createSpecialRegArg(asm_arg *& arg, YYLTYPE *& loc,
+                  const enum Registers& reg)
+{
+  asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
   tempArg->type = REG;
   tempArg->content.regNum = reg;
   tempArg->relative = false;
   arg = tempArg;
 }
-void createSpecialAddrRegArg(asm_arg *& arg, const enum Registers& reg,
-                              const bool rel) {
-  asm_immediate_arg * tempArg = new asm_immediate_arg();
+void createSpecialAddrRegArg(asm_arg *& arg, YYLTYPE *& loc,
+                  const enum Registers& reg, const bool rel)
+{
+  asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
   tempArg->type = ADDR_IN_REG;
   tempArg->content.regNum = reg;
   tempArg->relative = rel;
   arg = tempArg;
 }
-void createConstIntArg(asm_arg *& arg, const int _val) {
-  asm_immediate_arg * tempArg = new asm_immediate_arg();
+void createConstIntArg(asm_arg *& arg, YYLTYPE *& loc, const int _val) {
+  asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
   tempArg->type = COST;
   tempArg->content.val = _val;
   tempArg->relative = false;
   arg = tempArg;
 }
-void createConstRealArg(asm_arg *& arg, const float _val) {
-  asm_immediate_arg * tempArg = new asm_immediate_arg();
+void createConstRealArg(asm_arg *& arg, YYLTYPE *& loc, const float _val) {
+  asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
   tempArg->type = COST;
   tempArg->content.fval = _val;
   tempArg->relative = false;
