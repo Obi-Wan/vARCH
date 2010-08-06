@@ -107,7 +107,7 @@ struct asm_statement {
   virtual const string toString() const { return ""; }
   virtual int getSize() const { return 0; }
 
-  virtual void emitCode(vector<int>::iterator & position) { }
+  virtual void emitCode(Bloat::iterator & position) { }
   virtual const ObjType getType() const { return ASM_STATEMENT; }
 };
 
@@ -134,17 +134,15 @@ struct asm_instruction_statement : asm_statement {
     return output;
   }
 
-  void emitCode(vector<int>::iterator & position) {
+  void emitCode(Bloat::iterator & position) {
     int op = instruction;
     for (int i = 0; i < args.size(); i++) {
       op += ARG(i, (args[i]->type + (args[i]->relative ? RELATIVE_ARG : 0)) );
     }
-    *(position) = op;
-    position++;
+    *(position++) = op;
 
     for (int i = 0; i < args.size(); i++) {
-      *(position) = args[i]->getCode();
-      position++;
+      *(position++) = args[i]->getCode();
     }
   }
 
@@ -183,9 +181,8 @@ struct asm_int_keyword_statement : asm_data_keyword_statement {
   int getSize() const { return 1; }
   const ObjType getType() const { return ASM_INT_KEYWORD_STATEMENT; }
 
-  void emitCode(vector<int>::iterator & position) {
-    *(position) = integer;
-    position++;
+  void emitCode(Bloat::iterator & position) {
+    *(position++) = integer;
   }
 };
 
@@ -198,11 +195,9 @@ struct asm_long_keyword_statement : asm_data_keyword_statement {
   int getSize() const { return 2; }
   const ObjType getType() const { return ASM_LONG_KEYWORD_STATEMENT; }
 
-  void emitCode(vector<int>::iterator & position) {
-    *(position) = EXTRACT_HIGHER_SWORD_FROM_DWORD(longInteger);
-    position++;
-    *(position) = EXTRACT_LOWER__SWORD_FROM_DWORD(longInteger);
-    position++;
+  void emitCode(Bloat::iterator & position) {
+    *(position++) = EXTRACT_HIGHER_SWORD_FROM_DWORD(longInteger);
+    *(position++) = EXTRACT_LOWER__SWORD_FROM_DWORD(longInteger);
   }
 };
 
@@ -215,9 +210,8 @@ struct asm_char_keyword_statement : asm_data_keyword_statement {
   int getSize() const { return 1; }
   const ObjType getType() const { return ASM_CHAR_KEYWORD_STATEMENT; }
 
-  void emitCode(vector<int>::iterator & position) {
-    *(position) = (character & 0xff );
-    position++;
+  void emitCode(Bloat::iterator & position) {
+    *(position++) = (character & 0xff );
   }
 };
 
@@ -232,10 +226,9 @@ struct asm_string_keyword_statement : asm_data_keyword_statement {
   int getSize() const { return str.size(); }
   const ObjType getType() const { return ASM_STRING_KEYWORD_STATEMENT; }
 
-  void emitCode(vector<int>::iterator & position) {
+  void emitCode(Bloat::iterator & position) {
     for (int i = 0; i < str.size(); i++) {
-      *(position) = (str[i] & 0xff );
-      position++;
+      *(position++) = (str[i] & 0xff );
     }
   }
 };
@@ -248,9 +241,8 @@ struct asm_real_keyword_statement : asm_data_keyword_statement {
   const string toString() const { return  "real_keyword_statement: "; }
   int getSize() const { return 1; }
   const ObjType getType() const { return ASM_REAL_KEYWORD_STATEMENT; }
-  void emitCode(vector<int>::iterator & position) {
-    *(position) = static_cast<int>(real);
-    position++;
+  void emitCode(Bloat::iterator & position) {
+    *(position++) = static_cast<int>(real);
   }
 };
 
