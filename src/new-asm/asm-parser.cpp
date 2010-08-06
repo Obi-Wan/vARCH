@@ -110,13 +110,15 @@ void yyerror (YYLTYPE *locp, asm_program *& program, char const *);
 
 #include "parser_definitions.h"
 #include "asm-classes.h"
+#include "asm-program.h"
+#include "asm-function.h"
 
 int yyparse(asm_program *& program);
 
 
 
 /* Line 209 of yacc.c  */
-#line 120 "asm-parser.cpp"
+#line 122 "asm-parser.cpp"
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -155,7 +157,7 @@ typedef union YYSTYPE
 {
 
 /* Line 214 of yacc.c  */
-#line 22 "asm-parser.y"
+#line 24 "asm-parser.y"
 
   char *string;
   int integer;
@@ -178,7 +180,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 182 "asm-parser.cpp"
+#line 184 "asm-parser.cpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -203,7 +205,7 @@ typedef struct YYLTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 207 "asm-parser.cpp"
+#line 209 "asm-parser.cpp"
 
 #ifdef short
 # undef short
@@ -1498,84 +1500,84 @@ yyreduce:
         case 2:
 
 /* Line 1455 of yacc.c  */
-#line 73 "asm-parser.y"
+#line 75 "asm-parser.y"
     { program = new asm_program( (yyvsp[(1) - (1)].listOfFunctions), new list<asm_data_statement *>() ) ;}
     break;
 
   case 3:
 
 /* Line 1455 of yacc.c  */
-#line 75 "asm-parser.y"
+#line 77 "asm-parser.y"
     { program = new asm_program( (yyvsp[(3) - (3)].listOfFunctions), (yyvsp[(1) - (3)].listOfDataStatements) ) ;}
     break;
 
   case 4:
 
 /* Line 1455 of yacc.c  */
-#line 77 "asm-parser.y"
+#line 79 "asm-parser.y"
     { program = new asm_program( (yyvsp[(2) - (2)].listOfFunctions), new list<asm_data_statement *>() ) ;}
     break;
 
   case 5:
 
 /* Line 1455 of yacc.c  */
-#line 79 "asm-parser.y"
+#line 81 "asm-parser.y"
     { program = new asm_program( (yyvsp[(4) - (4)].listOfFunctions), (yyvsp[(2) - (4)].listOfDataStatements) ) ;}
     break;
 
   case 6:
 
 /* Line 1455 of yacc.c  */
-#line 81 "asm-parser.y"
+#line 83 "asm-parser.y"
     { program = new asm_program( (yyvsp[(1) - (2)].listOfFunctions), new list<asm_data_statement *>() ) ;}
     break;
 
   case 7:
 
 /* Line 1455 of yacc.c  */
-#line 83 "asm-parser.y"
+#line 85 "asm-parser.y"
     { program = new asm_program( (yyvsp[(3) - (4)].listOfFunctions), (yyvsp[(1) - (4)].listOfDataStatements) ) ;}
     break;
 
   case 8:
 
 /* Line 1455 of yacc.c  */
-#line 85 "asm-parser.y"
+#line 87 "asm-parser.y"
     { program = new asm_program( (yyvsp[(2) - (3)].listOfFunctions), new list<asm_data_statement *>() ) ;}
     break;
 
   case 9:
 
 /* Line 1455 of yacc.c  */
-#line 87 "asm-parser.y"
+#line 89 "asm-parser.y"
     { program = new asm_program( (yyvsp[(4) - (5)].listOfFunctions), (yyvsp[(2) - (5)].listOfDataStatements) ) ;}
     break;
 
   case 10:
 
 /* Line 1455 of yacc.c  */
-#line 92 "asm-parser.y"
+#line 94 "asm-parser.y"
     { (yyval.listOfDataStatements) = (yyvsp[(3) - (5)].listOfDataStatements) ;}
     break;
 
   case 11:
 
 /* Line 1455 of yacc.c  */
-#line 94 "asm-parser.y"
+#line 96 "asm-parser.y"
     { (yyval.listOfDataStatements) = new list<asm_data_statement *>() ;}
     break;
 
   case 12:
 
 /* Line 1455 of yacc.c  */
-#line 99 "asm-parser.y"
+#line 101 "asm-parser.y"
     { (yyvsp[(1) - (3)].listOfFunctions)->push_back( (yyvsp[(3) - (3)].function) ); (yyval.listOfFunctions) = (yyvsp[(1) - (3)].listOfFunctions) ;}
     break;
 
   case 13:
 
 /* Line 1455 of yacc.c  */
-#line 100 "asm-parser.y"
+#line 102 "asm-parser.y"
     { (yyval.listOfFunctions) = new list<asm_function *>();
                     (yyval.listOfFunctions)->push_back( (yyvsp[(1) - (1)].function) ) ;}
     break;
@@ -1583,35 +1585,35 @@ yyreduce:
   case 16:
 
 /* Line 1455 of yacc.c  */
-#line 114 "asm-parser.y"
+#line 116 "asm-parser.y"
     { (yyval.function) = new asm_function( (yyvsp[(2) - (8)].string), (yyvsp[(6) - (8)].listOfStatements), (yyvsp[(4) - (8)].listOfDataStatements) ) ;}
     break;
 
   case 17:
 
 /* Line 1455 of yacc.c  */
-#line 119 "asm-parser.y"
+#line 121 "asm-parser.y"
     { (yyval.listOfDataStatements) = (yyvsp[(3) - (5)].listOfDataStatements) ;}
     break;
 
   case 18:
 
 /* Line 1455 of yacc.c  */
-#line 121 "asm-parser.y"
+#line 123 "asm-parser.y"
     { (yyval.listOfDataStatements) = new list<asm_data_statement *>() ;}
     break;
 
   case 19:
 
 /* Line 1455 of yacc.c  */
-#line 126 "asm-parser.y"
+#line 128 "asm-parser.y"
     { (yyvsp[(1) - (3)].listOfStatements)->push_back( (yyvsp[(3) - (3)].stmt) ); (yyval.listOfStatements) = (yyvsp[(1) - (3)].listOfStatements) ;}
     break;
 
   case 20:
 
 /* Line 1455 of yacc.c  */
-#line 127 "asm-parser.y"
+#line 129 "asm-parser.y"
     { (yyval.listOfStatements) = new list<asm_statement *>();
                     (yyval.listOfStatements)->push_back( (yyvsp[(1) - (1)].stmt) ) ;}
     break;
@@ -1619,84 +1621,84 @@ yyreduce:
   case 21:
 
 /* Line 1455 of yacc.c  */
-#line 132 "asm-parser.y"
+#line 134 "asm-parser.y"
     { (yyval.arg) = new asm_immediate_arg( yylloc, (yyvsp[(1) - (1)].integer) , COST ) ;}
     break;
 
   case 22:
 
 /* Line 1455 of yacc.c  */
-#line 133 "asm-parser.y"
+#line 135 "asm-parser.y"
     { (yyval.arg) = new asm_immediate_arg( yylloc, (yyvsp[(1) - (1)].integer) , ADDR ) ;}
     break;
 
   case 23:
 
 /* Line 1455 of yacc.c  */
-#line 134 "asm-parser.y"
+#line 136 "asm-parser.y"
     { (yyval.arg) = new asm_immediate_arg( yylloc, (yyvsp[(1) - (1)].real) ) ;}
     break;
 
   case 24:
 
 /* Line 1455 of yacc.c  */
-#line 135 "asm-parser.y"
+#line 137 "asm-parser.y"
     { (yyval.arg) = new asm_label_arg( yylloc, (yyvsp[(1) - (1)].label) , COST ) ;}
     break;
 
   case 25:
 
 /* Line 1455 of yacc.c  */
-#line 136 "asm-parser.y"
+#line 138 "asm-parser.y"
     { (yyval.arg) = new asm_label_arg( yylloc, (yyvsp[(1) - (1)].label) , ADDR ) ;}
     break;
 
   case 26:
 
 /* Line 1455 of yacc.c  */
-#line 137 "asm-parser.y"
+#line 139 "asm-parser.y"
     { (yyval.arg) = (yyvsp[(1) - (1)].arg) ;}
     break;
 
   case 27:
 
 /* Line 1455 of yacc.c  */
-#line 141 "asm-parser.y"
+#line 143 "asm-parser.y"
     { (yyval.stmt) = (yyvsp[(1) - (1)].instr_stmt) ;}
     break;
 
   case 28:
 
 /* Line 1455 of yacc.c  */
-#line 142 "asm-parser.y"
+#line 144 "asm-parser.y"
     { (yyval.stmt) = (yyvsp[(1) - (1)].data_stmt) ;}
     break;
 
   case 29:
 
 /* Line 1455 of yacc.c  */
-#line 146 "asm-parser.y"
+#line 148 "asm-parser.y"
     { (yyval.instr_stmt) = (yyvsp[(1) - (2)].instr_stmt)->addArg( (yyvsp[(2) - (2)].arg) ) ;}
     break;
 
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 147 "asm-parser.y"
+#line 149 "asm-parser.y"
     { (yyval.instr_stmt) = new asm_instruction_statement( (yyvsp[(1) - (1)].instruction) ) ;}
     break;
 
   case 31:
 
 /* Line 1455 of yacc.c  */
-#line 152 "asm-parser.y"
+#line 154 "asm-parser.y"
     { (yyvsp[(1) - (3)].listOfDataStatements)->push_back( (yyvsp[(3) - (3)].data_stmt) ); (yyval.listOfDataStatements) = (yyvsp[(1) - (3)].listOfDataStatements) ;}
     break;
 
   case 32:
 
 /* Line 1455 of yacc.c  */
-#line 153 "asm-parser.y"
+#line 155 "asm-parser.y"
     { (yyval.listOfDataStatements) = new list<asm_data_statement *>();
                     (yyval.listOfDataStatements)->push_back( (yyvsp[(1) - (1)].data_stmt) ) ;}
     break;
@@ -1704,56 +1706,56 @@ yyreduce:
   case 33:
 
 /* Line 1455 of yacc.c  */
-#line 158 "asm-parser.y"
+#line 160 "asm-parser.y"
     { (yyval.data_stmt) = new asm_label_statement( (yyvsp[(1) - (1)].label) ) ;}
     break;
 
   case 34:
 
 /* Line 1455 of yacc.c  */
-#line 159 "asm-parser.y"
+#line 161 "asm-parser.y"
     { (yyval.data_stmt) = (yyvsp[(1) - (1)].keyw_stmt) ;}
     break;
 
   case 35:
 
 /* Line 1455 of yacc.c  */
-#line 163 "asm-parser.y"
+#line 165 "asm-parser.y"
     { (yyval.keyw_stmt) = new asm_int_keyword_statement( (yyvsp[(2) - (2)].integer) ) ;}
     break;
 
   case 36:
 
 /* Line 1455 of yacc.c  */
-#line 164 "asm-parser.y"
+#line 166 "asm-parser.y"
     { (yyval.keyw_stmt) = new asm_long_keyword_statement( (yyvsp[(2) - (2)].integer) ) ;}
     break;
 
   case 37:
 
 /* Line 1455 of yacc.c  */
-#line 165 "asm-parser.y"
+#line 167 "asm-parser.y"
     { (yyval.keyw_stmt) = new asm_real_keyword_statement( (yyvsp[(2) - (2)].real) ) ;}
     break;
 
   case 38:
 
 /* Line 1455 of yacc.c  */
-#line 166 "asm-parser.y"
+#line 168 "asm-parser.y"
     { (yyval.keyw_stmt) = new asm_char_keyword_statement( (yyvsp[(2) - (2)].id) ) ;}
     break;
 
   case 39:
 
 /* Line 1455 of yacc.c  */
-#line 167 "asm-parser.y"
+#line 169 "asm-parser.y"
     { (yyval.keyw_stmt) = new asm_string_keyword_statement( (yyvsp[(2) - (2)].string) ) ;}
     break;
 
 
 
 /* Line 1455 of yacc.c  */
-#line 1757 "asm-parser.cpp"
+#line 1759 "asm-parser.cpp"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -1972,70 +1974,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 171 "asm-parser.y"
-
-
-/*int
-main (void) {
-  int error = 0;
-  int res = yyparse(&error);
-  if (!res) {
-    for(int i = 0; i < program.functions.size(); i++) {
-      printf("Function: %s\n", program.functions[i]->name.c_str());
-      for(int j = 0; j < program.functions[i]->stmts.size(); j++) {
-        printf(" %s\n", program.functions[i]->stmts[j]->toString().c_str());
-      }
-      for(int j = 0; j < program.functions[i]->locals.size(); j++) {
-        printf(" Local: %s\n", program.functions[i]->locals[j]->toString().c_str());
-      }
-    }
-    for(int i = 0; i < program.globals.size(); i++) {
-      printf("Global: %s\n", program.globals[i]->toString().c_str());
-    }
-  }
-  program.assignValuesToLabels();
-  program.assemble("prova.s");
-  return res;
-}*/
-
-int
-main(int argc, char** argv) {
-
-  if (argc < 2) {
-    printf("You didn't enter the ASM file to process\n");
-    return (EXIT_FAILURE);
-  }
-  ++argv, --argc;
-  yyin = fopen( argv[0], "r" );
-  if (yyin != NULL) {
-    try {
-      asm_program * program;
-      int res = yyparse(program);
-      if (!res) {
-        for(int i = 0; i < program->functions.size(); i++) {
-          printf("Function: %s\n", program->functions[i]->name.c_str());
-          for(int j = 0; j < program->functions[i]->stmts.size(); j++) {
-            printf(" %s\n", program->functions[i]->stmts[j]->toString().c_str());
-          }
-          for(int j = 0; j < program->functions[i]->locals.size(); j++) {
-            printf(" Local: %s\n", program->functions[i]->locals[j]->toString().c_str());
-          }
-        }
-        for(int i = 0; i < program->globals.size(); i++) {
-          printf("Global: %s\n", program->globals[i]->toString().c_str());
-        }
-      }
-      program->assignValuesToLabels();
-      program->assemble( argv[0] );
-    } catch (BasicException e) {
-      printf("Error: %s\n", e.what());
-      return (EXIT_FAILURE);
-    }
-  } else {
-    printf("I couldn't open the ASM file to process\n");
-    return (EXIT_FAILURE);
-  }
-}
+#line 173 "asm-parser.y"
 
 
 void

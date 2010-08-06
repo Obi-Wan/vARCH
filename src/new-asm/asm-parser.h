@@ -39,13 +39,15 @@
 
 #include "parser_definitions.h"
 #include "asm-classes.h"
+#include "asm-program.h"
+#include "asm-function.h"
 
 int yyparse(asm_program *& program);
 
 
 
 /* Line 1676 of yacc.c  */
-#line 49 "asm-parser.h"
+#line 51 "asm-parser.h"
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -84,7 +86,7 @@ typedef union YYSTYPE
 {
 
 /* Line 1676 of yacc.c  */
-#line 22 "asm-parser.y"
+#line 24 "asm-parser.y"
 
   char *string;
   int integer;
@@ -107,7 +109,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 111 "asm-parser.h"
+#line 113 "asm-parser.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

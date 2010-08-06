@@ -8,6 +8,8 @@ void yyerror (YYLTYPE *locp, asm_program *& program, char const *);
 %code requires {
 #include "parser_definitions.h"
 #include "asm-classes.h"
+#include "asm-program.h"
+#include "asm-function.h"
 
 int yyparse(asm_program *& program);
 }
@@ -169,69 +171,6 @@ data_keyword
 
 
 %%
-
-/*int
-main (void) {
-  int error = 0;
-  int res = yyparse(&error);
-  if (!res) {
-    for(int i = 0; i < program.functions.size(); i++) {
-      printf("Function: %s\n", program.functions[i]->name.c_str());
-      for(int j = 0; j < program.functions[i]->stmts.size(); j++) {
-        printf(" %s\n", program.functions[i]->stmts[j]->toString().c_str());
-      }
-      for(int j = 0; j < program.functions[i]->locals.size(); j++) {
-        printf(" Local: %s\n", program.functions[i]->locals[j]->toString().c_str());
-      }
-    }
-    for(int i = 0; i < program.globals.size(); i++) {
-      printf("Global: %s\n", program.globals[i]->toString().c_str());
-    }
-  }
-  program.assignValuesToLabels();
-  program.assemble("prova.s");
-  return res;
-}*/
-
-int
-main(int argc, char** argv) {
-
-  if (argc < 2) {
-    printf("You didn't enter the ASM file to process\n");
-    return (EXIT_FAILURE);
-  }
-  ++argv, --argc;
-  yyin = fopen( argv[0], "r" );
-  if (yyin != NULL) {
-    try {
-      asm_program * program;
-      int res = yyparse(program);
-      if (!res) {
-        for(int i = 0; i < program->functions.size(); i++) {
-          printf("Function: %s\n", program->functions[i]->name.c_str());
-          for(int j = 0; j < program->functions[i]->stmts.size(); j++) {
-            printf(" %s\n", program->functions[i]->stmts[j]->toString().c_str());
-          }
-          for(int j = 0; j < program->functions[i]->locals.size(); j++) {
-            printf(" Local: %s\n", program->functions[i]->locals[j]->toString().c_str());
-          }
-        }
-        for(int i = 0; i < program->globals.size(); i++) {
-          printf("Global: %s\n", program->globals[i]->toString().c_str());
-        }
-      }
-      program->assignValuesToLabels();
-      program->assemble( argv[0] );
-    } catch (BasicException e) {
-      printf("Error: %s\n", e.what());
-      return (EXIT_FAILURE);
-    }
-  } else {
-    printf("I couldn't open the ASM file to process\n");
-    return (EXIT_FAILURE);
-  }
-}
-
 
 void
 yyerror (YYLTYPE *locp, asm_program *& program, char const *s) {
