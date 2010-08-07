@@ -10,10 +10,10 @@
 #include <cstring>
 #include <map>
 
-#include "../../include/asm_helpers.h"
-#include "../../include/std_istructions.h"
-#include "../../include/masks.h"
-#include "../../include/exceptions.h"
+#include "asm_helpers.h"
+#include "std_istructions.h"
+#include "masks.h"
+#include "exceptions.h"
 #include "../FileHandler.h"
 
 using namespace std;
