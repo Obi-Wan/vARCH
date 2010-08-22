@@ -1,5 +1,4 @@
-#line 2 "asm-lexer.cpp"
-#line 3 "asm-lexer.l"
+#line 3 "asm-lexer.lpp"
 #include "asm-parser.h"
 #include <cstdlib>
 
@@ -7,7 +6,7 @@ using namespace std;
 
 
 
-#line 11 "asm-lexer.cpp"
+#line 10 "asm-lexer.cpp"
 
 #define  YY_INT_ALIGNED short int
 
@@ -651,12 +650,12 @@ int yy_flex_debug = 0;
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
-#line 1 "asm-lexer.l"
+#line 1 "asm-lexer.lpp"
 /**/
 
 
 
-#line 36 "asm-lexer.l"
+#line 35 "asm-lexer.lpp"
 
 #define MAX_STR_CONST 256
 
@@ -679,7 +678,7 @@ void createSpecialAddrRegArg(asm_arg *& arg, const enum Registers& reg,
       yylloc->last_column += yyleng;					\
    } while(0);
 
-#line 683 "asm-lexer.cpp"
+#line 682 "asm-lexer.cpp"
 
 #define INITIAL 0
 #define STRING_CONTEXT 1
@@ -877,10 +876,10 @@ YY_DECL
     
         YYLTYPE * yylloc;
     
-#line 60 "asm-lexer.l"
+#line 59 "asm-lexer.lpp"
 
 
-#line 884 "asm-lexer.cpp"
+#line 883 "asm-lexer.cpp"
 
     yylval = yylval_param;
 
@@ -969,7 +968,7 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 63 "asm-lexer.l"
+#line 62 "asm-lexer.lpp"
 {
             yylval->integer = atoi(yytext+1);
             return INTEGER;
@@ -977,7 +976,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 67 "asm-lexer.l"
+#line 66 "asm-lexer.lpp"
 {
             yylval->real = atof(yytext+1);
             return REAL;
@@ -985,7 +984,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 72 "asm-lexer.l"
+#line 71 "asm-lexer.lpp"
 {
             yylval->instruction = ISet.getIstr(yytext);
             return INSTRUCTION;
@@ -993,72 +992,72 @@ YY_RULE_SETUP
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 77 "asm-lexer.l"
+#line 76 "asm-lexer.lpp"
 return KEYWORD_INT;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 78 "asm-lexer.l"
+#line 77 "asm-lexer.lpp"
 return KEYWORD_LONG;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 79 "asm-lexer.l"
+#line 78 "asm-lexer.lpp"
 return KEYWORD_REAL;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 80 "asm-lexer.l"
+#line 79 "asm-lexer.lpp"
 return KEYWORD_CHAR;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 81 "asm-lexer.l"
+#line 80 "asm-lexer.lpp"
 return KEYWORD_STRING;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 82 "asm-lexer.l"
+#line 81 "asm-lexer.lpp"
 return KEYWORD_LOCAL;
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 83 "asm-lexer.l"
+#line 82 "asm-lexer.lpp"
 return KEYWORD_GLOBAL;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 84 "asm-lexer.l"
+#line 83 "asm-lexer.lpp"
 return KEYWORD_FUNCTION;
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 85 "asm-lexer.l"
+#line 84 "asm-lexer.lpp"
 return KEYWORD_END;
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 87 "asm-lexer.l"
+#line 86 "asm-lexer.lpp"
 yylval->integer = atoi(yytext+1); return CONTENT_CONST;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 88 "asm-lexer.l"
+#line 87 "asm-lexer.lpp"
 yytext[yyleng-1] = '\0'; yylval->label = yytext+1; return DEF_LABEL;
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 89 "asm-lexer.l"
+#line 88 "asm-lexer.lpp"
 yylval->label = yytext+1; return CONTENT_LABEL;
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 90 "asm-lexer.l"
+#line 89 "asm-lexer.lpp"
 yylval->label = yytext+1; return POSITION_LABEL;
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 92 "asm-lexer.l"
+#line 91 "asm-lexer.lpp"
 {
             createSpecialRegArg(yylval->arg, STATE_REGISTER);
             return REGISTER;
@@ -1066,7 +1065,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 96 "asm-lexer.l"
+#line 95 "asm-lexer.lpp"
 {
             createSpecialRegArg(yylval->arg, STACK_POINTER);
             return REGISTER;
@@ -1074,7 +1073,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 100 "asm-lexer.l"
+#line 99 "asm-lexer.lpp"
 {
             createSpecialRegArg(yylval->arg, USER_STACK_POINTER);
             return REGISTER;
@@ -1082,7 +1081,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 104 "asm-lexer.l"
+#line 103 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+2, REG, 0, false);
             return REGISTER;
@@ -1090,7 +1089,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 108 "asm-lexer.l"
+#line 107 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+2, REG, OFFSET_REGS, false);
             return REGISTER;
@@ -1098,7 +1097,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 112 "asm-lexer.l"
+#line 111 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+3, REG_PRE_INCR, 0, false);
             return REGISTER;
@@ -1106,7 +1105,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 116 "asm-lexer.l"
+#line 115 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+3, REG_PRE_INCR, OFFSET_REGS, false);
             return REGISTER;
@@ -1114,7 +1113,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 120 "asm-lexer.l"
+#line 119 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+3, REG_PRE_DECR, 0, false);
             return REGISTER;
@@ -1122,7 +1121,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 124 "asm-lexer.l"
+#line 123 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+3, REG_PRE_DECR, OFFSET_REGS, false);
             return REGISTER;
@@ -1130,7 +1129,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 128 "asm-lexer.l"
+#line 127 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+2, REG_POST_INCR, 0, false);
             return REGISTER;
@@ -1138,7 +1137,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 132 "asm-lexer.l"
+#line 131 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+2, REG_POST_INCR, OFFSET_REGS, false);
             return REGISTER;
@@ -1146,7 +1145,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 136 "asm-lexer.l"
+#line 135 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+2, REG_POST_DECR, 0, false);
             return REGISTER;
@@ -1154,7 +1153,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 140 "asm-lexer.l"
+#line 139 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+2, REG_POST_DECR, OFFSET_REGS, false);
             return REGISTER;
@@ -1162,7 +1161,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 145 "asm-lexer.l"
+#line 144 "asm-lexer.lpp"
 {
             createSpecialAddrRegArg(yylval->arg, STATE_REGISTER,
                                     (*yytext) == 'r');
@@ -1171,7 +1170,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 150 "asm-lexer.l"
+#line 149 "asm-lexer.lpp"
 {
             createSpecialAddrRegArg(yylval->arg, STACK_POINTER,
                                     (*yytext) == 'r');
@@ -1180,7 +1179,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 155 "asm-lexer.l"
+#line 154 "asm-lexer.lpp"
 {
             createSpecialAddrRegArg(yylval->arg, USER_STACK_POINTER,
                                     (*yytext) == 'r');
@@ -1189,7 +1188,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 160 "asm-lexer.l"
+#line 159 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG, 0, (*yytext) == 'r');
@@ -1198,7 +1197,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 165 "asm-lexer.l"
+#line 164 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG, OFFSET_REGS, (*yytext) == 'r');
@@ -1207,7 +1206,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 170 "asm-lexer.l"
+#line 169 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 4 : 3),
                           ADDR_IN_REG_PRE_INCR, 0, (*yytext) == 'r');
@@ -1216,7 +1215,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 175 "asm-lexer.l"
+#line 174 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 4 : 3),
                           ADDR_IN_REG_PRE_INCR, OFFSET_REGS, (*yytext) == 'r');
@@ -1225,7 +1224,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 180 "asm-lexer.l"
+#line 179 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 4 : 3),
                           ADDR_IN_REG_PRE_DECR, 0, (*yytext) == 'r');
@@ -1234,7 +1233,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 185 "asm-lexer.l"
+#line 184 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 4 : 3),
                           ADDR_IN_REG_PRE_DECR, OFFSET_REGS, (*yytext) == 'r');
@@ -1243,7 +1242,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 190 "asm-lexer.l"
+#line 189 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG_POST_INCR, 0, (*yytext) == 'r');
@@ -1252,7 +1251,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 195 "asm-lexer.l"
+#line 194 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG_POST_INCR, OFFSET_REGS, (*yytext) == 'r');
@@ -1261,7 +1260,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 200 "asm-lexer.l"
+#line 199 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG_POST_DECR, 0, (*yytext) == 'r');
@@ -1270,7 +1269,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 205 "asm-lexer.l"
+#line 204 "asm-lexer.lpp"
 {
             createRegArg(yylval->arg, yytext+((*yytext) == 'r' ? 3 : 2),
                           ADDR_IN_REG_POST_DECR, OFFSET_REGS, (*yytext) == 'r');
@@ -1279,17 +1278,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 211 "asm-lexer.l"
+#line 210 "asm-lexer.lpp"
 yylval->id = yytext; return ID;
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 213 "asm-lexer.l"
+#line 212 "asm-lexer.lpp"
 BEGIN(COMMENT);
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 215 "asm-lexer.l"
+#line 214 "asm-lexer.lpp"
 {
             string_buf_ptr = string_buf;
             BEGIN(STRING_CONTEXT);
@@ -1298,7 +1297,7 @@ YY_RULE_SETUP
 case 46:
 /* rule 46 can match eol */
 YY_RULE_SETUP
-#line 220 "asm-lexer.l"
+#line 219 "asm-lexer.lpp"
 {
             yylloc->first_line++;
             yylloc->first_column = 1;
@@ -1308,7 +1307,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 227 "asm-lexer.l"
+#line 226 "asm-lexer.lpp"
 {
             fprintf( stderr, "Lexing Error, unknown symbol: %s\n", yytext );
             exit(1);
@@ -1316,17 +1315,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 231 "asm-lexer.l"
+#line 230 "asm-lexer.lpp"
 /* eat up whitespace */
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 232 "asm-lexer.l"
+#line 231 "asm-lexer.lpp"
 return COMA;
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 234 "asm-lexer.l"
+#line 233 "asm-lexer.lpp"
 {
             fprintf( stderr, "Lexing Error, unknown symbol: %s\n", yytext );
             exit(1);
@@ -1337,7 +1336,7 @@ YY_RULE_SETUP
 case 51:
 /* rule 51 can match eol */
 YY_RULE_SETUP
-#line 241 "asm-lexer.l"
+#line 240 "asm-lexer.lpp"
 {
             yylloc->first_line++;
             yylloc->first_column = 1;
@@ -1347,45 +1346,45 @@ YY_RULE_SETUP
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 247 "asm-lexer.l"
+#line 246 "asm-lexer.lpp"
 BEGIN(INITIAL);
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 248 "asm-lexer.l"
+#line 247 "asm-lexer.lpp"
 /* eat up */
 	YY_BREAK
 
 
 case 54:
 YY_RULE_SETUP
-#line 252 "asm-lexer.l"
+#line 251 "asm-lexer.lpp"
 *string_buf_ptr++ = '\n';
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 253 "asm-lexer.l"
+#line 252 "asm-lexer.lpp"
 *string_buf_ptr++ = '\t';
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 254 "asm-lexer.l"
+#line 253 "asm-lexer.lpp"
 *string_buf_ptr++ = '\r';
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 255 "asm-lexer.l"
+#line 254 "asm-lexer.lpp"
 *string_buf_ptr++ = '\b';
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 256 "asm-lexer.l"
+#line 255 "asm-lexer.lpp"
 *string_buf_ptr++ = '\f';
 	YY_BREAK
 case 59:
 /* rule 59 can match eol */
 YY_RULE_SETUP
-#line 258 "asm-lexer.l"
+#line 257 "asm-lexer.lpp"
 {
             *string_buf_ptr++ = yytext[0];
             *string_buf_ptr++ = yytext[1];
@@ -1393,7 +1392,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 263 "asm-lexer.l"
+#line 262 "asm-lexer.lpp"
 {
             char *yptr = yytext;
             while ( *yptr )
@@ -1402,7 +1401,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 269 "asm-lexer.l"
+#line 268 "asm-lexer.lpp"
 {
             BEGIN(INITIAL);
             *string_buf_ptr = '\0';
@@ -1413,10 +1412,10 @@ YY_RULE_SETUP
 
 case 62:
 YY_RULE_SETUP
-#line 277 "asm-lexer.l"
+#line 276 "asm-lexer.lpp"
 ECHO;
 	YY_BREAK
-#line 1420 "asm-lexer.cpp"
+#line 1419 "asm-lexer.cpp"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(STRING_CONTEXT):
 case YY_STATE_EOF(COMMENT):
@@ -2426,7 +2425,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 277 "asm-lexer.l"
+#line 276 "asm-lexer.lpp"
 
 
 

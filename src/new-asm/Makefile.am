@@ -1,9 +1,10 @@
-BUILT_SOURCES = asm-parser.h asm-lexer.h
+AM_YFLAGS = -d
+#AM_LFLAGS = --header-file=$(<:.lpp=.h)
 
 bin_PROGRAMS = new-vasm
 
-new_vasm_SOURCES = asm-parser.y \
-		  asm-lexer.l \
+new_vasm_SOURCES = asm-parser.ypp \
+		  asm-lexer.lpp \
 		  ../FileHandler.cpp \
 		  asm-function.cpp \
 		  asm-program.cpp \

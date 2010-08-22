@@ -8,9 +8,10 @@
 #include <cstdlib>
 #include "asm-program.h"
 #include "asm-parser.h"
-#include "asm-lexer.h"
 
 using namespace std;
+
+extern FILE *yyin;
 
 /*
  * 

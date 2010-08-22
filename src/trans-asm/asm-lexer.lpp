@@ -30,7 +30,6 @@ REGISTER  \%([RA][1-8]|[U]?SP)
 ADDR_REG  r?\(([RA][1-8]|[U]?SP)\)
 
 %option bison-bridge bison-locations noyywrap
-%option outfile="asm-lexer.cpp" header-file="asm-lexer.h"
 
 %{
 

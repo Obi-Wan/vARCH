@@ -1,8 +1,8 @@
-BUILT_SOURCES = asm-parser.h asm-lexer.h
+AM_YFLAGS = -d
 
 bin_PROGRAMS = trans-vasm
 
-trans_vasm_SOURCES = asm-parser.y \
-		  asm-lexer.l \
+trans_vasm_SOURCES = asm-parser.ypp \
+		  asm-lexer.lpp \
 		  ../FileHandler.cpp
 

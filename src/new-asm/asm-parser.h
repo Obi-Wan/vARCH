@@ -1,10 +1,9 @@
-
-/* A Bison parser, made by GNU Bison 2.4.1.  */
+/* A Bison parser, made by GNU Bison 2.4.2.  */
 
 /* Skeleton interface for Bison's Yacc-like parsers in C
    
-      Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
+      Copyright (C) 1984, 1989-1990, 2000-2006, 2009-2010 Free Software
+   Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -34,8 +33,8 @@
 
 /* "%code requires" blocks.  */
 
-/* Line 1676 of yacc.c  */
-#line 8 "asm-parser.y"
+/* Line 1685 of yacc.c  */
+#line 20 "asm-parser.ypp"
 
 #include "parser_definitions.h"
 #include "asm-classes.h"
@@ -46,8 +45,8 @@ int yyparse(asm_program *& program);
 
 
 
-/* Line 1676 of yacc.c  */
-#line 51 "asm-parser.h"
+/* Line 1685 of yacc.c  */
+#line 50 "asm-parser.h"
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -78,6 +77,29 @@ int yyparse(asm_program *& program);
      END_LINE = 278
    };
 #endif
+/* Tokens.  */
+#define INTEGER 258
+#define CONTENT_CONST 259
+#define REAL 260
+#define STRING 261
+#define INSTRUCTION 262
+#define KEYWORD_INT 263
+#define KEYWORD_LONG 264
+#define KEYWORD_REAL 265
+#define KEYWORD_CHAR 266
+#define KEYWORD_STRING 267
+#define KEYWORD_LOCAL 268
+#define KEYWORD_GLOBAL 269
+#define KEYWORD_FUNCTION 270
+#define KEYWORD_END 271
+#define DEF_LABEL 272
+#define POSITION_LABEL 273
+#define CONTENT_LABEL 274
+#define REGISTER 275
+#define ID 276
+#define COMA 277
+#define END_LINE 278
+
 
 
 
@@ -85,8 +107,8 @@ int yyparse(asm_program *& program);
 typedef union YYSTYPE
 {
 
-/* Line 1676 of yacc.c  */
-#line 24 "asm-parser.y"
+/* Line 1685 of yacc.c  */
+#line 34 "asm-parser.ypp"
 
   char *string;
   int integer;
@@ -108,8 +130,8 @@ typedef union YYSTYPE
 
 
 
-/* Line 1676 of yacc.c  */
-#line 113 "asm-parser.h"
+/* Line 1685 of yacc.c  */
+#line 135 "asm-parser.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
