@@ -99,8 +99,8 @@ void asm_program::assemble(const char * inputFile) {
     globals[i]->emitCode(pos);
   }
 
-  InfoPrintf(("Size of the generated file: %3d - follows the code\n",
-         (int)bytecode.size()));
+  InfoPrintf(("Size of the generated file: %5d bytes in %4d cells\n",
+              (int)bytecode.size()*4, (int)bytecode.size() ));
   for (int i = 0; i < bytecode.size(); i++) {
     InfoPrintf(("Mem %03d: %12d\n", i, bytecode[i]));
   }
