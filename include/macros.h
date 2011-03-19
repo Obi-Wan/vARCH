@@ -8,26 +8,47 @@
 #ifndef _MACROS_H
 #define	_MACROS_H
 
-//#define DEBUG
-#define WARNING
+#if defined(HAVE_CONFIG_H)
+/* Autotools build */
+# include "config.h"
+#elif defined(SCONS_BUILD)
+/* SCons Build */
+# if defined(NDEBUG) && defined(DEBUG)
+#   undef NDEBUG
+# endif
+#elif defined(_MSC_VER)
+# if defined(_DEBUG)
+#   define DEBUG
+# endif
+#else
+/* Other, potentially unsupported building system */
+# warning "Unknown building system, may cause unexpected behavior"
+#endif
+
+/* Common MSVC props */
+#if defined(_MSC_VER)
+# pragma warning(disable: 4290)
+#endif
+
+/* Message Reporting Level */
 
 #ifdef DEBUG
-  #ifndef WARNING
-    #define WARNING
-  #endif
-  #include <iostream>
+# ifndef WARNING
+#   define WARNING
+# endif
 #endif
 
 #ifdef WARNING
-#  ifndef INFO
-#    define INFO
-#  endif
+# ifndef INFO
+#   define INFO
+# endif
 #endif
 
-#if defined(DEBUG) || defined(WARNING)
-  #include <cstdio>
+#if defined(DEBUG) || defined(WARNING) || defined(INFO)
+# include <cstdio>
+# include <iostream>
+using namespace std;
 
-  using namespace std;
 #endif
 
 #ifdef DEBUG
