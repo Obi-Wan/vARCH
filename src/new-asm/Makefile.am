@@ -5,6 +5,7 @@ bin_PROGRAMS = new-vasm
 
 new_vasm_SOURCES = asm-parser.ypp \
 		  asm-lexer.lpp \
+		  asm-classes.cpp \
 		  ../FileHandler.cpp \
 		  asm-function.cpp \
 		  asm-program.cpp \

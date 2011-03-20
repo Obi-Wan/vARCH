@@ -265,28 +265,17 @@ struct asm_real_keyword_statement : asm_data_keyword_statement {
 // Labels Management //
 ///////////////////////
 
-struct labelRecord {
-  asm_statement * pointedStatement;
-  asm_label_statement * label;
-
-  labelRecord(asm_label_statement* lab) : label(lab), pointedStatement(NULL) { }
-};
-
-typedef map<string, labelRecord> LabelsMap;
+typedef map<string, asm_label_statement *> LabelsMap;
 
 class TableOfSymbols {
    LabelsMap defLabels;
 public:
-  void addLabel(asm_label_statement* lab) {
-    DebugPrintf(("TableOfSymbols: adding label at position %03d: %s\n",
-           lab->offset, lab->label.c_str()));
-    defLabels.insert( LabelsMap::value_type( lab->label, labelRecord(lab) ) );
-  }
+  void addLabel(asm_label_statement* lab) throw(WrongArgumentException);
 
   int getPositionOfLabel(const string& name) {
     LabelsMap::iterator iter = defLabels.find(name);
     if (iter != defLabels.end()) {
-      return iter->second.label->offset;
+      return iter->second->offset;
     } else return -1;
   }
 };

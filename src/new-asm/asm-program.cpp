@@ -10,10 +10,12 @@
 asm_program::asm_program(list<asm_function *> * _funcs,
               list<asm_data_statement *> * _globals) : tempOffset(0)
 {
-  /* Let's put the main function in front of all te others */
+  /* Let's put the main function in front of all the others */
   for(list<asm_function *>::iterator iter = _funcs->begin();
-          iter != _funcs->end(); iter++) {
+      iter != _funcs->end(); iter++)
+  {
     if (!(*iter)->name.compare("main")) {
+      /* Main found! */
       asm_function * main = (*iter);
       _funcs->erase(iter);
       _funcs->insert(_funcs->begin(), main);
