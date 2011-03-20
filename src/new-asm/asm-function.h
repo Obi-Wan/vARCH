@@ -15,15 +15,19 @@ struct asm_function {
   int tempLocalOffset;
   int funcOffset;
 
+  YYLTYPE position;
+
   vector<asm_statement *> stmts;
   vector<asm_data_statement *> locals;
 
   TableOfSymbols localSymbols;
   list<argLabelRecord *> refs;
 
-  asm_function(const string& _name, list<asm_statement *> * _stmts,
+  asm_function(const YYLTYPE& pos, const string& _name,
+               list<asm_statement *> * _stmts,
                list<asm_data_statement *> * _locals);
-  asm_function(const char * _name, list<asm_statement *> * _stmts,
+  asm_function(const YYLTYPE& pos, const char * _name,
+               list<asm_statement *> * _stmts,
                list<asm_data_statement *> * _locals);
 
   void init(list<asm_statement *> *_stmts, list<asm_data_statement *> *_locals);

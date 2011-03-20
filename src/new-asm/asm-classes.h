@@ -102,8 +102,9 @@ struct asm_statement {
 
   YYLTYPE position;
 
-  asm_statement() : offset(0) { }
-  asm_statement(const int& _offs) : offset(_offs) { }
+  asm_statement(const YYLTYPE& pos) : offset(0), position(pos) { }
+  asm_statement(const YYLTYPE& pos, const int& _offs)
+    : offset(_offs), position(pos) { }
 
   virtual const string toString() const { return ""; }
   virtual int getSize() const { return 0; }
@@ -120,7 +121,9 @@ struct asm_instruction_statement : asm_statement {
   int instruction;
   vector<asm_arg *> args;
 
-  asm_instruction_statement(const int _instr) : instruction(_instr) { }
+  asm_instruction_statement(const YYLTYPE& pos, const int _instr)
+    : asm_statement(pos), instruction(_instr) { }
+
   asm_instruction_statement * addArg(asm_arg * newArg) {
     args.push_back(newArg);
     newArg->relOffset = args.size();
@@ -155,20 +158,24 @@ struct asm_instruction_statement : asm_statement {
 ///////////////////////
 
 struct asm_data_statement : asm_statement {
+  asm_data_statement(const YYLTYPE& pos) : asm_statement(pos) { }
   const ObjType getType() const { return ASM_DATA_STATEMENT; }
 };
 
 struct asm_label_statement : asm_data_statement {
   string label;
 
-  asm_label_statement(const char * _label) : label(_label) { }
-  asm_label_statement(const string& _label) : label(_label) { }
+  asm_label_statement(const YYLTYPE& pos, const char * _label)
+    : asm_data_statement(pos), label(_label) { }
+  asm_label_statement(const YYLTYPE& pos, const string& _label)
+    : asm_data_statement(pos), label(_label) { }
 
   const string toString() const { return string("label: ").append(label); }
   const ObjType getType() const { return ASM_LABEL_STATEMENT; }
 };
 
 struct asm_data_keyword_statement : asm_data_statement {
+  asm_data_keyword_statement(const YYLTYPE& pos) : asm_data_statement(pos) { }
   const string toString() const { return "data_keyword_statement"; }
   const ObjType getType() const { return ASM_KEYWORD_STATEMENT; }
 };
@@ -176,7 +183,8 @@ struct asm_data_keyword_statement : asm_data_statement {
 struct asm_int_keyword_statement : asm_data_keyword_statement {
   int integer;
 
-  asm_int_keyword_statement(const int _integer) : integer(_integer) { }
+  asm_int_keyword_statement(const YYLTYPE& pos, const int _integer)
+    : asm_data_keyword_statement(pos), integer(_integer) { }
 
   const string toString() const { return "integer_keyword_statement"; }
   int getSize() const { return 1; }
@@ -190,7 +198,8 @@ struct asm_int_keyword_statement : asm_data_keyword_statement {
 struct asm_long_keyword_statement : asm_data_keyword_statement {
   long int longInteger;
 
-  asm_long_keyword_statement(const long int _long) : longInteger(_long) { }
+  asm_long_keyword_statement(const YYLTYPE& pos, const long int _long)
+    : asm_data_keyword_statement(pos), longInteger(_long) { }
 
   const string toString() const { return "long_integer_keyword_statement"; }
   int getSize() const { return 2; }
@@ -205,7 +214,8 @@ struct asm_long_keyword_statement : asm_data_keyword_statement {
 struct asm_char_keyword_statement : asm_data_keyword_statement {
   char character;
 
-  asm_char_keyword_statement(const char * _char) : character(*(_char)) { }
+  asm_char_keyword_statement(const YYLTYPE& pos, const char * _char)
+    : asm_data_keyword_statement(pos), character(*(_char)) { }
 
   const string toString() const { return "char_keyword_statement"; }
   int getSize() const { return 1; }
@@ -219,7 +229,8 @@ struct asm_char_keyword_statement : asm_data_keyword_statement {
 struct asm_string_keyword_statement : asm_data_keyword_statement {
   string str;
 
-  asm_string_keyword_statement(const string& _str) : str(_str) { }
+  asm_string_keyword_statement(const YYLTYPE& pos, const string& _str)
+    : asm_data_keyword_statement(pos), str(_str) { }
 
   const string toString() const {
     return  string("string_keyword_statement: ").append(str);
@@ -237,7 +248,8 @@ struct asm_string_keyword_statement : asm_data_keyword_statement {
 struct asm_real_keyword_statement : asm_data_keyword_statement {
   float real;
 
-  asm_real_keyword_statement(const float _real) : real(_real) { }
+  asm_real_keyword_statement(const YYLTYPE& pos, const float _real)
+    : asm_data_keyword_statement(pos), real(_real) { }
 
   const string toString() const { return  "real_keyword_statement: "; }
   int getSize() const { return 1; }

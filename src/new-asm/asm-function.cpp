@@ -7,14 +7,14 @@
 
 #include "asm-function.h"
 
-asm_function::asm_function(const string& _name, list<asm_statement *> * _stmts,
-               list<asm_data_statement *> * _locals)
-              : name(_name), tempLocalOffset(0), funcOffset(0)
-  { init(_stmts, _locals); }
-asm_function::asm_function(const char * _name, list<asm_statement *> * _stmts,
-               list<asm_data_statement *> * _locals)
-              : name(_name), tempLocalOffset(0), funcOffset(0)
-  { init(_stmts, _locals); }
+asm_function::asm_function(const YYLTYPE& pos, const string& _name,
+    list<asm_statement *> * _stmts, list<asm_data_statement *> * _locals)
+  : name(_name), tempLocalOffset(0), funcOffset(0), position(pos)
+{ init(_stmts, _locals); }
+asm_function::asm_function(const YYLTYPE& pos, const char * _name,
+    list<asm_statement *> * _stmts, list<asm_data_statement *> * _locals)
+  : name(_name), tempLocalOffset(0), funcOffset(0), position(pos)
+{ init(_stmts, _locals); }
 
 inline void
 asm_function::init(list<asm_statement *> * _stmts,

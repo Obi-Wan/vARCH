@@ -123,7 +123,7 @@ function
         locals blank_lines
         stmts blank_lines
         KEYWORD_END
-                  { $$ = new asm_function( $2, $6, $4 ); }
+                  { $$ = new asm_function( yyloc, $2, $6, $4 ); }
       ;
 
 locals
@@ -156,7 +156,8 @@ stmt
 
 instruction_stmt
       : instruction_stmt arg  { $$ = $1->addArg( $2 ); }
-      | INSTRUCTION           { $$ = new asm_instruction_statement( $1 ); }
+      | INSTRUCTION
+                  { $$ = new asm_instruction_statement( yylloc, $1 ); }
       ;
 
 data_stmts
@@ -167,16 +168,21 @@ data_stmts
       ;
 
 data_stmt
-      : DEF_LABEL     { $$ = new asm_label_statement( $1 ); }
+      : DEF_LABEL     { $$ = new asm_label_statement( yylloc, $1 ); }
       | data_keyword  { $$ = $1; }
       ;
 
 data_keyword
-      : KEYWORD_INT INTEGER   { $$ = new asm_int_keyword_statement( $2 ); }
-      | KEYWORD_LONG INTEGER  { $$ = new asm_long_keyword_statement( $2 ); }
-      | KEYWORD_REAL REAL     { $$ = new asm_real_keyword_statement( $2 ); }
-      | KEYWORD_CHAR ID       { $$ = new asm_char_keyword_statement( $2 ); }
-      | KEYWORD_STRING STRING { $$ = new asm_string_keyword_statement( $2 ); }
+      : KEYWORD_INT INTEGER 
+  	 	 		  { $$ = new asm_int_keyword_statement( yylloc, $2 ); }
+      | KEYWORD_LONG INTEGER
+  				  { $$ = new asm_long_keyword_statement( yylloc, $2 ); }
+      | KEYWORD_REAL REAL
+      		      { $$ = new asm_real_keyword_statement( yylloc, $2 ); }
+      | KEYWORD_CHAR ID
+      	          { $$ = new asm_char_keyword_statement( yylloc, $2 ); }
+      | KEYWORD_STRING STRING
+      			  { $$ = new asm_string_keyword_statement( yylloc, $2 ); }
       ;
 
 

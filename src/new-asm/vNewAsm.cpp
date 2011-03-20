@@ -31,16 +31,24 @@ main(int argc, char** argv) {
       int res = yyparse(program);
       if (!res) {
         for(int i = 0; i < program->functions.size(); i++) {
-          DebugPrintf(("Function: %s\n", program->functions[i]->name.c_str()));
+          DebugPrintf(("Line: %03d Function: %s\n",
+                        program->functions[i]->position.first_line,
+                        program->functions[i]->name.c_str()));
           for(int j = 0; j < program->functions[i]->stmts.size(); j++) {
-            DebugPrintf((" %s\n", program->functions[i]->stmts[j]->toString().c_str()));
+            DebugPrintf((" Line: %03d %s\n",
+                          program->functions[i]->stmts[j]->position.first_line,
+                          program->functions[i]->stmts[j]->toString().c_str()));
           }
           for(int j = 0; j < program->functions[i]->locals.size(); j++) {
-            DebugPrintf((" Local: %s\n", program->functions[i]->locals[j]->toString().c_str()));
+            DebugPrintf((" Line: %03d Local: %s\n",
+                          program->functions[i]->locals[j]->position.first_line,
+                          program->functions[i]->locals[j]->toString().c_str()));
           }
         }
         for(int i = 0; i < program->globals.size(); i++) {
-          DebugPrintf(("Global: %s\n", program->globals[i]->toString().c_str()));
+          DebugPrintf(("Line: %03d Global: %s\n",
+                        program->globals[i]->position.first_line,
+                        program->globals[i]->toString().c_str()));
         }
       } else {
         printf("An error may have occurred, code: %3d\n", res);

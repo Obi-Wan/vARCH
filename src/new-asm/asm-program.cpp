@@ -30,7 +30,8 @@ asm_program::asm_program(list<asm_function *> * _funcs,
   for(int i = 0; i < functions.size(); i++) {
     asm_function * func = functions[i];
 
-    asm_label_statement * tempLabel = new asm_label_statement(func->name);
+    asm_label_statement * tempLabel =
+        new asm_label_statement(func->position, func->name);
     tempLabel->offset = tempOffset;
 
     globalSymbols.addLabel(tempLabel);
