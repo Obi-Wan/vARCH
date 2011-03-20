@@ -116,5 +116,19 @@ using namespace std;
 # define InfoReportException( x )
 #endif
 
+/* ********* Types Definitions for Programmer's Use ****************************
+ */
+/* Let's take care of MS VisualStudio before 2010 that don't ship with stdint */
+#if defined(_MSC_VER) && _MSC_VER < 1600
+  typedef __int8 int8_t;
+  typedef unsigned __int8 uint8_t;
+  typedef __int32 int32_t;
+  typedef unsigned __int32 uint32_t;
+  typedef __int64 int64_t;
+  typedef unsigned __int64 uint64_t;
+#else
+# include <stdint.h>
+#endif
+
 #endif	/* _MACROS_H */
 
