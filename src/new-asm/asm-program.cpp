@@ -84,7 +84,7 @@ void asm_program::assignValuesToLabels() {
   }
 }
 
-void asm_program::assemble(const char * inputFile) {
+void asm_program::assemble(const string & outputName) {
   Bloat bytecode;
   bytecode.resize(tempOffset,0);
   Bloat::iterator pos = bytecode.begin();
@@ -106,15 +106,7 @@ void asm_program::assemble(const char * inputFile) {
     DebugPrintf(("Mem %03d: %12d\n", i, bytecode[i]));
   }
 
-  const int inputNameLen = strlen(inputFile);
-  char outfile[inputNameLen + 3];
-  strcpy(outfile, inputFile);
-  outfile[inputNameLen-1] = 'b';
-  outfile[inputNameLen] = 'i';
-  outfile[inputNameLen+1] = 'n';
-  outfile[inputNameLen+2] = '\0';
-
-  BinWriter writer(outfile);
+  BinWriter writer(outputName.c_str());
   writer.saveBinFileContent(bytecode);
 }
 

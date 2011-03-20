@@ -8,5 +8,6 @@ new_vasm_SOURCES = asm-parser.ypp \
 		  ../FileHandler.cpp \
 		  asm-function.cpp \
 		  asm-program.cpp \
+		  AsmArgs.cpp \
 		  vNewAsm.cpp
 

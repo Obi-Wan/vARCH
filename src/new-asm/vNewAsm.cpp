@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include "asm-program.h"
 #include "asm-parser.h"
+#include "AsmArgs.h"
 
 using namespace std;
 
@@ -18,13 +19,21 @@ extern FILE *yyin;
  */
 int
 main(int argc, char** argv) {
-
-  if (argc < 2) {
-    printf("You didn't enter the ASM file to process\n");
-    return (EXIT_FAILURE);
+  AsmArgs args(argc, argv);
+  try {
+    args.parse();
+  } catch (const WrongArgumentException & e) {
+    if (e.getMessage().empty()) {
+      args.printHelp();
+      return EXIT_SUCCESS;
+    } else {
+      printf("%s\n", e.what());
+      args.printHelp();
+      return EXIT_FAILURE;
+    }
   }
-  ++argv, --argc;
-  yyin = fopen( argv[0], "r" );
+
+  yyin = fopen( args.getInputName().c_str(), "r" );
   if (yyin != NULL) {
     try {
       asm_program * program;
@@ -54,13 +63,14 @@ main(int argc, char** argv) {
         printf("An error may have occurred, code: %3d\n", res);
       }
       program->assignValuesToLabels();
-      program->assemble( argv[0] );
+      program->assemble( args.getOutputName() );
     } catch (BasicException e) {
       printf("Error: %s\n", e.what());
       return (EXIT_FAILURE);
     }
   } else {
-    printf("I couldn't open the ASM file to process\n");
+    printf("I couldn't open the ASM file to process: %s\n",
+            args.getInputName().c_str());
     return (EXIT_FAILURE);
   }
 }

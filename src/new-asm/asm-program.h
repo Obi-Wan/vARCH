@@ -10,7 +10,7 @@
 
 #include "asm-classes.h"
 #include "asm-function.h"
-#include "../../include/exceptions.h"
+#include "exceptions.h"
 
 struct asm_program {
   int tempOffset;
@@ -33,7 +33,7 @@ public:
   }
 
   void assignValuesToLabels();
-  void assemble(const char * inputFile);
+  void assemble(const string & outputName);
 };
 
 #endif	/* ASM_PROGRAM_H */
