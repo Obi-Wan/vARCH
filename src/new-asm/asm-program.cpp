@@ -103,7 +103,7 @@ void asm_program::assemble(const char * inputFile) {
   InfoPrintf(("Size of the generated file: %5d bytes in %4d cells\n",
               (int)bytecode.size()*4, (int)bytecode.size() ));
   for (int i = 0; i < bytecode.size(); i++) {
-    InfoPrintf(("Mem %03d: %12d\n", i, bytecode[i]));
+    DebugPrintf(("Mem %03d: %12d\n", i, bytecode[i]));
   }
 
   const int inputNameLen = strlen(inputFile);
