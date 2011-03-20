@@ -132,8 +132,8 @@ struct asm_instruction_statement : asm_statement {
 
   const string toString() const {
     string output = "(instr, ";
-    for(int i = 0; i < args.size(); i++) {
-      output += args[i]->toString() + " ";
+    for(size_t argNum = 0; argNum < args.size(); argNum++) {
+      output += args[argNum]->toString() + " ";
     }
     output += " )";
     return output;
@@ -141,13 +141,14 @@ struct asm_instruction_statement : asm_statement {
 
   void emitCode(Bloat::iterator & position) {
     int op = instruction;
-    for (int i = 0; i < args.size(); i++) {
-      op += ARG(i, (args[i]->type + (args[i]->relative ? RELATIVE_ARG : 0)) );
+    for (size_t argNum = 0; argNum < args.size(); argNum++) {
+      const asm_arg & arg = *args[argNum];
+      op += ARG(argNum, (arg.type + (arg.relative ? RELATIVE_ARG : 0)) );
     }
     *(position++) = op;
 
-    for (int i = 0; i < args.size(); i++) {
-      *(position++) = args[i]->getCode();
+    for (size_t argNum = 0; argNum < args.size(); argNum++) {
+      *(position++) = args[argNum]->getCode();
     }
   }
 
@@ -240,7 +241,7 @@ struct asm_string_keyword_statement : asm_data_keyword_statement {
   const ObjType getType() const { return ASM_STRING_KEYWORD_STATEMENT; }
 
   void emitCode(Bloat::iterator & position) {
-    for (int i = 0; i < str.size(); i++) {
+    for (size_t i = 0; i < str.size(); i++) {
       *(position++) = (str[i] & 0xff );
     }
   }

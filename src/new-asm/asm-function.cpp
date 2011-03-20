@@ -25,18 +25,18 @@ asm_function::init(list<asm_statement *> * _stmts,
   locals.insert(locals.begin(), _locals->begin(), _locals->end());
 
   DebugPrintf(("- Adding stmts and locals to function: %s -\n", name.c_str()));
-  for(int i = 0; i < stmts.size(); i++) {
-    asm_statement * stmt = stmts[i];
+  for(size_t index = 0; index < stmts.size(); index++) {
+    asm_statement * stmt = stmts[index];
 
     stmt->offset = tempLocalOffset;
     tempLocalOffset += stmt->getSize();
 
     if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
       asm_instruction_statement * istmt = (asm_instruction_statement *) stmt;
-      for (int i = 0; i < istmt->args.size(); i++) {
-        if (istmt->args[i]->getType() == ASM_LABEL_ARG) {
+      for (size_t argNum = 0; argNum < istmt->args.size(); argNum++) {
+        if (istmt->args[argNum]->getType() == ASM_LABEL_ARG) {
           argLabelRecord * tempRecord = new argLabelRecord();
-          tempRecord->arg = (asm_label_arg *)istmt->args[i];
+          tempRecord->arg = (asm_label_arg *)istmt->args[argNum];
           tempRecord->parent = istmt;
           refs.push_back(tempRecord);
         }
@@ -45,7 +45,7 @@ asm_function::init(list<asm_statement *> * _stmts,
       checkLabel(stmt);
     }
   }
-  for(int i = 0; i < locals.size(); i++) {
+  for(size_t i = 0; i < locals.size(); i++) {
     asm_data_statement * stmt = locals[i];
 
     stmt->offset = tempLocalOffset;

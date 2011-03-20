@@ -35,15 +35,15 @@ struct asm_function {
 
   int getInstrSize() const {
     int size = 0;
-    for(int i = 0; i < stmts.size(); i++) {
-      size += stmts[i]->getSize();
+    for(size_t index = 0; index < stmts.size(); index++) {
+      size += stmts[index]->getSize();
     }
     return size;
   }
   int getDataSize() const {
     int size = 0;
-    for(int i = 0; i < locals.size(); i++) {
-      size += locals[i]->getSize();
+    for(size_t index = 0; index < locals.size(); index++) {
+      size += locals[index]->getSize();
     }
     return size;
   }

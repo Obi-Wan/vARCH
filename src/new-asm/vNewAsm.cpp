@@ -45,25 +45,25 @@ main(int argc, char** argv) {
       }
 #ifdef DEBUG
       DebugPrintf(("-- Dumping Schematic Parsed Code --\n"));
-      for(int i = 0; i < program->functions.size(); i++) {
-        DebugPrintf(("Line: %03d Function: %s\n",
-                      program->functions[i]->position.first_line,
-                      program->functions[i]->name.c_str()));
-        for(int j = 0; j < program->functions[i]->stmts.size(); j++) {
+      for(size_t funcNum = 0; funcNum < program->functions.size(); funcNum++) {
+        const asm_function & func = *program->functions[funcNum];
+        DebugPrintf(("Line: %03d Function: %s\n", func.position.first_line,
+                      func.name.c_str()));
+        for(size_t stmtNum = 0; stmtNum < func.stmts.size(); stmtNum++) {
           DebugPrintf((" Line: %03d %s\n",
-                        program->functions[i]->stmts[j]->position.first_line,
-                        program->functions[i]->stmts[j]->toString().c_str()));
+                        func.stmts[stmtNum]->position.first_line,
+                        func.stmts[stmtNum]->toString().c_str()));
         }
-        for(int j = 0; j < program->functions[i]->locals.size(); j++) {
+        for(size_t localNum = 0; localNum < func.locals.size(); localNum++) {
           DebugPrintf((" Line: %03d Local: %s\n",
-                        program->functions[i]->locals[j]->position.first_line,
-                        program->functions[i]->locals[j]->toString().c_str()));
+                        func.locals[localNum]->position.first_line,
+                        func.locals[localNum]->toString().c_str()));
         }
       }
-      for(int i = 0; i < program->globals.size(); i++) {
+      for(size_t num = 0; num < program->globals.size(); num++) {
         DebugPrintf(("Line: %03d Global: %s\n",
-                      program->globals[i]->position.first_line,
-                      program->globals[i]->toString().c_str()));
+                      program->globals[num]->position.first_line,
+                      program->globals[num]->toString().c_str()));
       }
       DebugPrintf(("-- Terminated Dumping Parsed Code --\n\n"));
 #endif
