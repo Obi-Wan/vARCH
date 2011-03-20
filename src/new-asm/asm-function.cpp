@@ -24,6 +24,7 @@ asm_function::init(list<asm_statement *> * _stmts,
   locals.reserve(_locals->size());
   locals.insert(locals.begin(), _locals->begin(), _locals->end());
 
+  DebugPrintf(("- Adding stmts and locals to function: %s -\n", name.c_str()));
   for(int i = 0; i < stmts.size(); i++) {
     asm_statement * stmt = stmts[i];
 
@@ -51,6 +52,7 @@ asm_function::init(list<asm_statement *> * _stmts,
     tempLocalOffset += stmt->getSize();
     checkLabel(stmt);
   }
+  DebugPrintf(("- Terminated: Adding stmts and locals -\n\n"));
 }
 
 inline void

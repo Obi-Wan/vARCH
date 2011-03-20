@@ -29,6 +29,7 @@ asm_program::asm_program(list<asm_function *> * _funcs,
   globals.insert(globals.begin(), _globals->begin(), _globals->end());
 
   /* And fix their labels */
+  DebugPrintf(("-- Adding Functions to Global Labels - Phase --\n"));
   for(int i = 0; i < functions.size(); i++) {
     asm_function * func = functions[i];
 
@@ -51,39 +52,49 @@ asm_program::asm_program(list<asm_function *> * _funcs,
       globalSymbols.addLabel((asm_label_statement *)stmt);
     }
   }
+  DebugPrintf(("-- Terminated: Adding Funcs to Global Labels - Phase --\n\n"));
 }
 
 void asm_program::assignValuesToLabels() {
-  DebugPrintf(("Assigning labels:\n"));
-  for(int i = 0; i < functions.size(); i++) {
-
-    DebugPrintf(("Processing refs of function: %s\n",functions[i]->name.c_str()));
+  DebugPrintf(("-- Assign labels - Phase --\n"));
+  for(int i = 0; i < functions.size(); i++)
+  {
+    DebugPrintf((" - Processing references of function: %s\n",
+                  functions[i]->name.c_str()));
     for(list<argLabelRecord *>::iterator j  = functions[i]->refs.begin();
-            j != functions[i]->refs.end(); j++) {
-      DebugPrintf(("Processing label: %s\n", (*j)->arg->label.c_str()));
+            j != functions[i]->refs.end(); j++)
+    {
+      DebugPrintf(("  - Processing label: %s\n", (*j)->arg->label.c_str()));
       int pos = functions[i]->localSymbols.getPositionOfLabel((*j)->arg->label);
+
       if (pos < 0) {
-        DebugPrintf(("It's not local since it returned: %3d\n", pos));
+        DebugPrintf(("    It's not local since it returned: %3d\n", pos));
         pos = globalSymbols.getPositionOfLabel((*j)->arg->label);
         if (pos < 0) {
-          DebugPrintf(("It's not even global (returned %3d)! ERROR!!\n", pos));
+          DebugPrintf(("    It's not even global (returned %3d)! ERROR!!\n",
+                        pos));
           throw WrongArgumentException("reference to a Label called: " +
                   (*j)->arg->label + " that does not exist");
         } else {
-          DebugPrintf(("It's global and at: %3d\n", pos));
+          DebugPrintf(("    It's global and at: %3d\n", pos));
           (*j)->arg->pointedPosition = pos;
           (*j)->arg->relative = false;
         }
       } else {
-        DebugPrintf(("It's local since it returned: %3d\n", pos));
-        DebugPrintf(("Calculating sizes:\n position of stmt: %03d\n", (*j)->parent->offset));
-        DebugPrintf((" size of statement and args: %03d\n", (*j)->parent->getSize()));
-        DebugPrintf((" position of the arg relative to the stmt: %03d\n", (*j)->arg->relOffset));
-        (*j)->arg->pointedPosition = pos - (*j)->arg->relOffset - (*j)->parent->offset;
+        DebugPrintf(("    It's local since it returned: %3d\n", pos));
+        DebugPrintf(("    Calculating sizes:\n"));
+        DebugPrintf(("      position of stmt: %03d\n", (*j)->parent->offset));
+        DebugPrintf(("      size of statement and args: %03d\n",
+                      (*j)->parent->getSize()));
+        DebugPrintf(("      position of the arg relative to the stmt: %03d\n",
+                      (*j)->arg->relOffset));
+        (*j)->arg->pointedPosition =
+                      pos - (*j)->arg->relOffset - (*j)->parent->offset;
         (*j)->arg->relative = true;
       }
     }
   }
+  DebugPrintf(("-- Terminated: Assign labels - Phase --\n\n"));
 }
 
 void asm_program::assemble(const string & outputName) {
@@ -104,9 +115,12 @@ void asm_program::assemble(const string & outputName) {
 
   InfoPrintf(("Size of the generated file: %5d bytes in %4d cells\n",
               (int)bytecode.size()*4, (int)bytecode.size() ));
+#ifdef DEBUG
+  DebugPrintf(("-- Dumping generated binary code --\n"));
   for (int i = 0; i < bytecode.size(); i++) {
     DebugPrintf(("Mem %03d: %12d\n", i, bytecode[i]));
   }
+#endif
 
   BinWriter writer(outputName.c_str());
   writer.saveBinFileContent(bytecode);
