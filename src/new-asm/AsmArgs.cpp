@@ -24,6 +24,7 @@ AsmArgs::parse() throw (WrongArgumentException)
       CHECK_THROW( (++argNum < argc),
           WrongArgumentException("You didn't specify the input name") );
       inputName.assign(argv[argNum]);
+
     } else if (!tempArg.compare("-o")) {
       /* Tells which file will be the output */
       CHECK_THROW( outputName.empty(),
@@ -31,12 +32,27 @@ AsmArgs::parse() throw (WrongArgumentException)
       CHECK_THROW( (++argNum < argc),
           WrongArgumentException("You didn't specify the output name") );
       outputName.assign(argv[argNum]);
+
+    } else if (!tempArg.substr(0, 2).compare("-I")) {
+      /* Tells to append an include dir */
+      includeDirs.push_back(tempArg.substr(2, tempArg.size()-2));
+
     } else if (!tempArg.compare("-h")) {
       throw WrongArgumentException("");
     } else {
       throw WrongArgumentException(string("Unknown option: ") + argv[argNum]);
     }
   }
+
+  DebugPrintf(("Input  filename: %s\n", inputName.c_str()));
+  DebugPrintf(("Output filename: %s\n", outputName.c_str()));
+#ifdef DEBUG
+  string includes;
+  for(uint32_t inclNum = 0; inclNum < includeDirs.size(); inclNum++) {
+    includes += " " + includeDirs[inclNum];
+  }
+  DebugPrintf(("Include dirs: %s\n\n", includes.c_str()));
+#endif
 
   CHECK_THROW( !inputName.empty(),
           WrongArgumentException("you didn't specify the input file") );
