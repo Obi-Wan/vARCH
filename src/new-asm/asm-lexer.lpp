@@ -61,6 +61,7 @@ struct FileBuffer {
   YY_BUFFER_STATE buff;         /* saved buffer */
   YYLTYPE yylloc;               /* saved position */
   const char * filename;        /* name of the file associated to the include */
+  const char * path;            /* path of the include file */
   FILE * infile;                /* current file descriptor */
 };
 
@@ -70,8 +71,13 @@ char tempIncludeFilename[MAX_STR_CONST];
 
 const vector<string> * includeDirs = NULL;
 
-FILE *
-openFile(const char * const _filename);
+void
+openFile(FileBuffer & buff);
+
+void
+printIncludeStack();
+void
+printCurrentFile();
 
 %}
 
@@ -257,15 +263,20 @@ r?\({AREG}\)\- {
           }
 
 {DIGIT}+{ID} {
-            fprintf( stderr, "Lexing Error, unknown symbol: %s\n", yytext );
+            fprintf( stderr, "Line %4d Lexing Error, forbidden symbol: '%s'\n",
+                     yylloc->first_line, yytext );
+            printCurrentFile();
+            printIncludeStack();
             exit(1);
           }
 [ \t]+      /* eat up whitespace */
 ,           return COMA;
 
 . {
-            fprintf( stderr, "%4d Lexing Error, unknown symbol: %s\n",
+            fprintf( stderr, "Line %4d Lexing Error, unknown symbol: '%s'\n",
                      yylloc->first_line, yytext );
+            printCurrentFile();
+            printIncludeStack();
             exit(1);
           }
 }
@@ -276,14 +287,19 @@ r?\({AREG}\)\- {
 
 [\"<].+[\">] {
             if (yyleng > MAX_STR_CONST) {
-              fprintf( stderr, "%4d include filename too long (>= 256): %s\n",
-                       yylloc->first_line, yytext);
+              fprintf( stderr,
+                       "Line %4d include filename too long (>= 256): %s\n",
+                       yylloc->first_line, yytext );
+              printCurrentFile();
+              printIncludeStack();
               exit(1);
             }
             strncpy(tempIncludeFilename, yytext+1, yyleng-2);
             if(!openIncludeFile(tempIncludeFilename, yylloc)) {
-              fprintf( stderr, "%4d inexisting include line\n",
-                       yylloc->first_line);
+              fprintf( stderr, "Line %4d inexisting include file name: %s\n",
+                       yylloc->first_line, yytext );
+              printCurrentFile();
+              printIncludeStack();
               exit(1);
             }
             yylloc->first_line = 1, yylloc->first_column = 1;
@@ -292,7 +308,9 @@ r?\({AREG}\)\- {
           }
 
 .|\n      {
-            fprintf( stderr, "%4d bad include line\n", yylloc->first_line);
+            fprintf( stderr, "Line %4d bad include line\n", yylloc->first_line);
+            printCurrentFile();
+            printIncludeStack();
             exit(1);
           }
 }
@@ -300,8 +318,9 @@ r?\({AREG}\)\- {
 <COMMENT>{
 
 <<EOF>>   {
-            fprintf( stderr, "End of file in comment, in file %s\n",
-                     includesStack.top().filename );
+            fprintf( stderr, "End of file in comment\n" );
+            printCurrentFile();
+            printIncludeStack();
             exit(1);
           }
 
@@ -319,8 +338,9 @@ r?\({AREG}\)\- {
 <STRING_CONTEXT>{
 
 <<EOF>>   {
-            fprintf( stderr, "End of file in string, in file %s\n",
-                     includesStack.top().filename );
+            fprintf( stderr, "End of file in string\n" );
+            printCurrentFile();
+            printIncludeStack();
             exit(1);
           }
 
@@ -418,26 +438,28 @@ setIncludeDirs(const vector<string> * _dirs)
   includeDirs = _dirs;
 }
 
-FILE *
-openFile(const char * const _filename)
+void
+openFile(FileBuffer & buff)
 {
-  FILE * f = fopen(_filename, "r");
   if (!includeDirs) {
     throw BasicException("Implementation Error: Not initialized 'IncludeDirs'");
   }
-  for(size_t dir = 0; !f && dir < includeDirs->size(); dir++) {
-    f = fopen( ( (*includeDirs)[dir] + '/' + _filename).c_str(), "r" );
+  buff.infile = fopen(buff.filename, "r");
+  buff.path = ".";
+  for(size_t dir = 0; !buff.infile && dir < includeDirs->size(); dir++) {
+    const string & inclDir = (*includeDirs)[dir];
+    buff.infile = fopen( ( inclDir + '/' + buff.filename).c_str(), "r");
+    buff.path = inclDir.c_str();
   }
-  return f;
 }
 
 bool
 openIncludeFile(const char * const _filename, const YYLTYPE * loc)
 {
   FileBuffer buff;
-  
   buff.filename = _filename;
-  buff.infile = openFile(buff.filename);
+  
+  openFile(buff);
   if(!buff.infile) {
     perror(buff.filename);
     return false;
@@ -474,4 +496,26 @@ closeIncludeFile(YYLTYPE * loc)
 
   return true;
 }
+
+void
+printIncludeStack()
+{
+  stack<FileBuffer> localStack = includesStack;
+  if (localStack.size()) {
+    YYLTYPE loc = localStack.top().yylloc;
+    for(localStack.pop(); localStack.size(); localStack.pop()) {
+      const FileBuffer & buff = localStack.top();
+      fprintf( stderr, "  Included by: %s (line: %4d, path: '%s')\n",
+               buff.filename, loc.first_line, buff.path );
+      loc = buff.yylloc;
+    }
+  }
+}
+
+void
+printCurrentFile()
+{
+  fprintf( stderr, "  in file '%s'\n", includesStack.top().filename );
+}
+
 
