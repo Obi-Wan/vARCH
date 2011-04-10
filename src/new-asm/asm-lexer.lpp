@@ -292,15 +292,16 @@ r?\({AREG}\)\- {
             if (!newFileName) {
               fprintf( stderr,
                        "Line %4d include filename too long (%4d chars): %s\n",
-                       yylloc->first_line, yyleng-2, yytext );
+                       yylloc->first_line, yyleng-2, yytext+1 );
               printCurrentFile();
               printIncludeStack();
               exit(1);
             }
             strncpy(newFileName, yytext+1, yyleng-2);
+            newFileName[yyleng-2] = '\0';
             if(!openIncludeFile(newFileName, yylloc)) {
               fprintf( stderr, "Line %4d inexisting include file name: %s\n",
-                       yylloc->first_line, yytext );
+                       yylloc->first_line, newFileName );
               printCurrentFile();
               printIncludeStack();
               exit(1);
