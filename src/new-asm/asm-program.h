@@ -25,7 +25,7 @@ struct asm_program {
 public:
   asm_program(list<asm_function *> * _funcs,
               list<asm_data_statement *> * _globals);
-  asm_program() { }
+  asm_program() : tempOffset(0) { }
 
   void addFunction(asm_function * _func);
   void addFunctions(list<asm_function *> * _funcs);
