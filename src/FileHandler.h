@@ -11,17 +11,23 @@
 #include <vector>
 #include <fstream>
 #include <string>
-#include "../include/exceptions.h"
+#include "exceptions.h"
 
 using namespace std;
 
 typedef vector<int> Bloat;
 
+static const char * openFileError = "Error opening file: ";
+
 class FileHandler {
 public:
-  FileHandler(const char * filename, ios_base::openmode mode) throw(WrongFileException) {
+  FileHandler(const char * filename, ios_base::openmode mode) {
     file.open(filename, mode );
-    if (!file) throw WrongFileException();
+    if (!file) throw WrongFileException(string(openFileError).append(filename));
+  }
+  FileHandler(const string &filename, ios_base::openmode mode) {
+    file.open(filename.c_str(), mode );
+    if (!file) throw WrongFileException(string(openFileError).append(filename));
   }
   ~FileHandler() { file.close(); }
   
@@ -32,7 +38,7 @@ protected:
 class BinLoader : public FileHandler {
 public:
   BinLoader(const char * filename)
-      : FileHandler(filename, ios_base::in | ios_base::binary) { }
+    : FileHandler(filename, ios_base::in | ios_base::binary) { }
 //  virtual ~BinLoader() { }
 
   Bloat getBinFileContent();
@@ -41,7 +47,11 @@ public:
 class BinWriter : public FileHandler {
 public:
   BinWriter(const char * filename)
-      : FileHandler(filename, ios_base::out | ios_base::binary | ios_base::trunc) { }
+    : FileHandler(filename, ios_base::out | ios_base::binary | ios_base::trunc)
+  { }
+  BinWriter(const string & filename)
+    : FileHandler(filename, ios_base::out | ios_base::binary | ios_base::trunc)
+  { }
 //  virtual ~BinWriter() { }
 
   void saveBinFileContent(const Bloat& bloat);
@@ -50,7 +60,9 @@ public:
 class TextLoader : public FileHandler {
 public:
   TextLoader(const char * filename)
-      : FileHandler(filename, ios_base::in) { }
+    : FileHandler(filename, ios_base::in) { }
+  TextLoader(const string & filename)
+    : FileHandler(filename, ios_base::in) { }
 //  virtual ~TextLoader() { }
 
   string getTextFileContent();

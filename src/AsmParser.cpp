@@ -10,8 +10,7 @@
 #include "FunctionRecord.h"
 
 AsmParser::AsmParser(const string& _fname) : fname(_fname) {
-  TextLoader loader(fname.data());
-  preParser(loader.getTextFileContent());
+  preParser( TextLoader(fname.data()).getTextFileContent() );
 }
 
 //AsmParser::AsmParser(const AsmParser& orig) { }

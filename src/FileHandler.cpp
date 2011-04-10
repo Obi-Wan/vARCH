@@ -5,10 +5,12 @@
  * Created on 26 agosto 2009, 18.38
  */
 
+#include "FileHandler.h"
+#include "macros.h"
+
 #include <unistd.h>
 
-#include "FileHandler.h"
-#include "../include/macros.h"
+#include <sstream>
 
 Bloat
 BinLoader::getBinFileContent() {
@@ -25,14 +27,12 @@ BinLoader::getBinFileContent() {
 
 string
 TextLoader::getTextFileContent() {
-  string str, line;
-  
-  while ( getline(file, line) ) {
-    str.append(line += '\n');
-//    DebugPrintf(("line: %s\n",line.c_str()));
+  char line[256];
+  stringstream stream;
+  while (file.getline(line, 256)) {
+    stream << line << endl;
   }
-
-  return str;
+  return stream.str();
 }
 
 void
