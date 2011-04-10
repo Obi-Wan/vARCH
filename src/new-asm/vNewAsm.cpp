@@ -12,7 +12,7 @@
 
 using namespace std;
 
-YYLTYPE yylloc = { 1, 1, 1, 1 };
+YYLTYPE yylloc = { 1, 1, 1, 1, "" };
 
 void
 printAbstractTree(const asm_program * const program);
@@ -52,6 +52,8 @@ main(int argc, char** argv) {
 #endif
       program->assignValuesToLabels();
       program->assemble( args.getOutputName() );
+
+      cleanParser();
     } catch (BasicException e) {
       printf("Error: %s\n", e.what());
       return (EXIT_FAILURE);

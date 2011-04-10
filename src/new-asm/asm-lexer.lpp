@@ -55,6 +55,8 @@ void createSpecialAddrRegArg(asm_arg *& arg, YYLTYPE *& loc,
    do {\
       yylloc->first_column = yylloc->last_column;\
       yylloc->last_column += yyleng;\
+      yylloc->filename = includesStack.top().filename;\
+      yylloc->filepath = includesStack.top().path;\
    } while(0);
 
 struct FileBuffer {
@@ -67,9 +69,9 @@ struct FileBuffer {
 
 stack<FileBuffer> includesStack;
 
-char tempIncludeFilename[MAX_STR_CONST];
-
 const vector<string> * includeDirs = NULL;
+
+vector<char *> parserAllocatedStrings;
 
 void
 openFile(FileBuffer & buff);
@@ -286,16 +288,17 @@ r?\({AREG}\)\- {
 [ \t]+      /* eat up whitespace */
 
 [\"<].+[\">] {
-            if (yyleng > MAX_STR_CONST) {
+            char * newFileName = new char[yyleng-1];
+            if (!newFileName) {
               fprintf( stderr,
-                       "Line %4d include filename too long (>= 256): %s\n",
-                       yylloc->first_line, yytext );
+                       "Line %4d include filename too long (%4d chars): %s\n",
+                       yylloc->first_line, yyleng-2, yytext );
               printCurrentFile();
               printIncludeStack();
               exit(1);
             }
-            strncpy(tempIncludeFilename, yytext+1, yyleng-2);
-            if(!openIncludeFile(tempIncludeFilename, yylloc)) {
+            strncpy(newFileName, yytext+1, yyleng-2);
+            if(!openIncludeFile(newFileName, yylloc)) {
               fprintf( stderr, "Line %4d inexisting include file name: %s\n",
                        yylloc->first_line, yytext );
               printCurrentFile();
@@ -304,6 +307,9 @@ r?\({AREG}\)\- {
             }
             yylloc->first_line = 1, yylloc->first_column = 1;
             yylloc->last_line = 1,  yylloc->last_column = 1;
+            yylloc->filename = newFileName;
+            yylloc->filepath = includesStack.top().path;
+            parserAllocatedStrings.push_back(newFileName);
             BEGIN(INITIAL);
           }
 
@@ -516,6 +522,14 @@ void
 printCurrentFile()
 {
   fprintf( stderr, "  in file '%s'\n", includesStack.top().filename );
+}
+
+void
+cleanParser()
+{
+  for(size_t str = 0; str < parserAllocatedStrings.size(); str++) {
+    delete [](parserAllocatedStrings[str]);
+  }
 }
 
 

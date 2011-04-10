@@ -18,6 +18,9 @@ extern int yylex \
 }
 
 %code requires {
+#ifndef ASM_PARSER_YPP
+#define ASM_PARSER_YPP
+
 #include "parser_definitions.h"
 #include "asm-classes.h"
 #include "asm-program.h"
@@ -28,6 +31,10 @@ int yyparse(asm_program *& program);
 void setIncludeDirs(const vector<string> * _dirs);
 bool openIncludeFile(const char * const _filename, const YYLTYPE * loc);
 bool closeIncludeFile(YYLTYPE * loc);
+
+void cleanParser();
+
+#endif
 }
 
 %locations
@@ -194,8 +201,11 @@ data_keyword
 
 void
 yyerror (YYLTYPE *locp, asm_program *& program, char const *s) {
-  fprintf(stderr, "ASSEMBLER ERROR: %s\n - at line: %4d col: %4d\n", s,
-          locp->first_line, locp->first_column);
+  fprintf( stderr,
+           "ASSEMBLER ERROR: %s\n - in file: '%s/%s'\n"
+           "   at line: %4d col: %4d\n",
+           s, locp->filepath, locp->filename, locp->first_line,
+           locp->first_column);
 }
 
 
