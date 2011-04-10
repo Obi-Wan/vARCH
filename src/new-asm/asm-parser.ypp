@@ -57,7 +57,6 @@ void cleanParser();
   struct asm_data_keyword_statement *keyw_stmt;
   struct asm_function *function;
 
-  list<asm_function *>  * listOfFunctions;
   list<asm_statement *>  * listOfStatements;
   list<asm_data_statement *>  * listOfDataStatements;
 }
@@ -87,27 +86,18 @@ void cleanParser();
 %type <listOfDataStatements> locals
 %type <listOfDataStatements> globals
 %type <function> function
-%type <listOfFunctions> functions
 
 %%
 
 program
-      : functions
-          { program = new asm_program( $1, new list<asm_data_statement *>() ); }
-      | globals blank_lines functions
-          { program = new asm_program( $3, $1 ); }
-      | blank_lines functions
-          { program = new asm_program( $2, new list<asm_data_statement *>() ); }
-      | blank_lines globals blank_lines functions
-          { program = new asm_program( $4, $2 ); }
-      | functions blank_lines
-          { program = new asm_program( $1, new list<asm_data_statement *>() ); }
-      | globals blank_lines functions blank_lines
-          { program = new asm_program( $3, $1 ); }
-      | blank_lines functions blank_lines
-          { program = new asm_program( $2, new list<asm_data_statement *>() ); }
-      | blank_lines globals blank_lines functions blank_lines
-          { program = new asm_program( $4, $2 ); }
+      : block
+      ;
+
+block
+      : block blank_lines
+      | block function     { program->addFunction( $2 ); }
+      | block globals      { program->addGlobals( $2 ); }
+      | 
       ;
 
 globals
@@ -115,13 +105,6 @@ globals
                   { $$ = $3; }
       | KEYWORD_GLOBAL blank_lines KEYWORD_END
                   { $$ = new list<asm_data_statement *>(); }
-      ;
-
-functions
-      : functions blank_lines function
-                  { $1->push_back( $3 ); $$ = $1; }
-      | function  { $$ = new list<asm_function *>();
-                    $$->push_back( $1 ); }
       ;
 
 blank_lines

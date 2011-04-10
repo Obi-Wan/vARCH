@@ -41,7 +41,7 @@ main(int argc, char** argv) {
   if (openIncludeFile(args.getInputName().c_str(), &yylloc))
   {
     try {
-      asm_program * program;
+      asm_program * program = new asm_program();
       int res = yyparse(program);
       if (res) {
         printf("An error may have occurred, code: %3d\n", res);
