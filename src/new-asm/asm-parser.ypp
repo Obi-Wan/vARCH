@@ -117,7 +117,7 @@ function
         locals blank_lines
         stmts blank_lines
         KEYWORD_END
-                  { $$ = new asm_function( yyloc, $2, $6, $4 ); }
+                  { $$ = new asm_function( yylloc, $2, $6, $4 ); }
       ;
 
 locals
@@ -168,15 +168,15 @@ data_stmt
 
 data_keyword
       : KEYWORD_INT INTEGER 
-  	 	 		  { $$ = new asm_int_keyword_statement( yylloc, $2 ); }
+                  { $$ = new asm_int_keyword_statement( yylloc, $2 ); }
       | KEYWORD_LONG INTEGER
-  				  { $$ = new asm_long_keyword_statement( yylloc, $2 ); }
+                  { $$ = new asm_long_keyword_statement( yylloc, $2 ); }
       | KEYWORD_REAL REAL
-      		      { $$ = new asm_real_keyword_statement( yylloc, $2 ); }
+                  { $$ = new asm_real_keyword_statement( yylloc, $2 ); }
       | KEYWORD_CHAR ID
       	          { $$ = new asm_char_keyword_statement( yylloc, $2 ); }
       | KEYWORD_STRING STRING
-      			  { $$ = new asm_string_keyword_statement( yylloc, $2 ); }
+                  { $$ = new asm_string_keyword_statement( yylloc, $2 ); }
       ;
 
 
