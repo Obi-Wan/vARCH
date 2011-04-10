@@ -94,9 +94,9 @@ program
       ;
 
 block
-      : block blank_lines
-      | block function     { program->addFunction( $2 ); }
-      | block globals      { program->addGlobals( $2 ); }
+      : block blank_lines block
+      | function     { program->addFunction( $1 ); }
+      | globals      { program->addGlobals( $1 ); }
       | 
       ;
 
@@ -132,6 +132,8 @@ stmts
                   { $1->push_back( $3 ); $$ = $1; }
       | stmt      { $$ = new list<asm_statement *>();
                     $$->push_back( $1 ); }
+      | error blank_lines stmt
+                  { $$ =  new list<asm_statement *>(); $$->push_back( $3 ); }
       ;
 
 arg
@@ -159,6 +161,9 @@ data_stmts
                   { $1->push_back( $3 ); $$ = $1; }
       | data_stmt { $$ = new list<asm_data_statement *>();
                     $$->push_back( $1 ); }
+      | error blank_lines data_stmt
+                  { $$ =  new list<asm_data_statement *>();
+                    $$->push_back( $3 ); }
       ;
 
 data_stmt
@@ -183,7 +188,8 @@ data_keyword
 %%
 
 void
-yyerror (YYLTYPE *locp, asm_program * program, char const *s) {
+yyerror (YYLTYPE *locp, asm_program * program, char const *s)
+{
   fprintf( stderr,
            "ASSEMBLER ERROR: %s\n - in file: '%s/%s'\n"
            "   at line: %4d col: %4d\n",
