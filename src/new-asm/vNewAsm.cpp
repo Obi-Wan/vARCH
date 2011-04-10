@@ -47,6 +47,7 @@ main(int argc, char** argv) {
         printf("An error may have occurred, code: %3d\n", res);
         throw BasicException("Error parsing\n");
       }
+      program->addFunctionLabelsToGlobals();
 #ifdef DEBUG
       printAbstractTree(program);
 #endif

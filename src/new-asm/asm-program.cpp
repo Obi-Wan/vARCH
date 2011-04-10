@@ -10,23 +10,50 @@
 asm_program::asm_program(list<asm_function *> * _funcs,
               list<asm_data_statement *> * _globals) : tempOffset(0)
 {
+  /* Now let's copy them, and the data */
+  functions.insert(functions.begin(), _funcs->begin(), _funcs->end());
+  globals.insert(globals.begin(), _globals->begin(), _globals->end());
+}
+
+void
+asm_program::addFunction(asm_function * _func)
+{
+  functions.insert(functions.end(), _func);
+}
+
+void
+asm_program::addFunctions(list<asm_function *> * _funcs)
+{
+  functions.insert(functions.end(), _funcs->begin(), _funcs->end());
+}
+
+void
+asm_program::addGlobal(asm_data_statement * _global)
+{
+  globals.insert(globals.end(), _global);
+}
+
+void
+asm_program::addGlobals(list<asm_data_statement *> * _globals)
+{
+  globals.insert(globals.end(), _globals->begin(), _globals->end());
+}
+
+void
+asm_program::addFunctionLabelsToGlobals()
+{
   /* Let's put the main function in front of all the others */
-  for(list<asm_function *>::iterator iter = _funcs->begin();
-      iter != _funcs->end(); iter++)
+  for(deque<asm_function *>::iterator iter = functions.begin();
+      iter != functions.end(); iter++)
   {
     if (!(*iter)->name.compare("main")) {
       /* Main found! */
       asm_function * main = (*iter);
-      _funcs->erase(iter);
-      _funcs->insert(_funcs->begin(), main);
+      functions.erase(iter);
+      functions.insert(functions.begin(), main);
       break;
     }
   }
-  /* Now let's copy them, and the data */
-  functions.reserve(_funcs->size());
-  functions.insert(functions.begin(), _funcs->begin(), _funcs->end());
-  globals.reserve(_globals->size());
-  globals.insert(globals.begin(), _globals->begin(), _globals->end());
 
   /* And fix their labels */
   DebugPrintf(("-- Adding Functions to Global Labels - Phase --\n"));

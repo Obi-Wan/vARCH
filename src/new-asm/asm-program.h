@@ -12,10 +12,12 @@
 #include "asm-function.h"
 #include "exceptions.h"
 
+#include <deque>
+
 struct asm_program {
   int tempOffset;
 
-  vector<asm_function *> functions;
+  deque<asm_function *> functions;
   vector<asm_data_statement *> globals;
 
   TableOfSymbols globalSymbols;
@@ -23,6 +25,12 @@ struct asm_program {
 public:
   asm_program(list<asm_function *> * _funcs,
               list<asm_data_statement *> * _globals);
+
+  void addFunction(asm_function * _func);
+  void addFunctions(list<asm_function *> * _funcs);
+
+  void addGlobal(asm_data_statement * _global);
+  void addGlobals(list<asm_data_statement *> * _globals);
 
   int getFunciontsTotalSize() {
     int totSize = 0;
@@ -32,6 +40,7 @@ public:
     return totSize;
   }
 
+  void addFunctionLabelsToGlobals();
   void assignValuesToLabels();
   void assemble(const string & outputName);
 };
