@@ -12,7 +12,6 @@ using namespace std;
 
 void
 TableOfSymbols::addLabel(asm_label_statement * lab)
-  throw(WrongArgumentException)
 {
   DebugPrintf(("TableOfSymbols: adding label at position %03d: %s\n",
          lab->offset, lab->label.c_str()));
@@ -22,10 +21,13 @@ TableOfSymbols::addLabel(asm_label_statement * lab)
     defLabels.insert( LabelsMap::value_type( lab->label, lab ) );
   } else {
     stringstream stream;
+    YYLTYPE & prevPos = previousDeclaration->second->position;
+    YYLTYPE & pos = lab->position;
     stream  << "Multiple definitions of '" << lab->label << "' at positions:\n"
-            << " - Line: " << previousDeclaration->second->position.first_line
-            << " The first definition.\n - Line: "
-            << lab->position.first_line << " The new definition.\n";
+            << " - File: '" << prevPos.filepath << "/" << prevPos.filename
+              << "' Line: " << prevPos.first_line << " The first definition.\n"
+            << " - File: '" << pos.filepath << "/" << pos.filename
+              << "' Line: " << pos.first_line << " The new definition.\n";
     throw WrongArgumentException(stream.str());
   }
 }

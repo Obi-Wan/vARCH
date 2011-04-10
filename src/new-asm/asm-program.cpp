@@ -55,6 +55,8 @@ asm_program::addFunctionLabelsToGlobals()
     }
   }
 
+  bool error = false;
+
   /* And fix their labels */
   DebugPrintf(("-- Adding Functions to Global Labels - Phase --\n"));
   for(size_t index = 0; index < functions.size(); index++) {
@@ -64,7 +66,15 @@ asm_program::addFunctionLabelsToGlobals()
         new asm_label_statement(func->position, func->name);
     tempLabel->offset = tempOffset;
 
-    globalSymbols.addLabel(tempLabel);
+    try {
+      globalSymbols.addLabel(tempLabel);
+    } catch (const WrongArgumentException & e) {
+      error = true;
+      fprintf( stderr, "ERROR: in File '%s/%s' at Line %4d\n"
+                "--> %s\n",
+                tempLabel->position.filepath, tempLabel->position.filename,
+                tempLabel->position.first_line, e.what());
+    }
 
     tempOffset += func->getSize();
   }
@@ -76,13 +86,27 @@ asm_program::addFunctionLabelsToGlobals()
     if (stmt->getType() == ASM_LABEL_STATEMENT) {
       DebugPrintf(("Found label statement: %s!\n",
              ((asm_label_statement *)stmt)->label.c_str()));
-      globalSymbols.addLabel((asm_label_statement *)stmt);
+      try {
+        globalSymbols.addLabel((asm_label_statement *)stmt);
+      } catch (const WrongArgumentException & e) {
+        error = true;
+        fprintf( stderr, "ERROR: in File '%s/%s' at Line %4d\n"
+                  "--> %s\n",
+                  stmt->position.filepath, stmt->position.filename,
+                  stmt->position.first_line, e.what());
+      }
     }
   }
   DebugPrintf(("-- Terminated: Adding Funcs to Global Labels - Phase --\n\n"));
+  if (error) {
+    throw WrongArgumentException("Errors in labels definition");
+  }
 }
 
 void asm_program::assignValuesToLabels() {
+
+  bool error = false;
+
   DebugPrintf(("-- Assign labels - Phase --\n"));
   for(size_t index = 0; index < functions.size(); index++)
   {
@@ -103,8 +127,11 @@ void asm_program::assignValuesToLabels() {
         if (pos < 0) {
           DebugPrintf(("    It's not even global (returned %3d)! ERROR!!\n",
                         pos));
-          throw WrongArgumentException("reference to a Label called: " +
-                  labelName + " that does not exist");
+          fprintf(stderr, "ERROR: in File '%s/%s' at Line %4d\n"
+                  "--> Reference to not existing Label: '%s'\n",
+                  argument.position.filepath, argument.position.filename,
+                  argument.position.first_column, labelName.c_str());
+          error = true;
         } else {
           DebugPrintf(("    It's global and at: %3d\n", pos));
 
@@ -127,6 +154,9 @@ void asm_program::assignValuesToLabels() {
     }
   }
   DebugPrintf(("-- Terminated: Assign labels - Phase --\n\n"));
+  if (error) {
+    throw WrongArgumentException("Errors in labels assignment");
+  }
 }
 
 void asm_program::assemble(const string & outputName) {

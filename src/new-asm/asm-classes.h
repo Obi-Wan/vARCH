@@ -295,7 +295,7 @@ typedef map<string, asm_label_statement *> LabelsMap;
 class TableOfSymbols {
    LabelsMap defLabels;
 public:
-  void addLabel(asm_label_statement* lab) throw(WrongArgumentException);
+  void addLabel(asm_label_statement* lab);
 
   int getPositionOfLabel(const string& name) {
     LabelsMap::iterator iter = defLabels.find(name);
