@@ -12,8 +12,10 @@
 
 using namespace std;
 
-//extern FILE *yyin;
 YYLTYPE yylloc = { 1, 1, 1, 1 };
+
+void
+printAbstractTree(const asm_program * const program);
 
 /*
  * 
@@ -36,8 +38,6 @@ main(int argc, char** argv) {
   }
   setIncludeDirs(&args.getIncludeDirs());
 
-//  yyin = fopen( args.getInputName().c_str(), "r" );
-//  if (yyin != NULL) {
   if (openIncludeFile(args.getInputName().c_str(), &yylloc))
   {
     try {
@@ -48,28 +48,7 @@ main(int argc, char** argv) {
         throw BasicException("Error parsing\n");
       }
 #ifdef DEBUG
-      DebugPrintf(("-- Dumping Schematic Parsed Code --\n"));
-      for(size_t funcNum = 0; funcNum < program->functions.size(); funcNum++) {
-        const asm_function & func = *program->functions[funcNum];
-        DebugPrintf(("Line: %03d Function: %s\n", func.position.first_line,
-                      func.name.c_str()));
-        for(size_t stmtNum = 0; stmtNum < func.stmts.size(); stmtNum++) {
-          DebugPrintf((" Line: %03d %s\n",
-                        func.stmts[stmtNum]->position.first_line,
-                        func.stmts[stmtNum]->toString().c_str()));
-        }
-        for(size_t localNum = 0; localNum < func.locals.size(); localNum++) {
-          DebugPrintf((" Line: %03d Local: %s\n",
-                        func.locals[localNum]->position.first_line,
-                        func.locals[localNum]->toString().c_str()));
-        }
-      }
-      for(size_t num = 0; num < program->globals.size(); num++) {
-        DebugPrintf(("Line: %03d Global: %s\n",
-                      program->globals[num]->position.first_line,
-                      program->globals[num]->toString().c_str()));
-      }
-      DebugPrintf(("-- Terminated Dumping Parsed Code --\n\n"));
+      printAbstractTree(program);
 #endif
       program->assignValuesToLabels();
       program->assemble( args.getOutputName() );
@@ -82,5 +61,31 @@ main(int argc, char** argv) {
             args.getInputName().c_str());
     return (EXIT_FAILURE);
   }
+}
+
+void
+printAbstractTree(const asm_program * const program) {
+  DebugPrintf(("-- Dumping Schematic Parsed Code --\n"));
+  for(size_t funcNum = 0; funcNum < program->functions.size(); funcNum++) {
+    const asm_function & func = *program->functions[funcNum];
+    DebugPrintf(("Line: %03d Function: %s\n", func.position.first_line,
+                  func.name.c_str()));
+    for(size_t stmtNum = 0; stmtNum < func.stmts.size(); stmtNum++) {
+      DebugPrintf((" Line: %03d %s\n",
+                    func.stmts[stmtNum]->position.first_line,
+                    func.stmts[stmtNum]->toString().c_str()));
+    }
+    for(size_t localNum = 0; localNum < func.locals.size(); localNum++) {
+      DebugPrintf((" Line: %03d Local: %s\n",
+                    func.locals[localNum]->position.first_line,
+                    func.locals[localNum]->toString().c_str()));
+    }
+  }
+  for(size_t num = 0; num < program->globals.size(); num++) {
+    DebugPrintf(("Line: %03d Global: %s\n",
+                  program->globals[num]->position.first_line,
+                  program->globals[num]->toString().c_str()));
+  }
+  DebugPrintf(("-- Terminated Dumping Parsed Code --\n\n"));
 }
 
