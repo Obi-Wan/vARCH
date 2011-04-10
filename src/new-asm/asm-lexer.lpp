@@ -2,12 +2,15 @@
 %top{
 #include "asm-parser.h"
 #include <cstdlib>
+#include <stack>
 
 using namespace std;
 }
 
 %s STRING_CONTEXT
 %s COMMENT
+
+%x INCLUDE_FILE
 
 DIGIT     [0-9]
 LETTER    [a-zA-Z]
@@ -48,17 +51,33 @@ void createSpecialRegArg(asm_arg *& arg, YYLTYPE *& loc,
 void createSpecialAddrRegArg(asm_arg *& arg, YYLTYPE *& loc,
               const enum Registers& reg, const bool rel);
 
-#define YY_USER_ACTION							\
-   do {									\
-      yylloc->first_column = yylloc->last_column;			\
-      yylloc->last_column += yyleng;					\
+#define YY_USER_ACTION \
+   do {\
+      yylloc->first_column = yylloc->last_column;\
+      yylloc->last_column += yyleng;\
    } while(0);
+
+struct FileBuffer {
+  YY_BUFFER_STATE buff;         /* saved buffer */
+  YYLTYPE yylloc;               /* saved position */
+  const char * filename;        /* name of the file associated to the include */
+  FILE * infile;                /* current file descriptor */
+};
+
+stack<FileBuffer> includesStack;
+
+char tempIncludeFilename[MAX_STR_CONST];
 
 %}
 
 %%
 
 <INITIAL>{
+
+^"#"[ \t]*include { BEGIN(INCLUDE_FILE); }
+
+<<EOF>>   { if(!closeIncludeFile(yylloc)) yyterminate(); }
+
 \${DIGIT}+ {
             yylval->integer = atoi(yytext+1);
             return INTEGER;
@@ -240,12 +259,47 @@ r?\({AREG}\)\- {
 ,           return COMA;
 
 . {
-            fprintf( stderr, "Lexing Error, unknown symbol: %s\n", yytext );
+            fprintf( stderr, "%4d Lexing Error, unknown symbol: %s\n",
+                     yylloc->first_line, yytext );
+            exit(1);
+          }
+}
+
+<INCLUDE_FILE>{
+
+[ \t]+      /* eat up whitespace */
+
+[\"<].+[\">] {
+            if (yyleng > MAX_STR_CONST) {
+              fprintf( stderr, "%4d include filename too long (>= 256): %s\n",
+                       yylloc->first_line, yytext);
+              exit(1);
+            }
+            strncpy(tempIncludeFilename, yytext+1, yyleng-2);
+            if(!openIncludeFile(tempIncludeFilename, yylloc)) {
+              fprintf( stderr, "%4d inexisting include line\n",
+                       yylloc->first_line);
+              exit(1);
+            }
+            yylloc->first_line = 1, yylloc->first_column = 1;
+            yylloc->last_line = 1,  yylloc->last_column = 1;
+            BEGIN(INITIAL);
+          }
+
+.|\n      {
+            fprintf( stderr, "%4d bad include line\n", yylloc->first_line);
             exit(1);
           }
 }
 
 <COMMENT>{
+
+<<EOF>>   {
+            fprintf( stderr, "End of file in comment, in file %s\n",
+                     includesStack.top().filename );
+            exit(1);
+          }
+
 \n  {
             yylloc->first_line++;
             yylloc->first_column = 1;
@@ -258,6 +312,13 @@ r?\({AREG}\)\- {
 }
 
 <STRING_CONTEXT>{
+
+<<EOF>>   {
+            fprintf( stderr, "End of file in string, in file %s\n",
+                     includesStack.top().filename );
+            exit(1);
+          }
+
 \\n         *string_buf_ptr++ = '\n';
 \\t         *string_buf_ptr++ = '\t';
 \\r         *string_buf_ptr++ = '\r';
@@ -285,15 +346,18 @@ r?\({AREG}\)\- {
 
 %%
 
-int getRegNum(const char * str) {
+int
+getRegNum(const char * str)
+{
   char * tempStr = strndup(str,1);
   int num = atoi(tempStr) -1;
   free(tempStr);
   return num;
 }
 
-void createRegArg(asm_arg *& arg, YYLTYPE *& loc, const char * str,
-                  const TypeOfArgument& type, const int& offset, const bool rel)
+void
+createRegArg(asm_arg *& arg, YYLTYPE *& loc, const char * str,
+             const TypeOfArgument& type, const int& offset, const bool rel)
 {
   asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
   tempArg->relative = rel;
@@ -301,8 +365,9 @@ void createRegArg(asm_arg *& arg, YYLTYPE *& loc, const char * str,
   tempArg->content.val = getRegNum(str) + offset;
   arg = tempArg;
 }
-void createSpecialRegArg(asm_arg *& arg, YYLTYPE *& loc,
-                  const enum Registers& reg)
+
+void
+createSpecialRegArg(asm_arg *& arg, YYLTYPE *& loc, const enum Registers& reg)
 {
   asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
   tempArg->type = REG;
@@ -310,8 +375,10 @@ void createSpecialRegArg(asm_arg *& arg, YYLTYPE *& loc,
   tempArg->relative = false;
   arg = tempArg;
 }
-void createSpecialAddrRegArg(asm_arg *& arg, YYLTYPE *& loc,
-                  const enum Registers& reg, const bool rel)
+
+void
+createSpecialAddrRegArg(asm_arg *& arg, YYLTYPE *& loc,
+                        const enum Registers& reg, const bool rel)
 {
   asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
   tempArg->type = ADDR_IN_REG;
@@ -319,17 +386,69 @@ void createSpecialAddrRegArg(asm_arg *& arg, YYLTYPE *& loc,
   tempArg->relative = rel;
   arg = tempArg;
 }
-void createConstIntArg(asm_arg *& arg, YYLTYPE *& loc, const int _val) {
+
+void
+createConstIntArg(asm_arg *& arg, YYLTYPE *& loc, const int _val)
+{
   asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
   tempArg->type = COST;
   tempArg->content.val = _val;
   tempArg->relative = false;
   arg = tempArg;
 }
-void createConstRealArg(asm_arg *& arg, YYLTYPE *& loc, const float _val) {
+
+void
+createConstRealArg(asm_arg *& arg, YYLTYPE *& loc, const float _val)
+{
   asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
   tempArg->type = COST;
   tempArg->content.fval = _val;
   tempArg->relative = false;
   arg = tempArg;
 }
+
+
+bool
+openIncludeFile(const char * const _filename, const YYLTYPE * loc)
+{
+  FileBuffer buff;
+  
+  buff.filename = _filename;
+  buff.infile = fopen(buff.filename, "r");
+  if(!buff.infile) {
+    perror(buff.filename);
+    return false;
+  }
+
+  buff.yylloc = *loc;
+  buff.buff = yy_create_buffer(buff.infile, YY_BUF_SIZE);
+  yy_switch_to_buffer(buff.buff);
+
+  includesStack.push(buff);
+  
+  return true;
+}
+
+bool
+closeIncludeFile(YYLTYPE * loc)
+{
+  if(!includesStack.size()) {
+    return false;
+  }
+
+  FileBuffer buff = includesStack.top();
+  fclose(buff.infile);
+  yy_delete_buffer(buff.buff);
+
+  includesStack.pop();  
+  if(!includesStack.size()) {
+    return false;
+  }
+
+  buff = includesStack.top();
+  yy_switch_to_buffer(buff.buff);
+  *loc = buff.yylloc;
+
+  return true;
+}
+

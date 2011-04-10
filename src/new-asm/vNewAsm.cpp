@@ -12,7 +12,8 @@
 
 using namespace std;
 
-extern FILE *yyin;
+//extern FILE *yyin;
+YYLTYPE yylloc = { 1, 1, 1, 1 };
 
 /*
  * 
@@ -34,8 +35,10 @@ main(int argc, char** argv) {
     }
   }
 
-  yyin = fopen( args.getInputName().c_str(), "r" );
-  if (yyin != NULL) {
+//  yyin = fopen( args.getInputName().c_str(), "r" );
+//  if (yyin != NULL) {
+  if (openIncludeFile(args.getInputName().c_str(), &yylloc))
+  {
     try {
       asm_program * program;
       int res = yyparse(program);
