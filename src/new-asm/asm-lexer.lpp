@@ -68,6 +68,11 @@ stack<FileBuffer> includesStack;
 
 char tempIncludeFilename[MAX_STR_CONST];
 
+const vector<string> * includeDirs = NULL;
+
+FILE *
+openFile(const char * const _filename);
+
 %}
 
 %%
@@ -407,6 +412,24 @@ createConstRealArg(asm_arg *& arg, YYLTYPE *& loc, const float _val)
   arg = tempArg;
 }
 
+void
+setIncludeDirs(const vector<string> * _dirs)
+{
+  includeDirs = _dirs;
+}
+
+FILE *
+openFile(const char * const _filename)
+{
+  FILE * f = fopen(_filename, "r");
+  if (!includeDirs) {
+    throw BasicException("Implementation Error: Not initialized 'IncludeDirs'");
+  }
+  for(size_t dir = 0; !f && dir < includeDirs->size(); dir++) {
+    f = fopen( ( (*includeDirs)[dir] + '/' + _filename).c_str(), "r" );
+  }
+  return f;
+}
 
 bool
 openIncludeFile(const char * const _filename, const YYLTYPE * loc)
@@ -414,7 +437,7 @@ openIncludeFile(const char * const _filename, const YYLTYPE * loc)
   FileBuffer buff;
   
   buff.filename = _filename;
-  buff.infile = fopen(buff.filename, "r");
+  buff.infile = openFile(buff.filename);
   if(!buff.infile) {
     perror(buff.filename);
     return false;

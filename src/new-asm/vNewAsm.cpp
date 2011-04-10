@@ -34,6 +34,7 @@ main(int argc, char** argv) {
       return EXIT_FAILURE;
     }
   }
+  setIncludeDirs(&args.getIncludeDirs());
 
 //  yyin = fopen( args.getInputName().c_str(), "r" );
 //  if (yyin != NULL) {

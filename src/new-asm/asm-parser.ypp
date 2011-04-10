@@ -25,6 +25,7 @@ extern int yylex \
 
 int yyparse(asm_program *& program);
 
+void setIncludeDirs(const vector<string> * _dirs);
 bool openIncludeFile(const char * const _filename, const YYLTYPE * loc);
 bool closeIncludeFile(YYLTYPE * loc);
 }

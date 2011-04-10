@@ -64,4 +64,6 @@ void
 AsmArgs::printHelp() const throw()
 {
   cout << "Syntax is: 'new-asm -c <input_file> -o <output_file>'" << endl;
+  cout << "To specify additional paths for searching the include files:" << endl
+        << "  -I<include_path> as many times as you want" << endl;
 }
