@@ -7,38 +7,6 @@
 
 #include "asm-program.h"
 
-asm_program::asm_program(list<asm_function *> * _funcs,
-              list<asm_data_statement *> * _globals) : tempOffset(0)
-{
-  /* Now let's copy them, and the data */
-  functions.insert(functions.begin(), _funcs->begin(), _funcs->end());
-  globals.insert(globals.begin(), _globals->begin(), _globals->end());
-}
-
-void
-asm_program::addFunction(asm_function * _func)
-{
-  functions.insert(functions.end(), _func);
-}
-
-void
-asm_program::addFunctions(list<asm_function *> * _funcs)
-{
-  functions.insert(functions.end(), _funcs->begin(), _funcs->end());
-}
-
-void
-asm_program::addGlobal(asm_data_statement * _global)
-{
-  globals.insert(globals.end(), _global);
-}
-
-void
-asm_program::addGlobals(list<asm_data_statement *> * _globals)
-{
-  globals.insert(globals.end(), _globals->begin(), _globals->end());
-}
-
 void
 asm_program::addFunctionLabelsToGlobals()
 {

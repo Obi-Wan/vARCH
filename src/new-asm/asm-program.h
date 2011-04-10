@@ -24,14 +24,27 @@ struct asm_program {
 
 public:
   asm_program(list<asm_function *> * _funcs,
-              list<asm_data_statement *> * _globals);
+              list<asm_data_statement *> * _globals) : tempOffset(0)
+  {
+    /* Now let's copy them, and the data */
+    functions.insert(functions.begin(), _funcs->begin(), _funcs->end());
+    globals.insert(globals.begin(), _globals->begin(), _globals->end());
+  }
   asm_program() : tempOffset(0) { }
 
-  void addFunction(asm_function * _func);
-  void addFunctions(list<asm_function *> * _funcs);
+  void addFunction(asm_function * _func) {
+    functions.insert(functions.end(), _func);
+  }
+  void addFunctions(list<asm_function *> * _funcs) {
+    functions.insert(functions.end(), _funcs->begin(), _funcs->end());
+  }
 
-  void addGlobal(asm_data_statement * _global);
-  void addGlobals(list<asm_data_statement *> * _globals);
+  void addGlobal(asm_data_statement * _global) {
+    globals.insert(globals.end(), _global);
+  }
+  void addGlobals(list<asm_data_statement *> * _globals) {
+    globals.insert(globals.end(), _globals->begin(), _globals->end());
+  }
 
   int getFunciontsTotalSize() {
     int totSize = 0;
