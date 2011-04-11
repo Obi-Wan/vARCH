@@ -31,6 +31,7 @@ struct asm_function {
                list<asm_data_statement *> * _locals);
 
   void init(list<asm_statement *> *_stmts, list<asm_data_statement *> *_locals);
+  bool checkInstructions() const;
   void checkLabel(asm_statement * stmt);
 
   int getInstrSize() const {

@@ -154,6 +154,8 @@ struct asm_instruction_statement : asm_statement {
     return this;
   }
 
+  void checkArgs() const;
+
   const string toString() const {
     string output = "(instr, ";
     for(size_t argNum = 0; argNum < args.size(); argNum++) {

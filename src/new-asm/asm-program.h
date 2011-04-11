@@ -54,6 +54,7 @@ public:
     return totSize;
   }
 
+  void checkInstructions() const;
   void addFunctionLabelsToGlobals();
   void assignValuesToLabels();
   void assemble(const string & outputName);

@@ -8,6 +8,20 @@
 #include "asm-program.h"
 
 void
+asm_program::checkInstructions() const
+{
+  bool error = false;
+  for(deque<asm_function *>::const_iterator iter = functions.begin();
+      iter != functions.end(); iter++)
+  {
+    error |= (*iter)->checkInstructions();
+  }
+  if (error) {
+    throw WrongArgumentException("Errors in instructions definition");
+  }
+}
+
+void
 asm_program::addFunctionLabelsToGlobals()
 {
   /* Let's put the main function in front of all the others */

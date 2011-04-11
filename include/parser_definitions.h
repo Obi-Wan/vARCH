@@ -124,15 +124,25 @@ public:
 
   const int& getIstr(const char * name) const {
     NameToValue::const_iterator istr = nameToValue.find(string(name));
-    if (istr == nameToValue.end())
+    if (istr == nameToValue.end()) {
       throw WrongIstructionException(errorMsgName + name);
+    }
 
     return istr->second;
   }
   const int& getIstr(const string& name) const {
     NameToValue::const_iterator istr = nameToValue.find(name);
-    if (istr == nameToValue.end())
+    if (istr == nameToValue.end()) {
       throw WrongIstructionException(errorMsgName + name);
+    }
+
+    return istr->second;
+  }
+  const string& getIstr(const int& value) const {
+    ValueToName::const_iterator istr = valueToName.find(value);
+    if (istr == valueToName.end()) {
+      throw WrongIstructionException(errorMsgValue);
+    }
 
     return istr->second;
   }
