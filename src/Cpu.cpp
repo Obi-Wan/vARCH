@@ -120,7 +120,7 @@ Cpu::coreStep() {
 }
 
 inline int
-Cpu::istructsZeroArg(const int& istr, int& newFlags) throw(WrongIstructionException) {
+Cpu::istructsZeroArg(const int& istr, int& newFlags) {
   switch (istr) {
     case SLEEP:
       return istr;
@@ -151,7 +151,7 @@ Cpu::istructsZeroArg(const int& istr, int& newFlags) throw(WrongIstructionExcept
 }
 
 inline int
-Cpu::istructsOneArg(const int& istr, int& newFlags) throw(WrongIstructionException) {
+Cpu::istructsOneArg(const int& istr, int& newFlags) {
 
   int typeArg = GET_ARG_1(istr);
   int arg = memoryController.loadFromMem(progCounter++);
@@ -234,7 +234,7 @@ Cpu::istructsOneArg(const int& istr, int& newFlags) throw(WrongIstructionExcepti
 }
 
 inline int
-Cpu::istructsTwoArg(const int& istr, int& newFlags) throw(WrongIstructionException) {
+Cpu::istructsTwoArg(const int& istr, int& newFlags) {
 
   int typeArg1 = GET_ARG_1(istr);
   int arg1 = memoryController.loadFromMem(progCounter++);
@@ -331,7 +331,7 @@ Cpu::istructsTwoArg(const int& istr, int& newFlags) throw(WrongIstructionExcepti
 }
 
 inline int
-Cpu::istructsThreeArg(const int& istr, int& newFlags) throw(WrongIstructionException) {
+Cpu::istructsThreeArg(const int& istr, int& newFlags) {
 
   int typeArg1 = GET_ARG_1(istr);
   int arg1 = memoryController.loadFromMem(progCounter++);
@@ -393,7 +393,7 @@ Cpu::istructsThreeArg(const int& istr, int& newFlags) throw(WrongIstructionExcep
 }
 
 inline int
-Cpu::loadArg(const int& arg,const int& typeArg) throw(WrongArgumentException) {
+Cpu::loadArg(const int& arg,const int& typeArg) {
   const int relative = (typeArg & 0x10) ? (progCounter -1) : 0;
   DebugPrintf(("Relative: %d\n", relative));
   switch (typeArg & 0xf) {
@@ -444,7 +444,7 @@ Cpu::loadArg(const int& arg,const int& typeArg) throw(WrongArgumentException) {
 }
 
 inline void
-Cpu::storeArg(const int& arg, const int& typeArg, int value) throw(WrongArgumentException) {
+Cpu::storeArg(const int& arg, const int& typeArg, int value) {
   const int relative = (typeArg & 0x10) ? (progCounter -1) : 0;
   DebugPrintf(("Relative: %d\n", relative));
   switch (typeArg & 0xf) {

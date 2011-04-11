@@ -18,7 +18,8 @@ asm_function::asm_function(const YYLTYPE& pos, const char * _name,
 
 inline void
 asm_function::init(list<asm_statement *> * _stmts,
-                   list<asm_data_statement *> * _locals) {
+                   list<asm_data_statement *> * _locals)
+{
   stmts.reserve(_stmts->size());
   stmts.insert(stmts.begin(), _stmts->begin(), _stmts->end());
   locals.reserve(_locals->size());
@@ -56,7 +57,8 @@ asm_function::init(list<asm_statement *> * _stmts,
 }
 
 inline void
-asm_function::checkLabel(asm_statement * stmt) {
+asm_function::checkLabel(asm_statement * stmt)
+{
   if (stmt->getType() == ASM_LABEL_STATEMENT) {
     DebugPrintf(("Found local label: %s in function %s!\n",
            ((asm_label_statement *)stmt)->label.c_str(), name.c_str()));
