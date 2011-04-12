@@ -31,7 +31,7 @@ main(int argc, char** argv) {
       args.printHelp();
       return EXIT_SUCCESS;
     } else {
-      printf("%s\n", e.what());
+      fprintf(stderr, "%s\n", e.what());
       args.printHelp();
       return EXIT_FAILURE;
     }
@@ -44,7 +44,7 @@ main(int argc, char** argv) {
       asm_program * program = new asm_program();
       int res = yyparse(program);
       if (res) {
-        printf("An error may have occurred, code: %3d\n", res);
+        fprintf(stderr, "An error may have occurred, code: %3d\n", res);
         throw BasicException("Error parsing\n");
       }
       program->checkInstructions();
@@ -57,11 +57,11 @@ main(int argc, char** argv) {
 
       cleanParser();
     } catch (BasicException e) {
-      printf("Error: %s\n", e.what());
+      fprintf(stderr, "Error: %s\n", e.what());
       return (EXIT_FAILURE);
     }
   } else {
-    printf("I couldn't open the ASM file to process: %s\n",
+    fprintf(stderr, "I couldn't open the ASM file to process: %s\n",
             args.getInputName().c_str());
     return (EXIT_FAILURE);
   }
