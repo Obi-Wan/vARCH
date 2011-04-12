@@ -7,6 +7,7 @@
 
 #include "asm-classes.h"
 #include "parser_definitions.h"
+#include "IncludesTree.h"
 
 #include <sstream>
 using namespace std;
@@ -19,8 +20,8 @@ asm_instruction_statement::checkArgs() const {
     stream  << "Wrong number of arguments for instruction '"
               << ISet.getIstr(instruction)
               << "' (" << instruction << ") at position:" << endl
-            << " - File: '" << position.filepath << "/" << position.filename
-              << "' Line: " << position.first_line << endl
+            << position.fileNode->printString()
+              << " Line: " << position.first_line << endl
             << " - Arguments expected: " << instrNumOfArgs
               << ", passed: " << args.size() << endl;
     throw WrongArgumentException(stream.str());
@@ -41,10 +42,12 @@ TableOfSymbols::addLabel(asm_label_statement * lab)
     YYLTYPE & prevPos = previousDeclaration->second->position;
     YYLTYPE & pos = lab->position;
     stream  << "Multiple definitions of '" << lab->label << "' at positions:\n"
-            << " - File: '" << prevPos.filepath << "/" << prevPos.filename
-              << "' Line: " << prevPos.first_line << " The first definition.\n"
-            << " - File: '" << pos.filepath << "/" << pos.filename
-              << "' Line: " << pos.first_line << " The new definition.\n";
+            << prevPos.fileNode->printString()
+              << " Line: " << prevPos.first_line << " The first definition.\n"
+              << prevPos.fileNode->printStringStackIncludes() << endl
+            << pos.fileNode->printString()
+              << " Line: " << pos.first_line << " The new definition.\n"
+              << pos.fileNode->printStringStackIncludes() << endl;
     throw WrongArgumentException(stream.str());
   }
 }

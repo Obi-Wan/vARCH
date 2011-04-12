@@ -56,8 +56,7 @@ void createSpecialAddrRegArg(asm_arg *& arg, YYLTYPE *& loc,
    do {\
       yylloc->first_column = yylloc->last_column;\
       yylloc->last_column += yyleng;\
-      yylloc->filename = includesTree->getCurrentName();\
-      yylloc->filepath = includesTree->getCurrentPath();\
+      yylloc->fileNode = includesTree->getCurrent();\
    } while(0);
 
 struct FileBuffer {
@@ -303,8 +302,7 @@ r?\({AREG}\)\- {
 
             yylloc->first_line = 1, yylloc->first_column = 1;
             yylloc->last_line = 1,  yylloc->last_column = 1;
-            yylloc->filename = includesTree->getCurrentName();
-            yylloc->filepath = includesTree->getCurrentPath();
+            yylloc->fileNode = includesTree->getCurrent();
 
             BEGIN(INITIAL);
           }

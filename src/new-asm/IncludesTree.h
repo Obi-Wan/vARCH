@@ -16,11 +16,9 @@
 using namespace std;
 
 class IncludesNode {
-  IncludesNode * parent;
-
   const string filepath;
   const string filename;
-  const YYLTYPE inclusionPosition;
+  const YYLTYPE parent;
 
   vector<IncludesNode *> included;
 
@@ -31,18 +29,15 @@ class IncludesNode {
     }
   }
 public:
-  IncludesNode(IncludesNode * _parent, const char * _path, const char * _name,
-                const YYLTYPE & _pos)
-    : parent(_parent), filepath(_path), filename(_name), inclusionPosition(_pos)
+  IncludesNode(const char * _path, const char * _name, const YYLTYPE & _pos)
+    : filepath(_path), filename(_name), parent(_pos)
   { }
   ~IncludesNode() { clean(); }
 
   const char * getName() const throw() { return filename.c_str(); }
   const char * getPath() const throw() { return filepath.c_str(); }
 
-  const YYLTYPE &getInclusionPosition() const throw() {
-    return inclusionPosition;
-  }
+  const YYLTYPE &getInclusionPosition() const throw() { return parent; }
 
   bool hasName(const char * name) const throw() {
     return !filename.compare(name);
@@ -52,7 +47,12 @@ public:
   }
 
   void attach(IncludesNode * child) { included.push_back(child); }
-  IncludesNode * getParent() const { return parent; }
+  IncludesNode * getParent() const { return parent.fileNode; }
+
+  void printStderr() const;
+  void printStderrStackIncludes() const;
+  string printString() const;
+  string printStringStackIncludes() const;
 };
 
 class IncludesTree {
@@ -68,6 +68,9 @@ public:
       const YYLTYPE & _pos);
   void exitInclude();
 
+  const IncludesNode * getCurrent() const throw() { return current; }
+  IncludesNode * getCurrent() throw() { return current; }
+
   const char * getCurrentName() const throw() { return current->getName(); }
   const char * getCurrentPath() const throw() { return current->getPath(); }
 
@@ -75,8 +78,8 @@ public:
     return current->getInclusionPosition();
   }
 
-  void printStderrCurrent() const;
-  void printStderrStackIncludes() const;
+  void printStderrCurrent() const { current->printStderr(); }
+  void printStderrStackIncludes() const { current->printStderrStackIncludes(); }
 };
 
 #endif /* INCLUDESTREE_H_ */

@@ -22,6 +22,7 @@ void cleanParser();
 %code top {
 #include <cstdio>
 #include "asm-parser.h"
+#include "IncludesTree.h"
 
 void yyerror (YYLTYPE *locp, asm_program * program, char const *);
 
@@ -191,11 +192,11 @@ data_keyword
 void
 yyerror (YYLTYPE *locp, asm_program * program, char const *s)
 {
-  fprintf( stderr,
-           "ASSEMBLER ERROR: %s\n - in file: '%s/%s'\n"
-           "   at line: %4d col: %4d\n",
-           s, locp->filepath, locp->filename, locp->first_line,
+  fprintf( stderr, "ASSEMBLER ERROR: %s\n", s );
+  fprintf( stderr, "   at line: %4d col: %4d\n", locp->first_line,
            locp->first_column);
+  locp->fileNode->printStderr();
+  locp->fileNode->printStderrStackIncludes();
 }
 
 

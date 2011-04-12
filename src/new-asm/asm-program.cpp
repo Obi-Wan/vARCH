@@ -7,6 +7,8 @@
 
 #include "asm-program.h"
 
+#include "IncludesTree.h"
+
 void
 asm_program::checkInstructions() const
 {
@@ -52,10 +54,11 @@ asm_program::addFunctionLabelsToGlobals()
       globalSymbols.addLabel(tempLabel);
     } catch (const WrongArgumentException & e) {
       error = true;
-      fprintf( stderr, "ERROR: in File '%s/%s' at Line %4d\n"
-                "--> %s\n",
-                tempLabel->position.filepath, tempLabel->position.filename,
-                tempLabel->position.first_line, e.what());
+      fprintf(stderr, "ERROR:%s at Line %4d\n%s\n--> %s\n",
+              tempLabel->position.fileNode->printString().c_str(),
+              tempLabel->position.first_line,
+              tempLabel->position.fileNode->printStringStackIncludes().c_str(),
+              e.what());
     }
 
     tempOffset += func->getSize();
@@ -72,10 +75,11 @@ asm_program::addFunctionLabelsToGlobals()
         globalSymbols.addLabel((asm_label_statement *)stmt);
       } catch (const WrongArgumentException & e) {
         error = true;
-        fprintf( stderr, "ERROR: in File '%s/%s' at Line %4d\n"
-                  "--> %s\n",
-                  stmt->position.filepath, stmt->position.filename,
-                  stmt->position.first_line, e.what());
+        fprintf(stderr, "ERROR:%s at Line %4d\n%s\n--> %s\n",
+                stmt->position.fileNode->printString().c_str(),
+                stmt->position.first_line,
+                stmt->position.fileNode->printStringStackIncludes().c_str(),
+                e.what());
       }
     }
   }
@@ -109,10 +113,12 @@ void asm_program::assignValuesToLabels() {
         if (pos < 0) {
           DebugPrintf(("    It's not even global (returned %3d)! ERROR!!\n",
                         pos));
-          fprintf(stderr, "ERROR: in File '%s/%s' at Line %4d\n"
+          fprintf(stderr, "ERROR:%s at Line %4d\n%s\n"
                   "--> Reference to not existing Label: '%s'\n",
-                  argument.position.filepath, argument.position.filename,
-                  argument.position.first_column, labelName.c_str());
+                  argument.position.fileNode->printString().c_str(),
+                  argument.position.first_line,
+                  argument.position.fileNode->printStringStackIncludes().c_str(),
+                  labelName.c_str());
           error = true;
         } else {
           DebugPrintf(("    It's global and at: %3d\n", pos));

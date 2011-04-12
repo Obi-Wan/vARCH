@@ -18,6 +18,8 @@
 
 using namespace std;
 
+class IncludesNode;
+
 #if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
 typedef struct YYLTYPE
 {
@@ -25,8 +27,7 @@ typedef struct YYLTYPE
   int first_column;
   int last_line;
   int last_column;
-  const char * filename;
-  const char * filepath;
+  IncludesNode * fileNode;
 } YYLTYPE;
 # define yyltype YYLTYPE /* obsolescent; will be withdrawn */
 # define YYLTYPE_IS_DECLARED 1
@@ -41,8 +42,7 @@ typedef struct YYLTYPE
     (Current).first_column = YYRHSLOC (Rhs, 1).first_column;\
     (Current).last_line    = YYRHSLOC (Rhs, N).last_line;   \
     (Current).last_column  = YYRHSLOC (Rhs, N).last_column; \
-    (Current).filename     = YYRHSLOC (Rhs, N).filename;    \
-    (Current).filepath     = YYRHSLOC (Rhs, N).filepath;    \
+    (Current).fileNode     = YYRHSLOC (Rhs, N).fileNode;    \
   }\
       else\
   {\
@@ -50,8 +50,7 @@ typedef struct YYLTYPE
       YYRHSLOC (Rhs, 0).last_line;        \
     (Current).first_column = (Current).last_column =    \
       YYRHSLOC (Rhs, 0).last_column;      \
-    (Current).filename = YYRHSLOC (Rhs, 0).filename;    \
-    (Current).filepath = YYRHSLOC (Rhs, 0).filepath;    \
+    (Current).fileNode     = YYRHSLOC (Rhs, 0).fileNode;\
   }\
     while (YYID (0))
 
