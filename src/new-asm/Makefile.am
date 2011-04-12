@@ -3,7 +3,9 @@ AM_YFLAGS = -d
 
 bin_PROGRAMS = new-vasm
 
-new_vasm_SOURCES = asm-parser.ypp \
+new_vasm_SOURCES = \
+			asm-parser.ypp \
+		  IncludesTree.cpp \
 		  asm-lexer.lpp \
 		  asm-classes.cpp \
 		  ../FileHandler.cpp \

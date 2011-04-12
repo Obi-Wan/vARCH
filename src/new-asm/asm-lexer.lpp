@@ -3,6 +3,7 @@
 #include "asm-parser.h"
 #include <cstdlib>
 #include <stack>
+#include "IncludesTree.h"
 
 using namespace std;
 }
@@ -55,15 +56,12 @@ void createSpecialAddrRegArg(asm_arg *& arg, YYLTYPE *& loc,
    do {\
       yylloc->first_column = yylloc->last_column;\
       yylloc->last_column += yyleng;\
-      yylloc->filename = includesStack.top().filename;\
-      yylloc->filepath = includesStack.top().path;\
+      yylloc->filename = includesTree->getCurrentName();\
+      yylloc->filepath = includesTree->getCurrentPath();\
    } while(0);
 
 struct FileBuffer {
   YY_BUFFER_STATE buff;         /* saved buffer */
-  YYLTYPE yylloc;               /* saved position */
-  const char * filename;        /* name of the file associated to the include */
-  const char * path;            /* path of the include file */
   FILE * infile;                /* current file descriptor */
 };
 
@@ -71,15 +69,10 @@ stack<FileBuffer> includesStack;
 
 const vector<string> * includeDirs = NULL;
 
-vector<char *> parserAllocatedStrings;
+IncludesTree * includesTree = NULL;
 
-void
-openFile(FileBuffer & buff);
-
-void
-printIncludeStack();
-void
-printCurrentFile();
+FILE *
+openFile(const char * filename, const char *& path);
 
 %}
 
@@ -267,8 +260,8 @@ r?\({AREG}\)\- {
 {DIGIT}+{ID} {
             fprintf( stderr, "Line %4d Lexing Error, forbidden symbol: '%s'\n",
                      yylloc->first_line, yytext );
-            printCurrentFile();
-            printIncludeStack();
+            includesTree->printStderrCurrent();
+            includesTree->printStderrStackIncludes();
             exit(1);
           }
 [ \t]+      /* eat up whitespace */
@@ -277,8 +270,8 @@ r?\({AREG}\)\- {
 . {
             fprintf( stderr, "Line %4d Lexing Error, unknown symbol: '%s'\n",
                      yylloc->first_line, yytext );
-            printCurrentFile();
-            printIncludeStack();
+            includesTree->printStderrCurrent();
+            includesTree->printStderrStackIncludes();
             exit(1);
           }
 }
@@ -293,8 +286,8 @@ r?\({AREG}\)\- {
               fprintf( stderr,
                        "Line %4d include filename too long (%4d chars): %s\n",
                        yylloc->first_line, yyleng-2, yytext+1 );
-              printCurrentFile();
-              printIncludeStack();
+              includesTree->printStderrCurrent();
+              includesTree->printStderrStackIncludes();
               exit(1);
             }
             strncpy(newFileName, yytext+1, yyleng-2);
@@ -302,22 +295,24 @@ r?\({AREG}\)\- {
             if(!openIncludeFile(newFileName, yylloc)) {
               fprintf( stderr, "Line %4d inexisting include file name: %s\n",
                        yylloc->first_line, newFileName );
-              printCurrentFile();
-              printIncludeStack();
+              includesTree->printStderrCurrent();
+              includesTree->printStderrStackIncludes();
               exit(1);
             }
+            delete newFileName;
+
             yylloc->first_line = 1, yylloc->first_column = 1;
             yylloc->last_line = 1,  yylloc->last_column = 1;
-            yylloc->filename = newFileName;
-            yylloc->filepath = includesStack.top().path;
-            parserAllocatedStrings.push_back(newFileName);
+            yylloc->filename = includesTree->getCurrentName();
+            yylloc->filepath = includesTree->getCurrentPath();
+
             BEGIN(INITIAL);
           }
 
 .|\n      {
             fprintf( stderr, "Line %4d bad include line\n", yylloc->first_line);
-            printCurrentFile();
-            printIncludeStack();
+            includesTree->printStderrCurrent();
+            includesTree->printStderrStackIncludes();
             exit(1);
           }
 }
@@ -326,8 +321,8 @@ r?\({AREG}\)\- {
 
 <<EOF>>   {
             fprintf( stderr, "End of file in comment\n" );
-            printCurrentFile();
-            printIncludeStack();
+            includesTree->printStderrCurrent();
+            includesTree->printStderrStackIncludes();
             exit(1);
           }
 
@@ -346,8 +341,8 @@ r?\({AREG}\)\- {
 
 <<EOF>>   {
             fprintf( stderr, "End of file in string\n" );
-            printCurrentFile();
-            printIncludeStack();
+            includesTree->printStderrCurrent();
+            includesTree->printStderrStackIncludes();
             exit(1);
           }
 
@@ -445,34 +440,61 @@ setIncludeDirs(const vector<string> * _dirs)
   includeDirs = _dirs;
 }
 
-void
-openFile(FileBuffer & buff)
+FILE *
+openFile(const char * filename, const char *& path)
 {
   if (!includeDirs) {
     throw BasicException("Implementation Error: Not initialized 'IncludeDirs'");
   }
-  buff.infile = fopen(buff.filename, "r");
-  buff.path = ".";
-  for(size_t dir = 0; !buff.infile && dir < includeDirs->size(); dir++) {
+
+  FILE * infile = fopen(filename, "r");
+  path = ".";
+
+  for(size_t dir = 0; !infile && dir < includeDirs->size(); dir++) {
     const string & inclDir = (*includeDirs)[dir];
-    buff.infile = fopen( ( inclDir + '/' + buff.filename).c_str(), "r");
-    buff.path = inclDir.c_str();
+    infile = fopen( ( inclDir + '/' + filename).c_str(), "r");
+    path = inclDir.c_str();
   }
+
+  return infile;
+}
+
+bool
+openFirstFile(const char * const _filename)
+{
+  FileBuffer buff;
+  const char * filepath = ".";
+  
+  buff.infile = openFile(_filename, filepath);
+  if(!buff.infile) {
+    perror(_filename);
+    return false;
+  }
+
+  includesTree = new IncludesTree(filepath, _filename);
+
+  buff.buff = yy_create_buffer(buff.infile, YY_BUF_SIZE);
+  yy_switch_to_buffer(buff.buff);
+
+  includesStack.push(buff);
+  
+  return true;
 }
 
 bool
 openIncludeFile(const char * const _filename, const YYLTYPE * loc)
 {
   FileBuffer buff;
-  buff.filename = _filename;
+  const char * filepath = ".";
   
-  openFile(buff);
+  buff.infile = openFile(_filename, filepath);
   if(!buff.infile) {
-    perror(buff.filename);
+    perror(_filename);
     return false;
   }
 
-  buff.yylloc = *loc;
+  includesTree->enterIncludeOfCurrent(filepath, _filename, *loc);
+
   buff.buff = yy_create_buffer(buff.infile, YY_BUF_SIZE);
   yy_switch_to_buffer(buff.buff);
 
@@ -499,38 +521,17 @@ closeIncludeFile(YYLTYPE * loc)
 
   buff = includesStack.top();
   yy_switch_to_buffer(buff.buff);
-  *loc = buff.yylloc;
+  
+  *loc = includesTree->getCurrentInclusionPosition();
+  includesTree->exitInclude();
 
   return true;
 }
 
 void
-printIncludeStack()
-{
-  stack<FileBuffer> localStack = includesStack;
-  if (localStack.size()) {
-    YYLTYPE loc = localStack.top().yylloc;
-    for(localStack.pop(); localStack.size(); localStack.pop()) {
-      const FileBuffer & buff = localStack.top();
-      fprintf( stderr, "  Included by: %s (line: %4d, path: '%s')\n",
-               buff.filename, loc.first_line, buff.path );
-      loc = buff.yylloc;
-    }
-  }
-}
-
-void
-printCurrentFile()
-{
-  fprintf( stderr, "  in file '%s'\n", includesStack.top().filename );
-}
-
-void
 cleanParser()
 {
-  for(size_t str = 0; str < parserAllocatedStrings.size(); str++) {
-    delete [](parserAllocatedStrings[str]);
-  }
+  delete includesTree;
 }
 
 

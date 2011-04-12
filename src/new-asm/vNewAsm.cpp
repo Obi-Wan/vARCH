@@ -12,8 +12,6 @@
 
 using namespace std;
 
-YYLTYPE yylloc = { 1, 1, 1, 1, "" };
-
 void
 printAbstractTree(const asm_program * const program);
 
@@ -38,7 +36,7 @@ main(int argc, char** argv) {
   }
   setIncludeDirs(&args.getIncludeDirs());
 
-  if (openIncludeFile(args.getInputName().c_str(), &yylloc))
+  if (openFirstFile(args.getInputName().c_str()))
   {
     try {
       asm_program * program = new asm_program();
