@@ -42,24 +42,33 @@ class Graph(object):
         self.nodes[node2].pred.append(node1)
         self.nodes[node1].succ.append(node2)
 
-    def addArc(self, node1, node2):
+    def addRelationArc(self, node1, node2):
         if node1 in self.arcs:
-            self.arcs[node1].append(node2)
+            if node2 not in self.arcs[node1]:
+                self.arcs[node1].append(node2)
         else:
             self.arcs[node1] = [node2]
         if node2 in self.arcs:
-            self.arcs[node2].append(node1)
+            if node1 not in self.arcs[node2]:
+                self.arcs[node2].append(node1)
         else:
             self.arcs[node2] = [node1]
             
     def _printNode(self, node):
         nodeObj = self.nodes[node]
         arcsStr = ""
-        if node in self.arcs:
-            for arc in self.arcs[node]:
-                arcsStr = arcsStr + " " + str(arc)
-        print("Node: %d\n  pred:%s\n  succ:%s\n  arcs:%s" % 
-              ( node, nodeObj.printPred(), nodeObj.printSucc(), arcsStr ))
+        print("Node: %d" % node)
+        if isinstance(node, GraphNode):
+            if node in self.arcs:
+                for arc in self.arcs[node]:
+                    arcsStr = arcsStr + " " + str(arc)
+            print("  pred:%s\n  succ:%s\n  arcs:%s" % 
+                  ( nodeObj.printPred(), nodeObj.printSucc(), arcsStr ))
+        else:
+            if nodeObj in self.arcs:
+                for arc in self.arcs[nodeObj]:
+                    arcsStr = arcsStr + " " + str(arc)
+            print("  value: %s\n  arcs:%s" % ( str(nodeObj), arcsStr )) 
 
     def printGraph(self):
         for node in range(len(self.nodes)):
@@ -131,9 +140,29 @@ class LiveMap(object):
             print("Node %d, live-in:%20s , live-out:%20s" %
                   ( node, self._printList(self.liveIn, node),
                     self._printList(self.liveOut, node)))
+        print("")
 
 class InterferenceGraph(Graph):
-    pass
+    def __init__(self):
+        Graph.__init__(self)
+        
+    def _buildInterference(self, flowGraph, liveMap):
+        for node in range(len(flowGraph.nodes)):
+            for var in liveMap.liveIn[node]:
+                if var not in self.nodes:
+                    self.nodes.append(var)
+            for var in liveMap.liveOut[node]:
+                if var not in self.nodes:
+                    self.nodes.append(var)
+                for defs in flowGraph.defs[node]:
+                    if defs is not var:
+                        self.addRelationArc(var, defs)
+                    
+class Liveness(InterferenceGraph):
+    def __init__(self, flowGraph, liveMap):
+        InterferenceGraph.__init__(self)
+        self._buildInterference(flowGraph, liveMap)
+
 
 # esempio interno
 
@@ -149,7 +178,7 @@ gr.fromNodeToNode(1, 2)
 gr.fromNodeToNode(2, 3)
 gr.fromNodeToNode(3, 4)
 
-gr.addArc(0, 2)
+gr.addRelationArc(0, 2)
 
 gr.printFlowGraph()
 
@@ -175,11 +204,12 @@ gr.fromNodeToNode(4, 5)
 
 gr.fromNodeToNode(4, 1)
 
-gr.addArc(0, 2)
-
 gr.printFlowGraph()
 
 lm = LiveMap()
 lm.buildMap(gr)
 lm.printMap()
+
+liveness = Liveness(gr, lm)
+liveness.printGraph()
 
