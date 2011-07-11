@@ -4,10 +4,19 @@ Created on 07/lug/2011
 @author: ben
 '''
 
-class GraphNode(object):
-    def __init__(self):
+class ListProxy(object):
+        
+    def _printList(self, theList):
+        output = ""
+        for el in theList:
+            output = output + " " + str(el)
+        return output
+
+class GraphNode(ListProxy):
+    def __init__(self, value):
         self.pred = []
         self.succ = []
+        self.value = value
 
     def addPred(self, _pred):
         self.pred.append(_pred)
@@ -20,23 +29,46 @@ class GraphNode(object):
         return len(self.succ)
     
     def printPred(self):
-        output = ""
-        for pr in self.pred:
-            output = output + " " + str(pr)
-        return output
+        return self._printList(self.pred)
     def printSucc(self):
-        output = ""
-        for sc in self.succ:
-            output = output + " " + str(sc)
-        return output
+        return self._printList(self.succ)
 
-class Graph(object):
+class Graph(ListProxy):
     def __init__(self):
-        self.nodes = []
+        self.nodes = {}
         self.arcs = {}
+        self.recycleNodes = []
         
-    def newNode(self):
-        self.nodes.append(GraphNode())
+    def getNodes(self):
+        output = []
+        for node in self.nodes:
+            output.append(self.nodes[node].value)
+        return output
+        
+    def newNode(self, value = None):
+        nodeNum = -1
+        if len(self.recycleNodes) > 0:
+            nodeNum = min(self.recycleNodes)
+            self.recycleNodes.remove(nodeNum)
+        elif len(self.nodes) > 0:
+            nodeNum = max(self.nodes) + 1
+        else:
+            nodeNum = 0
+        if value is None:
+            value = nodeNum
+        self.nodes[nodeNum] = GraphNode(value)
+        return nodeNum
+
+    def delNode(self, node):
+        for otherNode in self.nodes:
+             self.delRelationArc(node, otherNode)
+        if isinstance(self.nodes[node], GraphNode):
+            for pred in self.nodes[node].pred:
+                 self.nodes[pred].succ.remove(node)
+            for succ in self.nodes[node].succ:
+                 self.nodes[succ].pred.remove(node)
+        self.nodes.remove(node)
+        self.recycleNodes.append(node)
     
     def fromNodeToNode(self, node1, node2):
         self.nodes[node2].pred.append(node1)
@@ -53,71 +85,75 @@ class Graph(object):
                 self.arcs[node2].append(node1)
         else:
             self.arcs[node2] = [node1]
+
+    def delRelationArc(self, node1, node2):
+        if node1 in self.arcs:
+            if node2 in self.arcs[node1]:
+                self.arcs[node1].remove(node2)
+        if node2 in self.arcs:
+            if node1 in self.arcs[node2]:
+                self.arcs[node2].remove(node1)
             
     def _printNode(self, node):
         nodeObj = self.nodes[node]
         arcsStr = ""
-        print("Node: %d" % node)
-        if isinstance(node, GraphNode):
-            if node in self.arcs:
-                for arc in self.arcs[node]:
-                    arcsStr = arcsStr + " " + str(arc)
-            print("  pred:%s\n  succ:%s\n  arcs:%s" % 
-                  ( nodeObj.printPred(), nodeObj.printSucc(), arcsStr ))
+        if node in self.arcs:
+            for arc in self.arcs[node]:
+                arcsStr = arcsStr + " " + str(arc)
+        print("Node: %s" % str(node))
+        if isinstance(nodeObj, GraphNode):
+            print("  value: %s\n  pred:%s\n  succ:%s" % 
+                  ( str(nodeObj.value), nodeObj.printPred(),
+                    nodeObj.printSucc() ))
         else:
-            if nodeObj in self.arcs:
-                for arc in self.arcs[nodeObj]:
-                    arcsStr = arcsStr + " " + str(arc)
-            print("  value: %s\n  arcs:%s" % ( str(nodeObj), arcsStr )) 
+            print("  value: %s" % str(nodeObj))
+        print("  arcs:%s" % arcsStr) 
 
     def printGraph(self):
-        for node in range(len(self.nodes)):
+        for node in self.nodes:
             self._printNode(node)
             print("")
 
 class FlowGraph(Graph):
     def __init__(self):
         Graph.__init__(self)
-        self.defs = []
-        self.uses = []
+        self.defs = {}
+        self.uses = {}
 
-    def newNode(self, _defs = [], _uses = []):
-        Graph.newNode(self)
-        self.defs.append([])
-        self.defs[-1].extend(_defs)
-        self.uses.append([])
-        self.uses[-1].extend(_uses)
-        
-    def _printList(self, theList, node):
-        output = ""
-        for el in theList[node]:
-            output = output + " " + el
-        return output
+    def newNode(self, _defs = [], _uses = [], value = None):
+        nodeNum = Graph.newNode(self, value)
+        self.defs[nodeNum] = []
+        self.defs[nodeNum].extend(_defs)
+        self.uses[nodeNum] = []
+        self.uses[nodeNum].extend(_uses)
         
     def printFlowGraph(self):
-        for node in range(len(self.nodes)):
+        for node in self.nodes:
             self._printNode(node)
             print( "  uses:%s\n  defs:%s\n" %
-                   ( self._printList(self.uses, node),
-                     self._printList(self.defs, node)))
+                   ( self._printList(self.uses[node]),
+                     self._printList(self.defs[node])))
 
-class LiveMap(object):
+class LiveMap(ListProxy):
     def __init__(self):
-        self.liveIn  = [ ]
-        self.liveOut = [ ]
+        self.liveIn  = { }
+        self.liveOut = { }
 
-    def _printList(self, theList, node):
-        output = ""
-        for el in theList[node]:
-            output = output + " " + el
-        return output
+    def _makeVisitList(self, flowGraph, rootNode, visited, order):
+        visited[rootNode] = True
+        for succ in flowGraph.nodes[rootNode].succ:
+            if succ not in visited:
+                self._makeVisitList(flowGraph, succ, visited, order)
+        order.append(rootNode)
+        return order
+        
         
     def buildMap(self, flowGraph):
-        indexNodes = range(len(flowGraph.nodes))
-        indexNodes.reverse()
+        indexNodes = self._makeVisitList(flowGraph, min(flowGraph.nodes), {}, [])
+        print("Visit list (ordered): %s" % self._printList(indexNodes))
         for numNode in indexNodes:
-            self.liveIn.append([])
-            self.liveOut.append([])
+            self.liveIn[numNode] = []
+            self.liveOut[numNode] = []
         for numNode in indexNodes:
             self.liveIn[numNode].extend(flowGraph.uses[numNode])
         while True:
@@ -136,10 +172,10 @@ class LiveMap(object):
             if not modified: break 
             
     def printMap(self):
-        for node in range(len(self.liveIn)):
+        for node in self.liveIn:
             print("Node %d, live-in:%20s , live-out:%20s" %
-                  ( node, self._printList(self.liveIn, node),
-                    self._printList(self.liveOut, node)))
+                  ( node, self._printList(self.liveIn[node]),
+                    self._printList(self.liveOut[node])))
         print("")
 
 class InterferenceGraph(Graph):
@@ -147,13 +183,16 @@ class InterferenceGraph(Graph):
         Graph.__init__(self)
         
     def _buildInterference(self, flowGraph, liveMap):
-        for node in range(len(flowGraph.nodes)):
+        print("Interference for Nodes: %s" % self._printList(flowGraph.nodes))
+        for node in flowGraph.nodes:
             for var in liveMap.liveIn[node]:
                 if var not in self.nodes:
-                    self.nodes.append(var)
+                    self.nodes[var] = var
+                    #self.newNode(var)
             for var in liveMap.liveOut[node]:
                 if var not in self.nodes:
-                    self.nodes.append(var)
+                    self.nodes[var] = var
+                    #self.newNode(var)
                 for defs in flowGraph.defs[node]:
                     if defs is not var:
                         self.addRelationArc(var, defs)
