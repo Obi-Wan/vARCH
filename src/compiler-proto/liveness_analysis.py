@@ -71,8 +71,8 @@ class Graph(ListProxy):
                  self.nodes[pred].succ.remove(node)
             for succ in self.nodes[node].succ:
                  self.nodes[succ].pred.remove(node)
-        self.labels.remove(self.nodes[node].label)
-        self.nodes.remove(node)
+        del self.labels[self.nodes[node].label]
+        del self.nodes[node]
         self.recycleNodes.append(node)
     
     def fromNodeToNode(self, node1, node2):
@@ -209,10 +209,11 @@ class InterferenceGraph(Graph):
                         self.addRelationArc(varNum, defNum)
                     
 class Liveness(InterferenceGraph):
-    def __init__(self, flowGraph, liveMap):
+    def __init__(self):
         InterferenceGraph.__init__(self)
-        self._buildInterference(flowGraph, liveMap)
 
+    def buildFromFlow(self, flowGraph, liveMap):
+        self._buildInterference(flowGraph, liveMap)
 
 # esempio interno
 
@@ -260,6 +261,7 @@ lm = LiveMap()
 lm.buildMap(gr)
 lm.printMap()
 
-liveness = Liveness(gr, lm)
+liveness = Liveness()
+liveness.buildFromFlow(gr, lm)
 liveness.printGraph()
 
