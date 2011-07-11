@@ -13,10 +13,10 @@ class ListProxy(object):
         return output
 
 class GraphNode(ListProxy):
-    def __init__(self, value):
+    def __init__(self, label):
         self.pred = []
         self.succ = []
-        self.value = value
+        self.label = label
 
     def addPred(self, _pred):
         self.pred.append(_pred)
@@ -38,14 +38,17 @@ class Graph(ListProxy):
         self.nodes = {}
         self.arcs = {}
         self.recycleNodes = []
+        self.labels = {}
         
     def getNodes(self):
-        output = []
-        for node in self.nodes:
-            output.append(self.nodes[node].value)
-        return output
+        return list(self.labels)
+    
+    def getNodeNum(self, label):
+        return self.labels[label]
         
-    def newNode(self, value = None):
+    def newNode(self, label = None):
+        if label is not None and label in self.labels:
+            raise ValueError("Label " + label + " already defined")
         nodeNum = -1
         if len(self.recycleNodes) > 0:
             nodeNum = min(self.recycleNodes)
@@ -54,9 +57,10 @@ class Graph(ListProxy):
             nodeNum = max(self.nodes) + 1
         else:
             nodeNum = 0
-        if value is None:
-            value = nodeNum
-        self.nodes[nodeNum] = GraphNode(value)
+        if label is None:
+            label = nodeNum
+        self.nodes[nodeNum] = GraphNode(label)
+        self.labels[label] = nodeNum
         return nodeNum
 
     def delNode(self, node):
@@ -67,6 +71,7 @@ class Graph(ListProxy):
                  self.nodes[pred].succ.remove(node)
             for succ in self.nodes[node].succ:
                  self.nodes[succ].pred.remove(node)
+        self.labels.remove(self.nodes[node].label)
         self.nodes.remove(node)
         self.recycleNodes.append(node)
     
@@ -102,11 +107,11 @@ class Graph(ListProxy):
                 arcsStr = arcsStr + " " + str(arc)
         print("Node: %s" % str(node))
         if isinstance(nodeObj, GraphNode):
-            print("  value: %s\n  pred:%s\n  succ:%s" % 
-                  ( str(nodeObj.value), nodeObj.printPred(),
+            print("  label: %s\n  pred:%s\n  succ:%s" % 
+                  ( str(nodeObj.label), nodeObj.printPred(),
                     nodeObj.printSucc() ))
         else:
-            print("  value: %s" % str(nodeObj))
+            print("  label: %s" % str(nodeObj))
         print("  arcs:%s" % arcsStr) 
 
     def printGraph(self):
@@ -120,12 +125,13 @@ class FlowGraph(Graph):
         self.defs = {}
         self.uses = {}
 
-    def newNode(self, _defs = [], _uses = [], value = None):
-        nodeNum = Graph.newNode(self, value)
+    def newNode(self, _defs = [], _uses = [], label = None):
+        nodeNum = Graph.newNode(self, label)
         self.defs[nodeNum] = []
         self.defs[nodeNum].extend(_defs)
         self.uses[nodeNum] = []
         self.uses[nodeNum].extend(_uses)
+        return nodeNum
         
     def printFlowGraph(self):
         for node in self.nodes:
@@ -186,16 +192,21 @@ class InterferenceGraph(Graph):
         print("Interference for Nodes: %s" % self._printList(flowGraph.nodes))
         for node in flowGraph.nodes:
             for var in liveMap.liveIn[node]:
-                if var not in self.nodes:
-                    self.nodes[var] = var
-                    #self.newNode(var)
+                if var not in self.getNodes():
+                    #self.nodes[var] = var
+                    self.newNode(var)
+        for node in flowGraph.nodes:
             for var in liveMap.liveOut[node]:
-                if var not in self.nodes:
-                    self.nodes[var] = var
-                    #self.newNode(var)
+                varNum = -1
+                if var not in self.getNodes():
+                    #self.nodes[var] = var
+                    varNum = self.newNode(var)
+                else:
+                    varNum = self.getNodeNum(var)
                 for defs in flowGraph.defs[node]:
                     if defs is not var:
-                        self.addRelationArc(var, defs)
+                        defNum = self.getNodeNum(defs)
+                        self.addRelationArc(varNum, defNum)
                     
 class Liveness(InterferenceGraph):
     def __init__(self, flowGraph, liveMap):
