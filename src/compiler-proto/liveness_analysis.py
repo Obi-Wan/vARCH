@@ -187,6 +187,22 @@ class LiveMap(ListProxy):
 class InterferenceGraph(Graph):
     def __init__(self):
         Graph.__init__(self)
+        self.spillCost = {}
+    
+    def _countUsesAndDefs(self, flowGraph, var):
+        uses = 0
+        defs = 0
+        for node in flowGraph.uses:
+            if var in flowGraph.uses[node]:
+                uses = uses +1
+        for node in flowGraph.defs:
+            if var in flowGraph.defs[node]:
+                defs = defs +1
+        return uses + defs
+    
+    def _printNode(self, node):
+        Graph._printNode(self, node)
+        print("  spill cost: %d" % self.spillCost[node])
         
     def _buildInterference(self, flowGraph, liveMap):
         print("Interference for Nodes: %s" % self._printList(flowGraph.nodes))
@@ -194,7 +210,8 @@ class InterferenceGraph(Graph):
             for var in liveMap.liveIn[node]:
                 if var not in self.getNodes():
                     #self.nodes[var] = var
-                    self.newNode(var)
+                    varNum = self.newNode(var)
+                    self.spillCost[varNum] = self._countUsesAndDefs(flowGraph, var)
         for node in flowGraph.nodes:
             for var in liveMap.liveOut[node]:
                 varNum = -1
@@ -207,6 +224,12 @@ class InterferenceGraph(Graph):
                     if defs is not var:
                         defNum = self.getNodeNum(defs)
                         self.addRelationArc(varNum, defNum)
+    
+    def nodeDegree(self, node):
+        if node in self.arcs:
+            return len(self.arcs[node])
+        else:
+            return 0
                     
 class Liveness(InterferenceGraph):
     def __init__(self):
@@ -214,6 +237,17 @@ class Liveness(InterferenceGraph):
 
     def buildFromFlow(self, flowGraph, liveMap):
         self._buildInterference(flowGraph, liveMap)
+        
+    def buildFromGiven(self, nodes, interferences, costs, moves):
+        for node in nodes:
+            self.newNode(node)
+        for interf1, interf2 in interferences:
+            node1 = self.getNodeNum(interf1)
+            node2 = self.getNodeNum(interf2)
+            self.addRelationArc(node1, node2)
+        for cost in costs:
+            node = self.getNodeNum(cost[0])
+            self.spillCost[node] = cost[1]
 
 # esempio interno
 
