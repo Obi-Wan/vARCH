@@ -1,51 +1,67 @@
-In order to install it, remeber to run autoreconf, since it is an
-Autotools-spawned project.
--------------------------------------------------------------------------------
+COMPILE / INSTALL
 
-This is a virtual machine / interpreter of bytecode for a virtual architecture I
-ideated for learning purposes.
-It's not intended for preformance of flexibility use cases. It's just a simple
+Before trying to compile it, remeber to run autoreconf.
+
+Then it will be sufficient to type
+./configure
+make
+
+I'm not providing a predefined install way right now. It's more like a toy, than
+a tool.
+--------------------------------------------------------------------------------
+
+WHAT IS IT
+
+vARCH is a virtual machine / interpreter of bytecode for a virtual architecture
+that I invented for learning purposes.
+It's not intended for performance or flexibility use cases. It's just a simple
 and easy to learn architecture.
 
 For the ease of development I also created a simple assembler and it should
 offer some facility, over the "directly write binary code" :)
-Explanation on how to write the asm code is after the examples.
+Explanation on how to write the asm code is aided by some practical examples.
 
-If you intend to contribute to development, you should ask for
-documentation/answers to me directly. I had no time for documentation.
+If you want to contribute to vARCH, you should ask for documentation/answers to
+me directly, because it is a spare time project and I don't have much time for
+documentation.
 
 What I will report here are samples of the Asm language: they need to be
-assembled and then either moved to the name "bios.bin" of soft link the binary
+assembled and then either moved to the name "bios.bin" or soft link the binary
 to that name.
 
-A simple program for calculating the first n factorials:
+The first example is a simple program for calculating the first n factorials.
+The "main" function is a special one that is always put at the beginning of the
+binary
 
 biosFactorial.s
 ----------------
 
 ; calculate the factorial by definition of the first 5 numbers
+.function "main"
 .init:
-	STACK	$50
-	MOV	$1	%R8
+    MOV	  $1    %R8
 .start:
 ; the counter is post incremented after the copy
-	MOV	%R8+	%R1
-	MOV	$1	%R2
+    MOV   %R8+  %R1
+    MOV   $1    %R2
 .iter:
-	MULT	%R1-	%R2
-	MO	%R1	$1
-	IFNJ	@save
-	JMP	@iter
+    MULT  %R1-  %R2
+    MO    %R1   $1
+    IFNJ  @save
+    JMP   @iter
 .save:
-	PUSH	%R2
-	MO	%R8	.maxnum
-	IFJ	@end
-	JMP	@start
+    PUSH  %R2
+    MO    %R8   .maxnum
+    IFJ   @end
+    JMP   @start
 .end:
-	HALT
+    HALT
+.end
+
 .global
-.maxnum:
-        .int	$12
+  .maxnum:
+    .int  $12
+.end
 
 --------------------------------
 Another simple program that shows how to give shape to subroutines.
@@ -55,12 +71,16 @@ should launch the signal to the peripheral and than wait for the ready state,
 before sending another character to display, but it's just pretending that a
 terminal can work syncronously with the cpu.
 
+----------------
 biosSubroutine.s
 ----------------
 
-.function   main
+#include "biosGlobals.s"
+
+.function   "main"
+.local
+.end
 .init:
-    STACK   @stack
     MOV     @string1    %R1
 ; prepare destination comand
     MOV     .printCmd   %R2
@@ -78,11 +98,19 @@ biosSubroutine.s
     JMP     @testCond
 .end:
     HALT
-.end        main
+.end
+
+.global
+  .uselessGlobal:
+    .int        $4
+.end
 
 ; subroutine to call
-.function   print
-;.print:
+.function   "print"
+.local
+  .stckPosArg:
+    .int    $3
+.end
 ; let's push the regs we're going to use
     PUSH    %R1
 ; get the stack pointer
@@ -93,33 +121,31 @@ biosSubroutine.s
 ; pop regs back
     POP     %R1
     RET
-    .local
-    .stckPosArg:
-            .int        $3
-.end        print
+.end
+
+----------------
+biosGlobals.s
+----------------
 
 .global
-; string to write
-.printCmd:
+  .printCmd:
     .int        $131072
-.string1:
+  ; string to write
+  .string1:
     .string     "prova yeah"
     .int        $10
     .int        $13
-.endChar:
+  .endChar:
     .int        $13
-
-; placeholder for the minimal-safe stack pointer
-.stack:
+.end
 
 -----------------------------------
-
-A description:
+BRIEF DESCRIPTION OF EXAMPLES:
 
 There are 8 data registers R1, R2, .. , R8, and 8 general purpose address
-registers A1, A2, .. , A8. Then a specific register for te stack pointer SP, and
-USP for the priviledged executor that wants to access unprivileged stack
-pointer. (Issuing SP when privileged, an issuing SP when unprivileged gives to
+registers A1, A2, .. , A8. Then a specific register for the stack pointer SP,
+and USP for the priviledged executor that wants to access unprivileged stack
+pointer. (Issuing SP when privileged, an issuing SP when unprivileged gives two
 different stack pointers)
 
 As noted here before, there are two kinds of execution: privileged and
@@ -131,7 +157,7 @@ Accessing data and registers is achieved in many ways with different meanings:
 - prefixing registers with % (eg. %R1, %A3, %SP ..) which accessed the content
 of the registers.
 
-- surrounding registers with round parenthesys ( and ), (eg. (A1), (SP) ..)
+- surrounding registers with round parenthesis ( and ), (eg. (A1), (SP) ..)
 which accesses the address in memory, pointed by the content of the register.
 
 - using . (dot) prefixed labels which accesses the content of the address in
@@ -141,7 +167,7 @@ memory marked by the label.
 
 - prefixing constants with $ which uses those as numerical constants
 
-- prefizing constants with > which uses them as addresses (and addresses the
+- prefixing constants with > which uses them as addresses (and addresses the
 memory address pointed by the constant)
 
 There are then other useful methods for reducing code size and speeding up
@@ -156,22 +182,16 @@ modify data pointed by the content of the register )
 increment/decrement signs (eg. right: r%R2 , r(A5), +r(R4) .. , wrong: r+(A2),
 %rR1, .. )
 
-------
-A word about subroutines and constants:
+------------------
+Some words about SUBROUTINES:
 
 I implemented a specific way of instructing the assembler about subroutines, you
 need to specify subroutine name after the  .function  marker, and specify end of
-the subroutine with  .end  marker. It could be useful to specify the name of the
-subroutine after the  .end  marker for readability since it is not processed.
+the subroutine with  .end  marker. The name of the subroutine needs to be
+enclosed in double quotes, like a normal string.
 
-It's possible to specify local/private constants for function calls only after
-the marker  .local  which will also state that the subroutine has no more code,
-just constants till the  .end  marker.
-
-A section of free code is processed as the body of the main.
-
-The  .global  marker states the end of code in the asm file parsed and states
-also the area where global/public constants should be located.
+There is no possibility to use free code, outside of subroutines, since the main
+subroutine serves as entry point for the binary.
 
 Subroutines, when assembled do export their name as a global label and they can
 be accessed through . and @ facilities.
@@ -181,7 +201,45 @@ To call a subroutine just issue a
 Since JSR stands for "Jump to SubRoutine".
 
 ------------------
+Some words about CONSTANTS:
+
+The  .global  marker opens the area where global/public constants should be
+located. This area is terminated with an  .end  marker.
+
+It's possible to specify local/private constants for function calls only after
+the marker  .local  which is terminated by the  .end  marker, just like
+functions and globals.
+
+Constants, enclosed in  .global  and  .local  sections, have type specifiers,
+used by the assembler to pack the data.
+
+Labels instead make data visible and easily callable from outside.
+
+------------------
+Some words about PREPROCESSOR:
+
+As can be seen from the example, it is possible to include code from other files
+and compile it as if it was part of the current source.
+
+If any error happens in the included files, it will be reported in which file
+and at which line the error took place.
+
+------------------
+THINGS BEING IMPLEMENTED
+
+The edge of development is now on register auto-allocation logics.
+There is going to be a new kind of registers: T[0-9]* which serve as temporaries
+for successive elaboration by the allocation logics.
+
+Avoiding explicit register use, for temporaries, frees the programmer from one
+of the most bothering tasks, letting the assembler decide which register
+allocation to use. This should also give the maximum performance gain.
+
+There is also a pending enhancement of the preprocessor, in order to add extra
+functionalities like macro definitions and other directives.
+
+------------------
 
 If you feel this description incomplete, let me know.
 
-I hope you enjoy this playground for learning.
+I hope you will enjoy this playground for learning.
