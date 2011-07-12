@@ -81,6 +81,10 @@ openFile(const char * filename, const char *& path);
 
 ^[ \t]*"#"[ \t]*include { BEGIN(PREPROC_STATE_INCLUDE_FILE); }
 
+^[ \t]*"#"[ \t]*pragma { return PREPROC_PRAGMA; }
+
+^[ \t]*"#"[ \t]*define { return PREPROC_DEFINE; }
+
 <<EOF>>   { if(!closeIncludeFile(yylloc)) yyterminate(); }
 
 \${DIGIT}+ {

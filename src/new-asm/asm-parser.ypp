@@ -78,6 +78,9 @@ extern int yylex \
 %token COMA
 %token END_LINE
 
+%token PREPROC_DEFINE
+%token PREPROC_PRAGMA
+
 %type <arg> arg
 %type <stmt> stmt
 %type <listOfStatements> stmts
@@ -99,6 +102,8 @@ block
       : block blank_lines block
       | function     { program->addFunction( $1 ); }
       | globals      { program->addGlobals( $1 ); }
+      | define
+      | pragma
       | 
       ;
 
@@ -186,6 +191,14 @@ data_keyword
                   { $$ = new asm_string_keyword_statement( yylloc, $2 ); }
       ;
 
+define
+      : PREPROC_DEFINE ID ID
+      | PREPROC_DEFINE ID CONTENT_CONST
+      ;
+
+pragma
+      : PREPROC_PRAGMA
+      ;
 
 %%
 
