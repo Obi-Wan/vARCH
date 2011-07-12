@@ -92,12 +92,18 @@ struct asm_immediate_arg : asm_arg {
     float fval;
   } content;
 
-  asm_immediate_arg(const YYLTYPE& pos) : asm_arg(pos) { }
-  asm_immediate_arg(const YYLTYPE& pos, const int _val, const TypeOfArgument& type)
-      : asm_arg(pos, type) {
+  bool isTemp;
+
+  asm_immediate_arg(const YYLTYPE& pos) : asm_arg(pos), isTemp(false) { }
+  asm_immediate_arg(const YYLTYPE& pos, const int _val,
+                    const TypeOfArgument& type, const bool & _isTemp = false)
+    : asm_arg(pos, type), isTemp(_isTemp)
+  {
     content.val = _val;
   }
-  asm_immediate_arg(const YYLTYPE& pos, const float _fval) : asm_arg(pos,COST) {
+  asm_immediate_arg(const YYLTYPE& pos, const float _fval)
+    : asm_arg(pos, COST), isTemp(false)
+  {
     content.fval = _fval;
   }
 
