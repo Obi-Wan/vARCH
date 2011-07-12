@@ -1,4 +1,4 @@
-bin_PROGRAMS = varch vasm
+bin_PROGRAMS = varch
 
 varch_SOURCES = Mmu.cpp \
 		Component.cpp \
@@ -9,10 +9,4 @@ varch_SOURCES = Mmu.cpp \
 		CharTerminal.cpp \
 		vArch.cpp
 
-vasm_SOURCES =  FileHandler.cpp \
-                FunctionRecord.cpp \
-                CodeOrganizer.cpp \
-                AsmParser.cpp \
-                vAsm.cpp
-
-SUBDIRS = new-asm trans-asm
+SUBDIRS = vasm

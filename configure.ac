@@ -12,8 +12,7 @@ AC_CONFIG_HEADERS([include/config.h])
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
-	src/new-asm/Makefile
-	src/trans-asm/Makefile
+	src/vasm/Makefile
 ])
 
 ###############################################################################

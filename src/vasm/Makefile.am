@@ -1,9 +1,9 @@
 AM_YFLAGS = -d
 #AM_LFLAGS = --header-file=$(<:.lpp=.h)
 
-bin_PROGRAMS = new-vasm
+bin_PROGRAMS = vasm
 
-new_vasm_SOURCES = \
+vasm_SOURCES = \
 			asm-parser.ypp \
 		  IncludesTree.cpp \
 		  asm-lexer.lpp \
