@@ -10,7 +10,7 @@
 
 #include <map>
 #include <string>
-#include "../include/exceptions.h"
+#include "exceptions.h"
 
 using namespace std;
 

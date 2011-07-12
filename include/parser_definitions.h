@@ -12,7 +12,6 @@
 #include "std_istructions.h"
 
 #include <string>
-#include <vector>
 #include <map>
 #include <sstream>
 
@@ -147,78 +146,6 @@ public:
     return istr->second;
   }
 } ISet;
-
-struct LineOfCode {
-  int bytes;
-  unsigned int lineNumber;
-  vector<string> chunks;
-};
-
-struct Label {
-  string name;
-  unsigned int lineNumber;
-  unsigned int byte;
-  int offset;
-
-  Label(const string& _n, const unsigned int& _l, const unsigned int& _b,
-        const int& _o) :
-        name(_n), lineNumber(_l), byte(_b), offset(_o) { }
-};
-
-typedef map<string, Label> Labels;
-typedef map<string, int> Istructions;
-typedef vector<int> Constants;
-typedef vector< LineOfCode > CodeLines;
-
-class Marker {
-public:
-  enum MarkersType {
-    INT,
-    LONG,
-    CHAR,
-    STRING,
-
-    GLOBAL,
-    LOCAL,
-    FUNCTION,
-    END,
-  };
-
-  static MarkersType getMarkerType(const string& type) throw(WrongArgumentException) {
-    switch (type[1]) {
-      case 'i':
-	if (!type.compare(".int")) return INT;
-	else break;
-      case 'l':
-        if (!type.compare(".long")) {
-          return LONG;
-        } else if (!type.compare(".local")) {
-          return LOCAL;
-        } else {
-          break;
-	}
-      case 'c':
-	if (!type.compare(".char")) return CHAR;
-	else break;
-      case 's':
-	if (!type.compare(".string")) return STRING;
-	else break;
-      case 'g':
-	if (!type.compare(".global")) return GLOBAL;
-	else break;
-      case 'f':
-	if (!type.compare(".function")) return FUNCTION;
-	else break;
-      case 'e':
-	if (!type.compare(".end")) return END;
-	else break;
-      default:
-        break;
-    }
-    throw WrongArgumentException(
-                "No constant type: \"" + type + "\"");
-  }
-};
 
 #endif	/* _PARSER_DEFINITIONS_H */
 
