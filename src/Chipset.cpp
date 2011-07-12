@@ -66,7 +66,7 @@ Chipset::loadBiosFromFile(const char * file) {
   return handler.getBinFileContent();
 }
 
-inline void
+inline int
 Chipset::initMem() {
   int i = 0;
   try {
@@ -80,9 +80,11 @@ Chipset::initMem() {
       mainMem[i] = bios[i];
     }
   }
+  const int stackBasePointer = i;
   for (; i < maxMem; i++) {
     mainMem[i] = 0;
   }
+  return stackBasePointer;
 }
 
 void
@@ -104,8 +106,8 @@ Chipset::startClock() {
 
     // Reset if REBOOT istruction got.
     if (result == REBOOT) {
-      initMem();
-      cpu.init();
+      const int SPbase = initMem();
+      cpu.init(SPbase);
     }
   } while (result != HALT);
 

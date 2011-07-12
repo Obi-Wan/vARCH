@@ -38,7 +38,7 @@ class Cpu {
 public:
   Cpu(Chipset&, Mmu&);
 
-  void init();
+  void init(const int & stackPointerBase);
 
   void dumpRegistersAndMemory() const;
 

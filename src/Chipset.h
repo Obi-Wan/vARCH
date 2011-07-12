@@ -43,7 +43,7 @@ private:
 
   vector<Component *> components;
 
-  void initMem();
+  int initMem();
 
   Bloat loadBiosFromFile(const char * file);
 };
