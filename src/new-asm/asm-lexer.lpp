@@ -11,7 +11,7 @@ using namespace std;
 %s STRING_CONTEXT
 %s COMMENT
 
-%x INCLUDE_FILE
+%x PREPROC_STATE_INCLUDE_FILE
 
 DIGIT     [0-9]
 LETTER    [a-zA-Z]
@@ -79,7 +79,7 @@ openFile(const char * filename, const char *& path);
 
 <INITIAL>{
 
-^"#"[ \t]*include { BEGIN(INCLUDE_FILE); }
+^[ \t]*"#"[ \t]*include { BEGIN(PREPROC_STATE_INCLUDE_FILE); }
 
 <<EOF>>   { if(!closeIncludeFile(yylloc)) yyterminate(); }
 
@@ -275,7 +275,7 @@ r?\({AREG}\)\- {
           }
 }
 
-<INCLUDE_FILE>{
+<PREPROC_STATE_INCLUDE_FILE>{
 
 [ \t]+      /* eat up whitespace */
 
