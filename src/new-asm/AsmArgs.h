@@ -21,8 +21,11 @@ class AsmArgs {
   string inputName;
   string outputName;
   vector<string> includeDirs;
+
+  bool regAutoAlloc;
 public:
-  AsmArgs(int _argc, char** _argv) : argc(_argc), argv(_argv) { }
+  AsmArgs(int _argc, char** _argv)
+    : argc(_argc), argv(_argv), regAutoAlloc(false) { }
 
   void parse() throw(WrongArgumentException);
 
@@ -31,6 +34,7 @@ public:
   const string &getInputName() const throw() { return inputName; }
   const string &getOutputName() const throw() { return outputName; }
   const vector<string> &getIncludeDirs() const throw() { return includeDirs; }
+  const bool &getRegAutoAlloc() const throw() { return regAutoAlloc; }
 };
 
 #endif /* ASMARGS_H_ */

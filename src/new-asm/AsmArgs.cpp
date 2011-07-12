@@ -37,6 +37,9 @@ AsmArgs::parse() throw (WrongArgumentException)
       /* Tells to append an include dir */
       includeDirs.push_back(tempArg.substr(2, tempArg.size()-2));
 
+    } else if (!tempArg.compare("-reg-auto-alloc")) {
+      regAutoAlloc = true;
+
     } else if (!tempArg.compare("-h")) {
       throw WrongArgumentException("");
     } else {
@@ -51,7 +54,9 @@ AsmArgs::parse() throw (WrongArgumentException)
   for(uint32_t inclNum = 0; inclNum < includeDirs.size(); inclNum++) {
     includes += " " + includeDirs[inclNum];
   }
-  DebugPrintf(("Include dirs: %s\n\n", includes.c_str()));
+  DebugPrintf(("Include dirs: %s\n", includes.c_str()));
+  DebugPrintf(("Register auto allocation: %s\n\n",
+                regAutoAlloc ? "Enabled" : "Disabled"));
 #endif
 
   CHECK_THROW( !inputName.empty(),
@@ -66,4 +71,6 @@ AsmArgs::printHelp() const throw()
   cout << "Syntax is: 'new-asm -c <input_file> -o <output_file>'" << endl;
   cout << "To specify additional paths for searching the include files:" << endl
         << "  -I<include_path> as many times as you want" << endl;
+  cout << "To let the assembler auto allocate registers:" << endl
+        << "  add flag -reg-auto-alloc" << endl;
 }
