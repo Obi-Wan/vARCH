@@ -304,11 +304,20 @@ class TableOfSymbols {
 public:
   void addLabel(asm_label_statement* lab);
 
-  int getPositionOfLabel(const string& name) {
-    LabelsMap::iterator iter = defLabels.find(name);
+  int getPositionOfLabel(const string & name) const
+  {
+    LabelsMap::const_iterator iter = defLabels.find(name);
     if (iter != defLabels.end()) {
       return iter->second->offset;
     } else return -1;
+  }
+
+  asm_label_statement * getStmt( const string & name) const
+  {
+    LabelsMap::const_iterator iter = defLabels.find(name);
+    if (iter != defLabels.end()) {
+      return iter->second;
+    } else return NULL;
   }
 };
 
