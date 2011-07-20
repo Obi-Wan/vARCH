@@ -48,7 +48,7 @@ class Graph {
 public:
   typedef class NodeBaseType<DataType> NodeType;
   typedef class deque<NodeType> NodeListType;
-  typedef class map<string, const NodeType *> NodeMapType;
+  typedef class map<const string, const NodeType * const> NodeMapType;
   typedef class set<const NodeType *> NodeSetType;
   typedef class map<const NodeType *, NodeSetType> ArcsMap;
 
@@ -56,6 +56,7 @@ public:
   typedef typename NodeListType::iterator       nl_iterator;
   typedef typename NodeListType::const_iterator nl_c_iterator;
   typedef typename NodeMapType::iterator        nm_iterator;
+  typedef typename NodeMapType::const_iterator  nm_c_iterator;
   typedef typename ArcsMap::iterator            am_iterator;
 
 protected:
@@ -66,11 +67,11 @@ protected:
 
   NodeMapType mapOfNodes;
 
-  void * checkLabelInternal(const string & _label,
+  const void * checkLabelInternal(const string & _label,
       const string & _errorMsg) const;
   NodeType * checkLabel(const string & _label, const string & _errorMsg)
     const
-  { return (NodeType *) checkLabel(_label, _errorMsg); }
+  { return (NodeType *) checkLabelInternal(_label, _errorMsg); }
 
   void checkNodePtr(const NodeType * const node, const string & errorMessage)
     const;
@@ -144,6 +145,7 @@ public:
   typedef typename Graph<DataType, NodeFlowGraph>::nl_iterator    nl_iterator;
   typedef typename Graph<DataType, NodeFlowGraph>::nl_c_iterator  nl_c_iterator;
   typedef typename Graph<DataType, NodeFlowGraph>::nm_iterator    nm_iterator;
+  typedef typename Graph<DataType, NodeFlowGraph>::nm_c_iterator  nm_c_iterator;
   typedef typename Graph<DataType, NodeFlowGraph>::am_iterator    am_iterator;
 
   // Newly Defined Types
@@ -212,12 +214,12 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
-inline void *
+inline const void *
 Graph<DataType, NodeBaseType>::checkLabelInternal(const string & _label,
     const string & errorMessage)
   const
 {
-  nm_iterator nodeIter = mapOfNodes.find(_label);
+  nm_c_iterator nodeIter = mapOfNodes.find(_label);
 
   if (nodeIter == mapOfNodes.end()) {
     throw WrongArgumentException(errorMessage);
@@ -248,6 +250,8 @@ Graph<DataType, NodeBaseType>::_addNewNode(const string & _label,
 
   node.data = _data;
   node.label = _label;
+
+  mapOfNodes.insert(typename NodeMapType::value_type(_label, &node));
 
   preds.insert(typename ArcsMap::value_type(&node, NodeSetType() ));
   succs.insert(typename ArcsMap::value_type(&node, NodeSetType() ));
