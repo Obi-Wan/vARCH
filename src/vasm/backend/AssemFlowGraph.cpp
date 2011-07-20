@@ -9,8 +9,6 @@
 
 #include "exceptions.h"
 
-#include "../algorithms/Graphs.cpp"
-
 #include <sstream>
 
 using namespace std;
