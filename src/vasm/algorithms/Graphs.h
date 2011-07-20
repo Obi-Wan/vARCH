@@ -53,6 +53,7 @@ public:
   typedef class map<const NodeType *, NodeSetType> ArcsMap;
 
   typedef typename NodeSetType::iterator        ns_iterator;
+  typedef typename NodeSetType::const_iterator  ns_c_iterator;
   typedef typename NodeListType::iterator       nl_iterator;
   typedef typename NodeListType::const_iterator nl_c_iterator;
   typedef typename NodeMapType::iterator        nm_iterator;
@@ -142,6 +143,7 @@ public:
   typedef class Graph<DataType, NodeFlowGraph>::ArcsMap ArcsMap;
 
   typedef typename Graph<DataType, NodeFlowGraph>::ns_iterator    ns_iterator;
+  typedef typename Graph<DataType, NodeFlowGraph>::ns_c_iterator  ns_c_iterator;
   typedef typename Graph<DataType, NodeFlowGraph>::nl_iterator    nl_iterator;
   typedef typename Graph<DataType, NodeFlowGraph>::nl_c_iterator  nl_c_iterator;
   typedef typename Graph<DataType, NodeFlowGraph>::nm_iterator    nm_iterator;
@@ -504,7 +506,7 @@ Graph<DataType, NodeBaseType>::makeVisitList(
       for(ns_iterator succ = succsSet.begin(); succ != succsSet.end();
           succ++)
       {
-        if (visited.find(*succ) != visited.end()) {
+        if (visited.find(*succ) == visited.end()) {
           this->makeVisitList(visitList, visited, *succ);
         }
       }
@@ -709,11 +711,14 @@ FlowGraph<DataType>::populateLiveMap(LiveMap<DataType> & liveMap)
       for(us_iterator live_in = nodeLiveIn.begin(); live_in != endLivesIn;
           live_in++)
       {
-        const ns_iterator endPreds = this->preds[node].end();
-        for(ns_iterator pred = this->preds[node].begin(); pred != endPreds;
-            pred++)
+        const NodeSetType & nodePreds = this->preds.find(node)->second;
+        const ns_iterator endPreds = nodePreds.end();
+        for(ns_iterator predIt = nodePreds.begin(); predIt != endPreds;
+            predIt++)
         {
-          UIDSetType & outPred = liveMap.liveOut[*pred];
+          const NodeType * const pred = *predIt;
+          UIDSetType & outPred = liveMap.liveOut[pred];
+
           if (outPred.find(*live_in) == outPred.end()) {
             outPred.insert(*live_in);
             modified = true;
