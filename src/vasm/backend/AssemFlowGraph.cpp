@@ -131,41 +131,48 @@ AssemFlowGraph::_findUsesDefines()
           asm_immediate_arg * arg = (asm_immediate_arg *) argIt;
           if (arg->isTemp) {
             // to temps map
-            tempsMap.putTemp(arg->content.regNum);
-
-            // uses
-            uses[node].insert(arg->content.regNum);
-
-            // defines
-            if (argNum == 0) {
-              switch (instruction) {
-                case NOT:
-                case INCR:
-                case DECR:
-                case COMP2:
-                case LSH:
-                case RSH:
-                  defs[node].insert(arg->content.regNum);
-                  break;
-                default:
-                  break;
+            tempsMap.putTemp(arg->content.regNum, true);
+            if (instruction == MOV) {
+//              node->isMove = true;
+              if (argNum == 0) {
+                uses[node].insert(arg->content.regNum);
+              } else {
+                defs[node].insert(arg->content.regNum);
               }
             } else {
-              switch (instruction) {
-                case MOV:
-                case ADD:
-                case MULT:
-                case SUB:
-                case DIV:
-                case QUOT:
-                case AND:
-                case OR:
-                case XOR:
-                case GET:
-                  defs[node].insert(arg->content.regNum);
-                  break;
-                default:
-                  break;
+              // uses
+              uses[node].insert(arg->content.regNum);
+
+              // defines
+              if (argNum == 0) {
+                switch (instruction) {
+                  case NOT:
+                  case INCR:
+                  case DECR:
+                  case COMP2:
+                  case LSH:
+                  case RSH:
+                    defs[node].insert(arg->content.regNum);
+                    break;
+                  default:
+                    break;
+                }
+              } else {
+                switch (instruction) {
+                  case ADD:
+                  case MULT:
+                  case SUB:
+                  case DIV:
+                  case QUOT:
+                  case AND:
+                  case OR:
+                  case XOR:
+                  case GET:
+                    defs[node].insert(arg->content.regNum);
+                    break;
+                  default:
+                    break;
+                }
               }
             }
           }
