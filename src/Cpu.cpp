@@ -161,26 +161,33 @@ Cpu::istructsOneArg(const int& istr, int& newFlags) {
 
   const int polishedIstr = istr - ARG_1(typeArg);
 
-  int old = temp;
   switch (polishedIstr) {
-    case NOT:
+    case NOT: {
       temp = ~temp;
       break;
-    case INCR:
+    }
+    case INCR: {
+      int old = temp;
       if (old > ++temp) flags += F_OVERFLOW;
       break;
-    case DECR:
+    }
+    case DECR: {
+      int old = temp;
       if (old < --temp) flags += F_OVERFLOW;
       break;
-    case COMP2:
+    }
+    case COMP2: {
       temp = -temp;
       break;
-    case LSH:
+    }
+    case LSH: {
       temp <<= 1;
       break;
-    case RSH:
+    }
+    case RSH: {
       temp >>= 1;
       break;
+    }
 
     case STACK:
       sP.setStackPointer(temp);
@@ -249,23 +256,28 @@ Cpu::istructsTwoArg(const int& istr, int& newFlags) {
 
   const int polishedIstr = istr - ARG_1(typeArg1) - ARG_2(typeArg2);
 
-  int old = temp2;
   switch (polishedIstr) {
     case MOV:
       temp2 = temp1;
       break;
-    case ADD:
+    case ADD: {
+      int old = temp2;
       temp2 += temp1;
       if (old > temp2) flags += F_OVERFLOW;
       break;
-    case MULT:
+    }
+    case MULT: {
+      int old = temp2;
       temp2 *= temp1;
       if (old > temp2) flags += F_OVERFLOW;
       break;
-    case SUB:
+    }
+    case SUB: {
+      int old = temp2;
       temp2 -= temp1;
       if (old < temp2) flags += F_OVERFLOW;
       break;
+    }
     case DIV:
       temp2 /= temp1;
       break;
