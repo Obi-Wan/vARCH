@@ -50,7 +50,11 @@ AssemFlowGraph::_createArcs(const TableOfSymbols & functionSymbols)
   {
     const NodeType * const node = &listOfNodes[nodeNum];
     asm_statement * stmt = node->data;
-    if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
+    if (stmt->getType() == ASM_LABEL_STATEMENT) {
+      if (nodeNum < (listOfNodes.size() - 1)) {
+        addDirectedArc(node, &listOfNodes[nodeNum+1]);
+      }
+    } else if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
       asm_instruction_statement * i_stmt = (asm_instruction_statement *) stmt;
       switch(i_stmt->instruction) {
         case IFJ:
