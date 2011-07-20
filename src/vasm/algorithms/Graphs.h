@@ -896,8 +896,10 @@ InteferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
         for(us_iterator defsIter = nodeDefs.begin(); defsIter != nodeDefs.end();
             defsIter++)
         {
-          addUndirectedArc( tempsMap.getLabel(*defsIter),
-                            tempsMap.getLabel(*live_out) );
+          if (*defsIter != *live_out) {
+            addUndirectedArc( tempsMap.getLabel(*defsIter),
+                              tempsMap.getLabel(*live_out) );
+          }
         }
       }
     }
