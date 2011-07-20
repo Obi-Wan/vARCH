@@ -43,19 +43,26 @@ class SimpleAllocator(object):
     def allocate(self, interfGraph):
         workGraph = deepcopy(interfGraph)
         while len(workGraph.nodes) > 0:
-            min = (-1, 100000000)
+            notSignificNodes = []
+            significNodes = []
             for node in workGraph.nodes:
-                if workGraph.nodeDegree(node) < min[1]:
-                    min = (node, workGraph.nodeDegree(node))
-            if min[1] >= self.numRegs:
-                min = (-1, 100000000)
-                for node in workGraph.nodes:
-                    if workGraph.spillCost[node] < min[1]:
-                        min = (node, workGraph.nodeDegree(node))
-                self.stackRegs.append((min[0], True, min[1]))
+                if workGraph.nodeDegree(node) < self.numRegs:
+                    notSignificNodes.append((node, workGraph.nodeDegree(node)))
+                else:
+                    significNodes.append((node, workGraph.nodeDegree(node)))
+
+            max = (-1, -1)
+            if len(notSignificNodes) > 0:
+                for node in notSignificNodes:
+                    if node[1] > max[1]:
+                        max = node
+                self.stackRegs.append((max[0], False, max[1]))
             else:
-                self.stackRegs.append((min[0], False, min[1]))
-            workGraph.delNode(min[0])
+                for node in significNodes:
+                    if node[1] > max[1]:
+                        max = node
+                self.stackRegs.append((max[0], True, max[1]))
+            workGraph.delNode(max[0])
         self._printStack(interfGraph)
         
         while len(self.stackRegs) > 0:
@@ -75,7 +82,8 @@ class SimpleAllocator(object):
     def printColoredGraph(self, interfGraph):
         workGraph = deepcopy(interfGraph)
         for node in self.allocatedRegs:
-            workGraph.nodes[node].label = workGraph.nodes[node].label + " " + str(self.allocatedRegs[node])
+            workGraph.nodes[node].label = ( workGraph.nodes[node].label + " "
+                                             + str(self.allocatedRegs[node]) )
         workGraph.printGraph()
     
     def isSolution(self):
