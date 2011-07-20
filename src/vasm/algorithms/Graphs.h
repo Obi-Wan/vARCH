@@ -203,6 +203,8 @@ public:
   template<typename DataType>
   void populateGraph(const FlowGraph<DataType> & flowGraph,
       const LiveMap<DataType> & liveMap, const TempsMap & tempsMap);
+
+  void printInterferenceGraph() const;
 };
 
 #include "exceptions.h"
@@ -224,6 +226,7 @@ Graph<DataType, NodeBaseType>::checkLabelInternal(const string & _label,
   nm_c_iterator nodeIter = mapOfNodes.find(_label);
 
   if (nodeIter == mapOfNodes.end()) {
+    DebugPrintf(("No label %s in map of nodes\n", _label.c_str()));
     throw WrongArgumentException(errorMessage);
   }
 
@@ -238,6 +241,7 @@ Graph<DataType, NodeBaseType>::checkNodePtr(const NodeType * const node,
 {
   if (!node) { throw WrongArgumentException("Null pointer as node pointer"); }
   if (mapOfNodes.find(node->label) == mapOfNodes.end()) {
+    DebugPrintf(("No label %s in map of nodes\n", node->label.c_str()));
     throw WrongArgumentException(errorMessage);
   }
 }
@@ -510,6 +514,9 @@ Graph<DataType, NodeBaseType>::makeVisitList(
           this->makeVisitList(visitList, visited, *succ);
         }
       }
+    } else {
+      DebugPrintf(("ERROR: Could find node %p (label %s) in successive\n",
+                   node, node->label.c_str()));
     }
 
     visitList.push_back(node);
@@ -533,17 +540,18 @@ LiveMap<DataType>::printLiveMap() const
   for(; live_in != end_live_in && live_out != end_live_out;
       live_in++, live_out++)
   {
-    cout << "Node " << live_in->first->label << ", live-in:";
+    cout << "Node " << live_in->first->label << endl << "   live-in  (num: "
+        << live_in->second.size() << "):";
     for(us_iterator ins = live_in->second.begin(); ins != live_in->second.end();
         ins++)
     {
-      cout << " " << *ins;
+      cout << " T" << (*ins +1);
     }
-    cout << ", live-out:";
+    cout << "\n   live-out (num: " << live_out->second.size() << "):";
     for(us_iterator outs = live_out->second.begin();
         outs != live_out->second.end(); outs++)
     {
-      cout << " " << *outs;
+      cout << " T" << (*outs +1);
     }
     cout << endl;
   }
@@ -697,6 +705,8 @@ FlowGraph<DataType>::populateLiveMap(LiveMap<DataType> & liveMap)
   bool modified = true;
 
   while(modified) {
+    uint32_t iter = 0;
+    DebugPrintf(("Liveness: iteration %u. VisitList Size: %lu\n", iter++, visitList.size()));
     modified = false;
 
     for(nd_iterator listIter = visitList.begin(); listIter != visitList.end();
@@ -720,6 +730,8 @@ FlowGraph<DataType>::populateLiveMap(LiveMap<DataType> & liveMap)
           UIDSetType & outPred = liveMap.liveOut[pred];
 
           if (outPred.find(*live_in) == outPred.end()) {
+            DebugPrintf(( "Adding Live-Out: %d to node %s\n",
+                          *live_in, pred->label.c_str()));
             outPred.insert(*live_in);
             modified = true;
           }
@@ -749,24 +761,43 @@ FlowGraph<DataType>::printFlowGraph() const
       nodeIt != this->listOfNodes.end(); nodeIt++)
   {
     const NodeType * const node = &*nodeIt;
-    cout << "Node: " << node->label << ", isMove: " << node->isMove;
+    cout << "Node - pointer: " << node << ", label: " << node->label
+        << ", isMove: " << node->isMove;
     cout << "\n  Preds:";
+    const NodeSetType & nodePreds = this->preds.find(node)->second;
+    for(ns_c_iterator predIt = nodePreds.begin(); predIt != nodePreds.end();
+        predIt++)
+    {
+      cout << " " << *predIt;
+    }
     cout << "\n  Succs:";
+    const NodeSetType & nodeSuccs = this->succs.find(node)->second;
+    for(ns_c_iterator succIt = nodeSuccs.begin(); succIt != nodeSuccs.end();
+        succIt++)
+    {
+      cout << " " << *succIt;
+    }
     cout << "\n  Uses:";
     const UIDMultiSetType & nodeUses = uses.find(node)->second;
     for(us_c_iterator useIt = nodeUses.begin(); useIt != nodeUses.end();
         useIt++)
     {
-      cout << " " << *useIt;
+      cout << " T" << (*useIt +1);
     }
     cout << "\n  Defs:";
     const UIDMultiSetType & nodeDefs = defs.find(node)->second;
     for(us_c_iterator defIt = nodeDefs.begin(); defIt != nodeDefs.end();
         defIt++)
     {
-      cout << " " << *defIt;
+      cout << " T" << (*defIt +1);
     }
     cout << endl;
+  }
+  DebugPrintf(("Map of labels\n"));
+  for(nm_c_iterator mapIter = this->mapOfNodes.begin();
+      mapIter != this->mapOfNodes.end(); mapIter++)
+  {
+    DebugPrintf((" label: %s, pointer %p\n", mapIter->first.c_str(), mapIter->second));
   }
 }
 

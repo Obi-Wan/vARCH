@@ -23,7 +23,7 @@ AssemFlowGraph::buildLabel(const asm_statement * const stmt,
   stream << progr;
   stream.width(0);
   stream.fill(' ');
-  stream << stmt->toString();
+  stream << " " << stmt->toString();
   return stream.str();
 }
 
@@ -52,6 +52,7 @@ AssemFlowGraph::_createArcs(const TableOfSymbols & functionSymbols)
     asm_statement * stmt = node->data;
     if (stmt->getType() == ASM_LABEL_STATEMENT) {
       if (nodeNum < (listOfNodes.size() - 1)) {
+        DebugPrintf(("Adding arc to next node\n"));
         addDirectedArc(node, &listOfNodes[nodeNum+1]);
       }
     } else if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
@@ -66,6 +67,7 @@ AssemFlowGraph::_createArcs(const TableOfSymbols & functionSymbols)
         case IFLEJ:
         case IFMEJ: {
           if (nodeNum < (listOfNodes.size() - 1)) {
+            DebugPrintf(("Adding arc to next node\n"));
             addDirectedArc(node, &listOfNodes[nodeNum+1]);
           }
         }
@@ -82,6 +84,7 @@ AssemFlowGraph::_createArcs(const TableOfSymbols & functionSymbols)
                   "(in auto-register mode)");
             }
 
+            DebugPrintf(("Adding arc to jumped node\n"));
             const NodeType * const pointedNode = backReference[pointedStmt];
             addDirectedArc(node, pointedNode);
 
@@ -94,6 +97,7 @@ AssemFlowGraph::_createArcs(const TableOfSymbols & functionSymbols)
         }
         default: {
           if (nodeNum < (listOfNodes.size() - 1)) {
+            DebugPrintf(("Adding arc to next node\n"));
             addDirectedArc(node, &listOfNodes[nodeNum+1]);
           }
           break;
@@ -197,12 +201,18 @@ AssemFlowGraph::clear()
 void
 AssemFlowGraph::populateGraph(asm_function & function)
 {
+  DebugPrintf(("  - Populating AssemGraph\n"));
   // import nodes from assembler code
   _addNodesToGraph(function);
 
+  this->printFlowGraph();
+
+  DebugPrintf(("  - Adding Arcs\n"));
   // Assigns relations
   _createArcs(function.localSymbols);
 
+  DebugPrintf(("  - Finding Uses and Defs\n"));
   // Finds uses and defines
   _findUsesDefines();
+  DebugPrintf(("  - Done\n"));
 }

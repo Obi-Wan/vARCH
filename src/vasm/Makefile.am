@@ -13,6 +13,7 @@ vasm_SOURCES = \
 		  asm-program.cpp \
 		  AsmArgs.cpp \
 		  algorithms/TempsMap.cpp	\
+		  algorithms/Graphs.cpp	\
 		  backend/AssemFlowGraph.cpp \
 		  vNewAsm.cpp
 
