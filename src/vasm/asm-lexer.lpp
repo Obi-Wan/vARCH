@@ -445,22 +445,28 @@ getRegNum(const char * str)
 int
 getTempRegNum(const char * str, const TypeOfArgument& type)
 {
-  char * tempStr = strdup(str);
-  int num = 0;
+  size_t len = strlen(str);
+
   switch (type) {
-  case REG_POST_INCR:
-  case REG_POST_DECR:
-  case ADDR_POST_INCR:
-  case ADDR_POST_DECR:
-  case ADDR_IN_REG_POST_INCR:
-  case ADDR_IN_REG_POST_DECR: {
-      num = atoi(tempStr) -2;
+    case REG_POST_INCR:
+    case REG_POST_DECR: {
+      len -= 1;
       break;
     }
-  default: {
-      num = atoi(tempStr) -1;
+    case ADDR_POST_INCR:
+    case ADDR_POST_DECR:
+    case ADDR_IN_REG_POST_INCR:
+    case ADDR_IN_REG_POST_DECR: {
+      len -= 2;
+      break;
+    }
+    default: {
+      break;
     }
   }
+  char * tempStr = strndup(str, len);
+  int num = atoi(tempStr) -1;
+
   free(tempStr);
   return num;
 }
