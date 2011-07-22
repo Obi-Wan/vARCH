@@ -16,7 +16,7 @@ RegAllocator::_findMax(const deque<const NodeType *> & nodes,
   {
     const NodeType * const node = nodes[nodeNum];
     const uint32_t & degree = degrees[nodeNum];
-    if (degree > record.degree) {
+    if (degree >= record.degree) {
       record.node = node;
       record.degree = degree;
     }
@@ -69,8 +69,8 @@ RegAllocator::printStack() const
 {
   cout << "Stack of simplified nodes (number of registers " << maxRegs << "):"
       << endl;
-  for(deque<SimlifyRecord>::const_reverse_iterator el = nodesStack.rend();
-      el != nodesStack.rbegin(); el--)
+  for(deque<SimlifyRecord>::const_reverse_iterator el = nodesStack.rbegin();
+      el != nodesStack.rend(); ++el)
   {
     cout << "Node: " << el->node << "\n  label: " << el->node->label
         << "\n  degree: " << el->degree
