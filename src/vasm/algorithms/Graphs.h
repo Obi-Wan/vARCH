@@ -702,12 +702,13 @@ FlowGraph<DataType>::populateLiveMap(LiveMap<DataType> & liveMap)
 
   this->makeVisitList(visitList, visited);
 
-  bool modified = true;
-
-  while(modified) {
-    uint32_t iter = 0;
-    DebugPrintf(("Liveness: iteration %u. VisitList Size: %lu\n", iter++, visitList.size()));
+  uint32_t iter = 0;
+  for(bool modified = true; modified;)
+  {
     modified = false;
+
+    DebugPrintf(("Liveness: iteration %u. VisitList Size: %lu\n", iter++,
+        visitList.size()));
 
     for(nd_iterator listIter = visitList.begin(); listIter != visitList.end();
         listIter++)
@@ -730,7 +731,7 @@ FlowGraph<DataType>::populateLiveMap(LiveMap<DataType> & liveMap)
           UIDSetType & outPred = liveMap.liveOut[pred];
 
           if (outPred.find(*live_in) == outPred.end()) {
-            DebugPrintf(( "Adding Live-Out: %d to node %s\n",
+            DebugPrintf(( "Adding Live-Out: T%5d to node %s\n",
                           *live_in, pred->label.c_str()));
             outPred.insert(*live_in);
             modified = true;
@@ -761,8 +762,8 @@ FlowGraph<DataType>::printFlowGraph() const
       nodeIt != this->listOfNodes.end(); nodeIt++)
   {
     const NodeType * const node = &*nodeIt;
-    cout << "Node - pointer: " << node << ", label: " << node->label
-        << ", isMove: " << node->isMove;
+    cout << "Node - pointer: " << node << "\n  label: " << node->label
+        << "\n  isMove: " << boolalpha << node->isMove;
     cout << "\n  Preds:";
     const NodeSetType & nodePreds = this->preds.find(node)->second;
     for(ns_c_iterator predIt = nodePreds.begin(); predIt != nodePreds.end();
@@ -836,8 +837,10 @@ InteferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
   typedef typename UIDSetType::iterator us_iterator;
   typedef typename UIDsMap::iterator um_iterator;
 
+  // Clean graph
   this->clear();
 
+  // Populate with nodes
   const fg_nl_c_iterator endOfNodes = flowGraph.getListOfNodes().end();
   for(fg_nl_c_iterator nodeIt = flowGraph.getListOfNodes().begin();
       nodeIt != endOfNodes; nodeIt++)
@@ -868,6 +871,7 @@ InteferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
     }
   }
 
+  // Find interference relations
   for(fg_nl_c_iterator nodeIt = flowGraph.getListOfNodes().begin();
       nodeIt != flowGraph.getListOfNodes().end(); nodeIt++)
   {
@@ -883,11 +887,12 @@ InteferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
         // it should have both one define and one use
         const UIDMultiSetType & nodeUses =
                                          flowGraph.getUses().find(node)->second;
-        // Safety check
+        // Safety check - Could be skipped
         if (!(nodeDefs.size() == 1 && nodeUses.size() == 1)) {
           throw WrongIstructionException(
               "A move instruction should have both one define and one use");
         }
+
         if (*live_out != *nodeUses.begin()) {
           addUndirectedArc( tempsMap.getLabel(*nodeDefs.begin()),
                             tempsMap.getLabel(*live_out) );
