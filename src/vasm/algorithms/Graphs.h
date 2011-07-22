@@ -62,7 +62,6 @@ public:
   typedef typename NodeMapType::iterator        nm_iterator;
   typedef typename NodeMapType::const_iterator  nm_c_iterator;
   typedef typename ArcsMap::iterator            am_iterator;
-  typedef typename ArcsMap::const_iterator      am_c_iterator;
 
 protected:
   NodeListType listOfNodes;

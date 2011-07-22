@@ -15,5 +15,6 @@ vasm_SOURCES = \
 		  algorithms/TempsMap.cpp	\
 		  algorithms/Graphs.cpp	\
 		  backend/AssemFlowGraph.cpp \
+		  backend/RegAllocator.cpp \
 		  vNewAsm.cpp
 
