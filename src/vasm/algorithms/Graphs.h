@@ -62,6 +62,7 @@ public:
   typedef typename NodeMapType::iterator        nm_iterator;
   typedef typename NodeMapType::const_iterator  nm_c_iterator;
   typedef typename ArcsMap::iterator            am_iterator;
+  typedef typename ArcsMap::const_iterator      am_c_iterator;
 
 protected:
   NodeListType listOfNodes;
@@ -90,10 +91,7 @@ protected:
 
 public:
   Graph() { }
-  Graph(const Graph<DataType, NodeBaseType> & other)
-    : listOfNodes(other.listOfNodes), preds(other.preds), succs(other.succs)
-    , mapOfNodes(other.mapOfNodes)
-  { }
+  Graph(const Graph<DataType, NodeBaseType> & other);
 
   virtual void addNewNode(const string & _label, DataType _data);
   virtual void removeNode(const string & _label);
@@ -179,10 +177,8 @@ protected:
   size_t _numDefs(const uint32_t & uid) const;
 
 public:
-  FlowGraph() { }
-  FlowGraph(const FlowGraph<DataType> & other)
-    : Graph<DataType, NodeFlowGraph>(other), uses(other.uses), defs(other.defs)
-  { }
+//  FlowGraph() { }
+//  FlowGraph(const FlowGraph<DataType> & other);
 
   virtual void addNewNode(const string & _label, DataType _data);
   virtual void removeNode(const string & _label);
@@ -371,6 +367,36 @@ Graph<DataType, NodeBaseType>::_outDegree(const NodeType * const node) const
 ///
 /// Public Members
 ////////////////////////////////////////////////////////////////////////////////
+
+template<typename DataType, template<typename NodeDataType> class NodeBaseType>
+Graph<DataType, NodeBaseType>::Graph(const Graph<DataType, NodeBaseType> & old)
+  : listOfNodes(old.listOfNodes)
+{
+  for(nl_iterator nodeIt = listOfNodes.begin(); nodeIt != listOfNodes.end();
+      nodeIt++)
+  {
+    const NodeType * const node = &*nodeIt;
+    mapOfNodes.insert(typename NodeMapType::value_type(node->label,node));
+    DebugPrintf(("Inserted pair: %p, %s\n", node, node->label.c_str()));
+
+    preds.insert(typename ArcsMap::value_type(node, NodeSetType() ));
+    succs.insert(typename ArcsMap::value_type(node, NodeSetType() ));
+  }
+  for(am_c_iterator predIt = old.preds.begin(); predIt != old.preds.end();
+      predIt++)
+  {
+    const string & fromLabel = predIt->first->label;
+    const NodeSetType & toSet = predIt->second;
+    for(ns_c_iterator succIt = toSet.begin(); succIt != toSet.end(); succIt++)
+    {
+      const NodeType * const toNode = *succIt;
+      this->addDirectedArc(fromLabel, toNode->label);
+      DebugPrintf(("Added arc: from %s (%p), to %s (%p)\n",
+          fromLabel.c_str(), checkLabel(fromLabel,""),
+          toNode->label.c_str(), checkLabel(toNode->label,"")));
+    }
+  }
+}
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 void
