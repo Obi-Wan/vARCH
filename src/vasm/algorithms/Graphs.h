@@ -900,7 +900,7 @@ InteferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
               "A move instruction should have both one define and one use");
         }
 
-        if (*live_out != *nodeUses.begin()) {
+        if (*live_out != *nodeUses.begin() && *live_out != *nodeDefs.begin()) {
           addUndirectedArc( tempsMap.getLabel(*nodeDefs.begin()),
                             tempsMap.getLabel(*live_out) );
         }
