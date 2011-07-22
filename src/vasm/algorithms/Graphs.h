@@ -13,10 +13,13 @@
 #include <map>
 #include <string>
 
+#include <iostream>
+
 using namespace std;
 
 #include "macros.h"
 #include "TempsMap.h"
+#include "exceptions.h"
 
 template<typename DataType>
 class NodeGraph {
@@ -86,7 +89,11 @@ protected:
   size_t _outDegree(const NodeType * const node) const;
 
 public:
-//  Graph();
+  Graph() { }
+  Graph(const Graph<DataType, NodeBaseType> & other)
+    : listOfNodes(other.listOfNodes), preds(other.preds), succs(other.succs)
+    , mapOfNodes(other.mapOfNodes)
+  { }
 
   virtual void addNewNode(const string & _label, DataType _data);
   virtual void removeNode(const string & _label);
@@ -172,7 +179,10 @@ protected:
   size_t _numDefs(const uint32_t & uid) const;
 
 public:
-//  FlowGraph();
+  FlowGraph() { }
+  FlowGraph(const FlowGraph<DataType> & other)
+    : Graph<DataType, NodeFlowGraph>(other), uses(other.uses), defs(other.defs)
+  { }
 
   virtual void addNewNode(const string & _label, DataType _data);
   virtual void removeNode(const string & _label);
@@ -198,7 +208,8 @@ public:
 
 class InteferenceGraph : public Graph<uint32_t> {
 public:
-//  InteferenceGraph();
+  InteferenceGraph() { }
+  InteferenceGraph(const InteferenceGraph & other) : Graph<uint32_t>(other) { }
 
   template<typename DataType>
   void populateGraph(const FlowGraph<DataType> & flowGraph,
@@ -206,10 +217,6 @@ public:
 
   void printInterferenceGraph() const;
 };
-
-#include "exceptions.h"
-
-#include <iostream>
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Class Graph
