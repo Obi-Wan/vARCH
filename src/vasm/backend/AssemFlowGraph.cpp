@@ -13,6 +13,13 @@
 
 using namespace std;
 
+bool
+AssemFlowGraph::_argIsTemp(const asm_arg * const arg) const
+{
+  return (arg->getType() == ASM_IMMEDIATE_ARG
+          && ((const asm_immediate_arg * const)arg)->isTemp);
+}
+
 string
 AssemFlowGraph::buildLabel(const asm_statement * const stmt,
     const uint32_t & progr) const
@@ -107,6 +114,90 @@ AssemFlowGraph::_createArcs(const TableOfSymbols & functionSymbols)
   }
 }
 
+inline bool
+AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
+    UIDMultiSetType & nodeUses, UIDMultiSetType & nodeDefs)
+{
+  const bool arg0_temp = _argIsTemp(args[0]);
+  const bool arg1_temp = _argIsTemp(args[1]);
+
+  bool isMove = arg0_temp && arg1_temp;
+
+  if (arg0_temp) {
+    asm_immediate_arg * arg = (asm_immediate_arg *) args[0];
+    // Add to temps map
+    tempsMap.putTemp( arg->content.regNum, true);
+    // Add to uses
+    nodeUses.insert( arg->content.regNum );
+    switch(arg->type) {
+      case REG_PRE_INCR:
+      case REG_PRE_DECR:
+      case REG_POST_INCR:
+      case REG_POST_DECR:
+      case ADDR_IN_REG_PRE_INCR:
+      case ADDR_IN_REG_PRE_DECR:
+      case ADDR_IN_REG_POST_INCR:
+      case ADDR_IN_REG_POST_DECR:
+        nodeDefs.insert( arg->content.regNum );
+        isMove = false;
+      default: break;
+    }
+  }
+  if (arg1_temp) {
+    asm_immediate_arg * arg = (asm_immediate_arg *) args[1];
+    // Add to temps map
+    tempsMap.putTemp( arg->content.regNum, true);
+    // Add to defs
+    nodeDefs.insert( arg->content.regNum );
+  }
+  return isMove;
+}
+
+inline bool
+AssemFlowGraph::_argIsDefined(const int & instruction, const size_t & argNum,
+    const TypeOfArgument & argType)
+  const
+{
+  switch (instruction) {
+    case NOT:
+    case INCR:
+    case DECR:
+    case COMP2:
+    case LSH:
+    case RSH: {
+      return true;
+    }
+    case ADD:
+    case MULT:
+    case SUB:
+    case DIV:
+    case QUOT:
+    case AND:
+    case OR:
+    case XOR:
+    case GET: {
+      if (argNum == 1) return true;
+    }
+    default: {
+      switch(argType) {
+        case REG_PRE_INCR:
+        case REG_PRE_DECR:
+        case REG_POST_INCR:
+        case REG_POST_DECR:
+        case ADDR_IN_REG_PRE_INCR:
+        case ADDR_IN_REG_PRE_DECR:
+        case ADDR_IN_REG_POST_INCR:
+        case ADDR_IN_REG_POST_DECR: {
+          return true;
+        }
+        default:
+          break;
+      }
+      return false;
+    }
+  }
+}
+
 inline void
 AssemFlowGraph::_findUsesDefines()
 {
@@ -117,74 +208,29 @@ AssemFlowGraph::_findUsesDefines()
     if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
       asm_instruction_statement * i_stmt = (asm_instruction_statement *) stmt;
 
-      int instruction = i_stmt->instruction;
+      UIDMultiSetType & nodeUses = uses[node];
+      UIDMultiSetType & nodeDefs = defs[node];
 
-      for(size_t argNum = 0; argNum < i_stmt->args.size(); argNum++)
-      {
-        asm_arg * argIt = i_stmt->args[argNum];
-//        switch(GET_ARG(argNum, i_stmt->instruction)) {
-//          case ADDR_IN_REG:
-//          case REG_PRE_INCR:
-//          case REG_PRE_DECR:
-//          case REG_POST_INCR:
-//          case REG_POST_DECR:
-//          case ADDR_IN_REG_PRE_INCR:
-//          case ADDR_IN_REG_PRE_DECR:
-//          case ADDR_IN_REG_POST_INCR:
-//          case ADDR_IN_REG_POST_DECR:
-//
-//        }
-        if ( argIt->getType() == ASM_IMMEDIATE_ARG )
+      // Special treatment of "move" instruction
+      if (i_stmt->instruction == MOV) {
+        node->isMove = _moveInstr(i_stmt->args, nodeUses, nodeDefs);
+      } else {
+        // Other instructions
+        for(size_t argNum = 0; argNum < i_stmt->args.size(); argNum++)
         {
-          asm_immediate_arg * arg = (asm_immediate_arg *) argIt;
-          if (arg->isTemp) {
+          if ( _argIsTemp(i_stmt->args[argNum]) ) {
+            asm_immediate_arg * arg = (asm_immediate_arg *)i_stmt->args[argNum];
             // to temps map
             tempsMap.putTemp(arg->content.regNum, true);
-            if (instruction == MOV) {
-//              node->isMove = true;
-              if (argNum == 0) {
-                uses[node].insert(arg->content.regNum);
-              } else {
-                defs[node].insert(arg->content.regNum);
-              }
-            } else {
-              // uses
-              uses[node].insert(arg->content.regNum);
+            // uses
+            nodeUses.insert(arg->content.regNum);
 
-              // defines
-              if (argNum == 0) {
-                switch (instruction) {
-                  case NOT:
-                  case INCR:
-                  case DECR:
-                  case COMP2:
-                  case LSH:
-                  case RSH:
-                    defs[node].insert(arg->content.regNum);
-                    break;
-                  default:
-                    break;
-                }
-              } else {
-                switch (instruction) {
-                  case ADD:
-                  case MULT:
-                  case SUB:
-                  case DIV:
-                  case QUOT:
-                  case AND:
-                  case OR:
-                  case XOR:
-                  case GET:
-                    defs[node].insert(arg->content.regNum);
-                    break;
-                  default:
-                    break;
-                }
-              }
+            // defines
+            if (_argIsDefined(i_stmt->instruction, argNum, arg->type)) {
+              nodeDefs.insert(arg->content.regNum);
             }
           }
-        }
+        } // End loop arguments
       }
     }
   }
