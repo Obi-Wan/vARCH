@@ -354,7 +354,7 @@ template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 inline size_t
 Graph<DataType, NodeBaseType>::_inDegree(const NodeType * const node) const
 {
-  am_iterator predsIter = preds.find(node);
+  am_c_iterator predsIter = preds.find(node);
   return predsIter->second.size();
 }
 
@@ -362,7 +362,7 @@ template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 inline size_t
 Graph<DataType, NodeBaseType>::_outDegree(const NodeType * const node) const
 {
-  am_iterator succsIter = succs.find(node);
+  am_c_iterator succsIter = succs.find(node);
   return succsIter->second.size();
 }
 
