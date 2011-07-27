@@ -20,7 +20,7 @@ inline void
 asm_function::init(list<asm_statement *> * _stmts,
                    list<asm_data_statement *> * _locals)
 {
-  stmts.reserve(_stmts->size());
+//  stmts.reserve(_stmts->size());
   stmts.insert(stmts.begin(), _stmts->begin(), _stmts->end());
   locals.reserve(_locals->size());
   locals.insert(locals.begin(), _locals->begin(), _locals->end());
@@ -60,7 +60,7 @@ bool
 asm_function::checkInstructions() const
 {
   bool error = false;
-  for(vector<asm_statement *>::const_iterator stmt_it = this->stmts.begin();
+  for(deque<asm_statement *>::const_iterator stmt_it = this->stmts.begin();
       stmt_it != stmts.end(); stmt_it++)
   {
     const asm_statement * stmt = *stmt_it;

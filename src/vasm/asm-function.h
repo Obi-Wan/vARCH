@@ -17,7 +17,7 @@ struct asm_function {
 
   YYLTYPE position;
 
-  vector<asm_statement *> stmts;
+  deque<asm_statement *> stmts;
   vector<asm_data_statement *> locals;
 
   TableOfSymbols localSymbols;

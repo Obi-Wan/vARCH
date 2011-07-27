@@ -49,6 +49,7 @@ asm_program::addFunctionLabelsToGlobals()
     asm_label_statement * tempLabel =
         new asm_label_statement(func->position, func->name);
     tempLabel->offset = tempOffset;
+    func->stmts.push_front(tempLabel);
 
     try {
       globalSymbols.addLabel(tempLabel);
