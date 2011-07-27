@@ -21,7 +21,7 @@ asm_function::finalize()
       asm_instruction_statement * istmt = (asm_instruction_statement *) stmt;
       for (size_t argNum = 0; argNum < istmt->args.size(); argNum++) {
         if (istmt->args[argNum]->getType() == ASM_LABEL_ARG) {
-          argLabelRecord * tempRecord = new argLabelRecord();
+          ArgLabelRecord * tempRecord = new ArgLabelRecord();
           tempRecord->arg = (asm_label_arg *)istmt->args[argNum];
           tempRecord->parent = istmt;
           refs.push_back(tempRecord);

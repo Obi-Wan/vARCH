@@ -9,6 +9,7 @@
 #define	ASM_FUNCTION_H
 
 #include "asm-classes.h"
+#include "algorithms/Labels.h"
 
 struct asm_function {
   const string name;
@@ -22,7 +23,7 @@ struct asm_function {
   vector<asm_function_param *> parameters;
 
   TableOfSymbols localSymbols;
-  list<argLabelRecord *> refs;
+  list<ArgLabelRecord *> refs;
 
   asm_function(const YYLTYPE& pos, const string& _name)
     : name(_name), tempLocalOffset(0), funcOffset(0), position(pos)

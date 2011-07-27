@@ -99,7 +99,7 @@ void asm_program::assignValuesToLabels() {
   {
     DebugPrintf((" - Processing references of function: %s\n",
                   functions[index]->name.c_str()));
-    for(list<argLabelRecord *>::iterator ref  = functions[index]->refs.begin();
+    for(list<ArgLabelRecord *>::iterator ref  = functions[index]->refs.begin();
             ref != functions[index]->refs.end(); ref++)
     {
       asm_label_arg & argument = *((*ref)->arg);
