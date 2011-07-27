@@ -19,20 +19,28 @@ struct asm_function {
 
   deque<asm_statement *> stmts;
   vector<asm_data_statement *> locals;
+  vector<asm_function_param *> parameters;
 
   TableOfSymbols localSymbols;
   list<argLabelRecord *> refs;
 
-  asm_function(const YYLTYPE& pos, const string& _name,
-               list<asm_statement *> * _stmts,
-               list<asm_data_statement *> * _locals);
-  asm_function(const YYLTYPE& pos, const char * _name,
-               list<asm_statement *> * _stmts,
-               list<asm_data_statement *> * _locals);
+  asm_function(const YYLTYPE& pos, const string& _name)
+    : name(_name), tempLocalOffset(0), funcOffset(0), position(pos)
+  { }
+  asm_function(const YYLTYPE& pos, const char * _name)
+    : name(_name), tempLocalOffset(0), funcOffset(0), position(pos)
+  { }
 
-  void init(list<asm_statement *> *_stmts, list<asm_data_statement *> *_locals);
+  void finalize();
   bool checkInstructions() const;
   void checkLabel(asm_statement * stmt);
+
+  void addStmt(asm_statement * stmt) { if (stmt) stmts.push_back(stmt); }
+  void addLocals(list<asm_data_statement *> * locs)
+  {
+    locals.insert(locals.begin(), locs->begin(), locs->end());
+  }
+  void addParameter(asm_function_param * p) { if (p) parameters.push_back(p); }
 
   int getInstrSize() const {
     int size = 0;

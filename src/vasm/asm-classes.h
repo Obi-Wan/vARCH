@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <list>
+#include <deque>
 #include <string>
 #include <cstdio>
 #include <cstring>
@@ -56,6 +57,7 @@ typedef struct YYLTYPE
 
 enum ObjType {
   ASM_ARG,
+  ASM_FUNCTION_ARG,
   ASM_IMMEDIATE_ARG,
   ASM_LABEL_ARG,
   ASM_STATEMENT,
@@ -110,6 +112,22 @@ struct asm_immediate_arg : asm_arg {
   const int getCode() const { return content.val; }
   const ObjType getType() const { return ASM_IMMEDIATE_ARG; }
   const string toString() const { return "(immediate arg)"; }
+};
+
+struct asm_function_param : asm_arg {
+  union {
+    enum Registers regNum;
+    int address;
+  } content;
+
+  bool isReg;
+
+  asm_function_param(const YYLTYPE& pos, const int & _addr)
+    : asm_arg(pos, ADDR), isReg(false)
+  { content.address = _addr; }
+  asm_function_param(const YYLTYPE& pos, const asm_arg * reg)
+    : asm_arg(pos, REG), isReg(true)
+  { content.regNum = ((const asm_immediate_arg *)reg)->content.regNum; }
 };
 
 struct asm_label_arg : asm_arg {

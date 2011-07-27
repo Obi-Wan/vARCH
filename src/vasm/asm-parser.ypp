@@ -58,6 +58,7 @@ extern int yylex \
   struct asm_data_statement *data_stmt;
   struct asm_data_keyword_statement *keyw_stmt;
   struct asm_function *function;
+  struct asm_function_param *function_parameter;
 
   list<asm_statement *>  * listOfStatements;
   list<asm_data_statement *>  * listOfDataStatements;
@@ -69,7 +70,7 @@ extern int yylex \
 %token <string> STRING
 %token <instruction> INSTRUCTION
 %token KEYWORD_INT KEYWORD_LONG KEYWORD_REAL KEYWORD_CHAR KEYWORD_STRING
-%token KEYWORD_LOCAL KEYWORD_GLOBAL KEYWORD_FUNCTION KEYWORD_END
+%token KEYWORD_LOCAL KEYWORD_GLOBAL KEYWORD_FUNCTION KEYWORD_END KEYWORD_PARAM
 %token <label> DEF_LABEL
 %token <label> POSITION_LABEL
 %token <label> CONTENT_LABEL
@@ -84,14 +85,20 @@ extern int yylex \
 
 %type <arg> arg
 %type <stmt> stmt
-%type <listOfStatements> stmts
 %type <instr_stmt> instruction_stmt
 %type <data_stmt> data_stmt
 %type <keyw_stmt> data_keyword
 %type <listOfDataStatements> data_stmts
 %type <listOfDataStatements> locals
 %type <listOfDataStatements> globals
+
 %type <function> function
+%type <function> function_init_and_body
+%type <function> function_init_all
+%type <function> function_init_params
+%type <function> function_init
+
+%type <function_parameter> function_parameter
 
 %%
 
@@ -120,29 +127,53 @@ blank_lines
       | END_LINE
       ;
 
+
+
 function
-      : KEYWORD_FUNCTION STRING blank_lines
-        locals blank_lines
-        stmts blank_lines
-        KEYWORD_END
-                  { $$ = new asm_function( yylloc, $2, $6, $4 ); }
+      : function_init_and_body KEYWORD_END
+                  { $1->finalize(); $$ = $1; }
       ;
 
+function_init_and_body
+      : function_init_and_body stmt
+                  { $1->addStmt( $2 ); $$ = $1; }
+      | function_init_all
+                  { $$ = $1; }
+      ;
+
+function_init_all
+      : function_init_all locals
+                  { $1->addLocals( $2 ); delete $2; $$ = $1; }
+      | function_init_params
+                  { $$ = $1; }
+      ;
+
+function_init_params
+      : function_init_params function_parameter
+                  { $1->addParameter( $2 ); $$ = $1; }
+      | function_init
+                  { $$ = $1; }
+      ;
+
+function_init
+      : KEYWORD_FUNCTION STRING blank_lines
+                  { $$ = new asm_function( yylloc, $2 ); }
+      ;
+
+function_parameter
+      : KEYWORD_PARAM REGISTER blank_lines
+                  { $$ = new asm_function_param( yylloc, $2 ); delete $2; }
+      ;
+
+
 locals
-      : KEYWORD_LOCAL blank_lines data_stmts blank_lines KEYWORD_END
+      : KEYWORD_LOCAL blank_lines data_stmts blank_lines KEYWORD_END blank_lines
                   { $$ = $3; }
-      | KEYWORD_LOCAL blank_lines KEYWORD_END
+      | KEYWORD_LOCAL blank_lines KEYWORD_END blank_lines
                   { $$ = new list<asm_data_statement *>(); }
       ;
 
-stmts
-      : stmts blank_lines stmt
-                  { $1->push_back( $3 ); $$ = $1; }
-      | stmt      { $$ = new list<asm_statement *>();
-                    $$->push_back( $1 ); }
-      | error blank_lines stmt
-                  { $$ =  new list<asm_statement *>(); $$->push_back( $3 ); }
-      ;
+
 
 arg
       : INTEGER         { $$ = new asm_immediate_arg( yylloc, $1 , COST ); }
@@ -155,8 +186,8 @@ arg
       ;
 
 stmt
-      : instruction_stmt  { $$ = $1; }
-      | data_stmt         { $$ = $1; }
+      : instruction_stmt blank_lines  { $$ = $1; }
+      | data_stmt blank_lines         { $$ = $1; }
       ;
 
 instruction_stmt
@@ -194,8 +225,7 @@ data_keyword
       ;
 
 define
-      : PREPROC_DEFINE ID ID
-      | PREPROC_DEFINE ID CONTENT_CONST
+      : PREPROC_DEFINE ID CONTENT_CONST
       ;
 
 pragma
