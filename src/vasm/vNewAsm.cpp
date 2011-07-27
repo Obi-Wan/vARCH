@@ -9,6 +9,8 @@
 #include "asm-program.h"
 #include "asm-parser.h"
 #include "AsmArgs.h"
+#include "backend/AssemFlowGraph.h"
+#include "backend/RegAllocator.h"
 
 using namespace std;
 
@@ -50,6 +52,30 @@ main(int argc, char** argv) {
 #ifdef DEBUG
       printAbstractTree(program);
 #endif
+      // Try Graph
+      AssemFlowGraph flowGraph;
+      flowGraph.populateGraph(*(program->functions[0]));
+      DebugPrintf((" --> Printing Flow Graph!! <--\n"));
+      flowGraph.printFlowGraph();
+      DebugPrintf((" --> Printed Flow Graph!! <--\n\n"));
+
+      LiveMap<asm_statement *> liveMap;
+      flowGraph.populateLiveMap(liveMap);
+      DebugPrintf((" --> Printing Live Map!! <--\n"));
+      liveMap.printLiveMap();
+      DebugPrintf((" --> Printed Live Map!! <--\n\n"));
+
+      InteferenceGraph interfGraph;
+      interfGraph.populateGraph<asm_statement *>(flowGraph, liveMap, flowGraph.getTempsMap());
+      DebugPrintf((" --> Printing Interference Graph!! <--\n"));
+      interfGraph.printInterferenceGraph();
+      DebugPrintf((" --> Printed Interference Graph!! <--\n\n"));
+
+      RegAllocator regAlloc(flowGraph.getTempsMap());
+      DebugPrintf((" --> Printing Allocator Stack!! <--\n"));
+      regAlloc.simpleAllocateRegs(interfGraph);
+      DebugPrintf((" --> Printed Allocator Stack!! <--\n\n"));
+
       program->assignValuesToLabels();
       program->assemble( args.getOutputName() );
 
