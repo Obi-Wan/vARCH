@@ -74,9 +74,6 @@ protected:
 
   const void * checkLabelInternal(const string & _label,
       const string & _errorMsg) const;
-  NodeType * checkLabel(const string & _label, const string & _errorMsg)
-    const
-  { return (NodeType *) checkLabelInternal(_label, _errorMsg); }
 
   void checkNodePtr(const NodeType * const node, const string & errorMessage)
     const;
@@ -98,6 +95,10 @@ public:
   virtual void removeNode(const NodeType * const node);
 
   virtual void clear();
+
+  NodeType * checkLabel(const string & _label, const string & _errorMsg)
+    const
+  { return (NodeType *) checkLabelInternal(_label, _errorMsg); }
 
   void addDirectedArc(const string & _from, const string & _to);
   void addDirectedArc(const NodeType * const from, const NodeType * const to);

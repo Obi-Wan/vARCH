@@ -9,7 +9,7 @@
 #define	_CPU_H
 
 #include "Mmu.h"
-#include "../include/exceptions.h"
+#include "exceptions.h"
 
 #define NUM_REGS 8
 

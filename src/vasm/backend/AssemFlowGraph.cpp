@@ -38,8 +38,8 @@ inline void
 AssemFlowGraph::_addNodesToGraph(asm_function & function)
 {
   uint32_t progr = 0; // progressive number of instruction
-  vector<asm_statement *> & stmts = function.stmts;
-  for(vector<asm_statement *>::iterator stmtIt = stmts.begin();
+  deque<asm_statement *> & stmts = function.stmts;
+  for(deque<asm_statement *>::iterator stmtIt = stmts.begin();
       stmtIt != stmts.end(); stmtIt++)
   {
     asm_statement * stmt = *stmtIt;
