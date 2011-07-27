@@ -76,6 +76,8 @@ main(int argc, char** argv) {
       regAlloc.simpleAllocateRegs(interfGraph);
       DebugPrintf((" --> Printed Allocator Stack!! <--\n\n"));
 
+      flowGraph.applySelectedRegisters(regAlloc.getAssignedRegs());
+
       program->assignValuesToLabels();
       program->assemble( args.getOutputName() );
 

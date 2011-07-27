@@ -36,6 +36,7 @@ public:
 //  AssemFlowGraph();
 
   void populateGraph(asm_function & function);
+  void applySelectedRegisters(const AssignedRegs & regs);
 
   virtual void clear();
 

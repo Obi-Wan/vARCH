@@ -15,6 +15,9 @@ using namespace std;
 
 #include "macros.h"
 
+// Used later in RegAllocator and AssemFlowGraph
+typedef map<uint32_t, uint32_t>       AssignedRegs;
+
 class TempsMap {
   typedef class map<string, uint32_t> LabelToUID;
   typedef class map<uint32_t, string> UIDToLabel;

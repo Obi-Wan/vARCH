@@ -262,3 +262,39 @@ AssemFlowGraph::populateGraph(asm_function & function)
   _findUsesDefines();
   DebugPrintf(("  - Done\n"));
 }
+
+void
+AssemFlowGraph::applySelectedRegisters(const AssignedRegs & regs)
+{
+  for(nl_iterator nodeIt = listOfNodes.begin(); nodeIt != listOfNodes.end();
+      nodeIt++)
+  {
+    if (nodeIt->data->getType() == ASM_INSTRUCTION_STATEMENT) {
+      asm_instruction_statement * stmt =
+                                    (asm_instruction_statement *) nodeIt->data;
+      for(vector<asm_arg *>::iterator argIt = stmt->args.begin();
+          argIt != stmt->args.end(); argIt++)
+      {
+        if (_argIsTemp(*argIt)) {
+          asm_immediate_arg * arg = (asm_immediate_arg *) *argIt;
+          const uint32_t temp_uid = arg->content.tempUID;
+
+          AssignedRegs::const_iterator reg = regs.find(temp_uid);
+          if (reg == regs.end()) {
+            throw WrongArgumentException(
+                "A temporary in instruction was not considered!");
+          }
+          if (reg->second) {
+            arg->content.tempUID = reg->second -1;
+          } else {
+            throw WrongArgumentException(
+                "Pending Spills! not using a solution!");
+          }
+        }
+      }
+    }
+  }
+}
+
+
+

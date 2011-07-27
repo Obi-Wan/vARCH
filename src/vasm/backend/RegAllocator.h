@@ -39,8 +39,6 @@ public:
   typedef InteferenceGraph::am_c_iterator am_c_iterator;
   typedef InteferenceGraph::am_iterator   am_iterator;
 
-  typedef map<uint32_t, uint32_t>         AssignedRegs;
-
 protected:
   const TempsMap & tempsMap;
 
