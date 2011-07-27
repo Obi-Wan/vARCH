@@ -126,9 +126,9 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
   if (arg0_temp) {
     asm_immediate_arg * arg = (asm_immediate_arg *) args[0];
     // Add to temps map
-    tempsMap.putTemp( arg->content.regNum, true);
+    tempsMap.putTemp( arg->content.tempUID, true);
     // Add to uses
-    nodeUses.insert( arg->content.regNum );
+    nodeUses.insert( arg->content.tempUID );
     switch(arg->type) {
       case REG_PRE_INCR:
       case REG_PRE_DECR:
@@ -138,7 +138,7 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
       case ADDR_IN_REG_PRE_DECR:
       case ADDR_IN_REG_POST_INCR:
       case ADDR_IN_REG_POST_DECR:
-        nodeDefs.insert( arg->content.regNum );
+        nodeDefs.insert( arg->content.tempUID );
         isMove = false;
       default: break;
     }
@@ -146,9 +146,9 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
   if (arg1_temp) {
     asm_immediate_arg * arg = (asm_immediate_arg *) args[1];
     // Add to temps map
-    tempsMap.putTemp( arg->content.regNum, true);
+    tempsMap.putTemp( arg->content.tempUID, true);
     // Add to defs
-    nodeDefs.insert( arg->content.regNum );
+    nodeDefs.insert( arg->content.tempUID );
   }
   return isMove;
 }
@@ -221,13 +221,13 @@ AssemFlowGraph::_findUsesDefines()
           if ( _argIsTemp(i_stmt->args[argNum]) ) {
             asm_immediate_arg * arg = (asm_immediate_arg *)i_stmt->args[argNum];
             // to temps map
-            tempsMap.putTemp(arg->content.regNum, true);
+            tempsMap.putTemp(arg->content.tempUID, true);
             // uses
-            nodeUses.insert(arg->content.regNum);
+            nodeUses.insert(arg->content.tempUID);
 
             // defines
             if (_argIsDefined(i_stmt->instruction, argNum, arg->type)) {
-              nodeDefs.insert(arg->content.regNum);
+              nodeDefs.insert(arg->content.tempUID);
             }
           }
         } // End loop arguments

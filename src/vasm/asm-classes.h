@@ -90,6 +90,7 @@ struct asm_arg {
 struct asm_immediate_arg : asm_arg {
   union {
     enum Registers regNum;
+    uint32_t tempUID;
     int val;
     float fval;
   } content;

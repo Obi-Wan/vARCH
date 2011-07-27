@@ -44,7 +44,7 @@ char string_buf[MAX_STR_CONST];
 char *string_buf_ptr;
 
 int getRegNum(const char * str);
-int getTempRegNum(const char * str, const TypeOfArgument& type);
+uint32_t getTempRegNum(const char * str, const TypeOfArgument& type);
 void createRegArg(asm_arg *& arg, YYLTYPE *& loc, const char * str,
               const TypeOfArgument& type, const int& offset, const bool rel);
 void createTempRegArg(asm_arg *& arg, YYLTYPE *& loc, const char * str,
@@ -443,7 +443,7 @@ getRegNum(const char * str)
   return num;
 }
 
-int
+uint32_t
 getTempRegNum(const char * str, const TypeOfArgument& type)
 {
   size_t len = strlen(str);
@@ -490,7 +490,7 @@ createTempRegArg(asm_arg *& arg, YYLTYPE *& loc, const char * str,
   asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
   tempArg->relative = rel;
   tempArg->type = type;
-  tempArg->content.val = getTempRegNum(str, type);
+  tempArg->content.tempUID = getTempRegNum(str, type);
   tempArg->isTemp = true;
   arg = tempArg;
 }
