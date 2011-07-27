@@ -84,7 +84,7 @@ struct asm_arg {
   asm_arg(const YYLTYPE& pos) : relOffset(0), relative(false), position(pos) { }
   virtual const string toString() const { return ""; }
   virtual const int getCode() const { }
-  virtual const ObjType getType() const { return ASM_ARG; }
+  virtual const ObjType getType() const throw() { return ASM_ARG; }
 };
 
 struct asm_immediate_arg : asm_arg {
@@ -110,7 +110,7 @@ struct asm_immediate_arg : asm_arg {
   }
 
   const int getCode() const { return content.val; }
-  const ObjType getType() const { return ASM_IMMEDIATE_ARG; }
+  const ObjType getType() const throw() { return ASM_IMMEDIATE_ARG; }
   const string toString() const { return "(immediate arg)"; }
 };
 
@@ -141,11 +141,11 @@ struct asm_label_arg : asm_arg {
 
   const string toString() const { return string("(label: '") + label + "')"; }
   const int getCode() const { return pointedPosition; }
-  const ObjType getType() const { return ASM_LABEL_ARG; }
+  const ObjType getType() const throw() { return ASM_LABEL_ARG; }
 };
 
 struct asm_statement {
-  int offset;
+  size_t offset;
 
   YYLTYPE position;
 
@@ -154,10 +154,10 @@ struct asm_statement {
     : offset(_offs), position(pos) { }
 
   virtual const string toString() const { return ""; }
-  virtual int getSize() const { return 0; }
+  virtual size_t getSize() const throw() { return 0; }
 
   virtual void emitCode(Bloat::iterator & position) { }
-  virtual const ObjType getType() const { return ASM_STATEMENT; }
+  virtual const ObjType getType() const throw() { return ASM_STATEMENT; }
 };
 
 //////////////////
@@ -201,8 +201,8 @@ struct asm_instruction_statement : asm_statement {
     }
   }
 
-  int getSize() const { return 1 + args.size(); }
-  const ObjType getType() const { return ASM_INSTRUCTION_STATEMENT; }
+  size_t getSize() const throw() { return 1 + args.size(); }
+  const ObjType getType() const throw() { return ASM_INSTRUCTION_STATEMENT; }
 };
 
 ///////////////////////
@@ -210,7 +210,7 @@ struct asm_instruction_statement : asm_statement {
 
 struct asm_data_statement : asm_statement {
   asm_data_statement(const YYLTYPE& pos) : asm_statement(pos) { }
-  const ObjType getType() const { return ASM_DATA_STATEMENT; }
+  const ObjType getType() const throw() { return ASM_DATA_STATEMENT; }
 };
 
 struct asm_label_statement : asm_data_statement {
@@ -222,13 +222,13 @@ struct asm_label_statement : asm_data_statement {
     : asm_data_statement(pos), label(_label) { }
 
   const string toString() const { return string("(label: '") + label + "')"; }
-  const ObjType getType() const { return ASM_LABEL_STATEMENT; }
+  const ObjType getType() const throw() { return ASM_LABEL_STATEMENT; }
 };
 
 struct asm_data_keyword_statement : asm_data_statement {
   asm_data_keyword_statement(const YYLTYPE& pos) : asm_data_statement(pos) { }
   const string toString() const { return "(data_keyword_statement)"; }
-  const ObjType getType() const { return ASM_KEYWORD_STATEMENT; }
+  const ObjType getType() const throw() { return ASM_KEYWORD_STATEMENT; }
 };
 
 struct asm_int_keyword_statement : asm_data_keyword_statement {
@@ -238,8 +238,8 @@ struct asm_int_keyword_statement : asm_data_keyword_statement {
     : asm_data_keyword_statement(pos), integer(_integer) { }
 
   const string toString() const { return "(integer_keyword_statement)"; }
-  int getSize() const { return 1; }
-  const ObjType getType() const { return ASM_INT_KEYWORD_STATEMENT; }
+  size_t getSize() const throw() { return 1; }
+  const ObjType getType() const throw() { return ASM_INT_KEYWORD_STATEMENT; }
 
   void emitCode(Bloat::iterator & position) {
     *(position++) = integer;
@@ -253,8 +253,8 @@ struct asm_long_keyword_statement : asm_data_keyword_statement {
     : asm_data_keyword_statement(pos), longInteger(_long) { }
 
   const string toString() const { return "(long_integer_keyword_statement)"; }
-  int getSize() const { return 2; }
-  const ObjType getType() const { return ASM_LONG_KEYWORD_STATEMENT; }
+  size_t getSize() const throw() { return 2; }
+  const ObjType getType() const throw() { return ASM_LONG_KEYWORD_STATEMENT; }
 
   void emitCode(Bloat::iterator & position) {
     *(position++) = EXTRACT_HIGHER_SWORD_FROM_DWORD(longInteger);
@@ -269,8 +269,8 @@ struct asm_char_keyword_statement : asm_data_keyword_statement {
     : asm_data_keyword_statement(pos), character(*(_char)) { }
 
   const string toString() const { return "(char_keyword_statement)"; }
-  int getSize() const { return 1; }
-  const ObjType getType() const { return ASM_CHAR_KEYWORD_STATEMENT; }
+  size_t getSize() const throw() { return 1; }
+  const ObjType getType() const throw() { return ASM_CHAR_KEYWORD_STATEMENT; }
 
   void emitCode(Bloat::iterator & position) {
     *(position++) = (character & 0xff );
@@ -286,8 +286,8 @@ struct asm_string_keyword_statement : asm_data_keyword_statement {
   const string toString() const {
     return  string("(string_keyword_statement: '") + str + "')";
   }
-  int getSize() const { return str.size(); }
-  const ObjType getType() const { return ASM_STRING_KEYWORD_STATEMENT; }
+  size_t getSize() const throw() { return str.size(); }
+  const ObjType getType() const throw() { return ASM_STRING_KEYWORD_STATEMENT; }
 
   void emitCode(Bloat::iterator & position) {
     for (size_t i = 0; i < str.size(); i++) {
@@ -303,8 +303,8 @@ struct asm_real_keyword_statement : asm_data_keyword_statement {
     : asm_data_keyword_statement(pos), real(_real) { }
 
   const string toString() const { return  "(real_keyword_statement: )"; }
-  int getSize() const { return 1; }
-  const ObjType getType() const { return ASM_REAL_KEYWORD_STATEMENT; }
+  size_t getSize() const throw() { return 1; }
+  const ObjType getType() const throw() { return ASM_REAL_KEYWORD_STATEMENT; }
   void emitCode(Bloat::iterator & position) {
     *(position++) = static_cast<int>(real);
   }

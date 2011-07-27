@@ -15,7 +15,7 @@
 #include <deque>
 
 struct asm_program {
-  int tempOffset;
+  size_t tempOffset;
 
   deque<asm_function *> functions;
   vector<asm_data_statement *> globals;
