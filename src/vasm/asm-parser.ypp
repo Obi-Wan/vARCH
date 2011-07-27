@@ -74,6 +74,7 @@ extern int yylex \
 %token <label> POSITION_LABEL
 %token <label> CONTENT_LABEL
 %token <arg> REGISTER
+%token <arg> TEMPORARY
 %token <id> ID
 %token COMA
 %token END_LINE
@@ -150,6 +151,7 @@ arg
       | POSITION_LABEL  { $$ = new asm_label_arg( yylloc, $1 , COST ); }
       | CONTENT_LABEL   { $$ = new asm_label_arg( yylloc, $1 , ADDR ); }
       | REGISTER        { $$ = $1; }
+      | TEMPORARY       { $$ = $1; }
       ;
 
 stmt
