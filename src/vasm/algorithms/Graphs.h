@@ -579,13 +579,13 @@ LiveMap<DataType>::printLiveMap() const
     for(us_iterator ins = live_in->second.begin(); ins != live_in->second.end();
         ins++)
     {
-      cout << " T" << (*ins +1);
+      cout << " T" << *ins;
     }
     cout << "\n   live-out (num: " << live_out->second.size() << "):";
     for(us_iterator outs = live_out->second.begin();
         outs != live_out->second.end(); outs++)
     {
-      cout << " T" << (*outs +1);
+      cout << " T" << *outs;
     }
     cout << endl;
   }
@@ -817,14 +817,14 @@ FlowGraph<DataType>::printFlowGraph() const
     for(us_c_iterator useIt = nodeUses.begin(); useIt != nodeUses.end();
         useIt++)
     {
-      cout << " T" << (*useIt +1);
+      cout << " T" << *useIt;
     }
     cout << "\n  Defs:";
     const UIDMultiSetType & nodeDefs = defs.find(node)->second;
     for(us_c_iterator defIt = nodeDefs.begin(); defIt != nodeDefs.end();
         defIt++)
     {
-      cout << " T" << (*defIt +1);
+      cout << " T" << *defIt;
     }
     cout << endl;
   }

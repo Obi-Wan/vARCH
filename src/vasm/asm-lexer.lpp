@@ -466,7 +466,7 @@ getTempRegNum(const char * str, const TypeOfArgument& type)
     }
   }
   char * tempStr = strndup(str, len);
-  int num = atoi(tempStr) -1;
+  uint32_t num = atoi(tempStr);
 
   free(tempStr);
   return num;

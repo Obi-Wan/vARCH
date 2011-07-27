@@ -136,7 +136,7 @@ RegAllocator::printAssigned() const
   for(AssignedRegs::const_iterator el = assignedRegs.begin();
       el != assignedRegs.end(); el++)
   {
-    cout << "Node: " << el->first << ", reg: ";
+    cout << "Node: " << tempsMap.getLabel(el->first) << ", reg: ";
     if (el->second) {
       cout << "R" << el->second << endl;
     } else {
