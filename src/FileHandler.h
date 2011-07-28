@@ -68,5 +68,34 @@ public:
   string getTextFileContent();
 };
 
+class TextWriter : public FileHandler {
+public:
+  TextWriter(const char * filename)
+      : FileHandler(filename, ios_base::out | ios_base::trunc ) { }
+  TextWriter(const string & filename)
+      : FileHandler(filename.c_str(), ios_base::out | ios_base::trunc ) { }
+
+  void writeLineToFile(const string & line) {
+    file << (line + "\n");
+  }
+  template<typename Type>
+  TextWriter & operator<<(const Type & input) {
+    file << input;
+    return *this;
+  }
+  TextWriter & operator<<(ostream & (*fp)(ostream &)) {
+    file << fp;
+    return *this;
+  }
+  TextWriter & operator<<(ios & (*fp)(ios&)) {
+    file << fp;
+    return *this;
+  }
+  TextWriter & operator<<(ios_base & (*fp)(ios_base&)) {
+    file << fp;
+    return *this;
+  }
+};
+
 #endif	/* _FILEHANDLER_H */
 
