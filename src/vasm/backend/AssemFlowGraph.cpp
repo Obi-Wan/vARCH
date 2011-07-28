@@ -53,14 +53,18 @@ AssemFlowGraph::_addNodesToGraph(asm_function & function)
 inline void
 AssemFlowGraph::_createArcs(const TableOfSymbols & functionSymbols)
 {
-  for(size_t nodeNum = 0; nodeNum < listOfNodes.size(); nodeNum++)
+  for(nl_iterator nodeIt = listOfNodes.begin(); nodeIt != listOfNodes.end();
+      nodeIt++)
   {
-    const NodeType * const node = &listOfNodes[nodeNum];
+    const NodeType * const node = &*nodeIt;
+    nl_iterator nextNodeIt = nodeIt;
+    nextNodeIt++;
+
     asm_statement * stmt = node->data;
     if (stmt->getType() == ASM_LABEL_STATEMENT) {
-      if (nodeNum < (listOfNodes.size() - 1)) {
+      if (nextNodeIt != listOfNodes.end()) {
         DebugPrintf(("Adding arc to next node\n"));
-        addDirectedArc(node, &listOfNodes[nodeNum+1]);
+        addDirectedArc(node, &*nextNodeIt);
       }
     } else if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
       asm_instruction_statement * i_stmt = (asm_instruction_statement *) stmt;
@@ -73,9 +77,9 @@ AssemFlowGraph::_createArcs(const TableOfSymbols & functionSymbols)
         case IFMOJ:
         case IFLEJ:
         case IFMEJ: {
-          if (nodeNum < (listOfNodes.size() - 1)) {
+          if (nextNodeIt != listOfNodes.end()) {
             DebugPrintf(("Adding arc to next node\n"));
-            addDirectedArc(node, &listOfNodes[nodeNum+1]);
+            addDirectedArc(node, &*nextNodeIt);
           }
         }
         case JMP: {
@@ -103,9 +107,9 @@ AssemFlowGraph::_createArcs(const TableOfSymbols & functionSymbols)
           break;
         }
         default: {
-          if (nodeNum < (listOfNodes.size() - 1)) {
+          if (nextNodeIt != listOfNodes.end()) {
             DebugPrintf(("Adding arc to next node\n"));
-            addDirectedArc(node, &listOfNodes[nodeNum+1]);
+            addDirectedArc(node, &*nextNodeIt);
           }
           break;
         }
@@ -201,9 +205,10 @@ AssemFlowGraph::_argIsDefined(const int & instruction, const size_t & argNum,
 inline void
 AssemFlowGraph::_findUsesDefines()
 {
-  for(size_t nodeNum = 0; nodeNum < listOfNodes.size(); nodeNum++)
+  for(nl_iterator nodeIt = listOfNodes.begin(); nodeIt != listOfNodes.end();
+      nodeIt++)
   {
-    NodeType * const node = &listOfNodes[nodeNum];
+    NodeType * const node = &*nodeIt;
     asm_statement * stmt = node->data;
     if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
       asm_instruction_statement * i_stmt = (asm_instruction_statement *) stmt;

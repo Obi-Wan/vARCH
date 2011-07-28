@@ -8,6 +8,7 @@
 #ifndef GRAPHS_H_
 #define GRAPHS_H_
 
+#include <list>
 #include <deque>
 #include <set>
 #include <map>
@@ -50,7 +51,7 @@ template<typename DataType, template<typename NodeDataType> class NodeBaseType =
 class Graph {
 public:
   typedef class NodeBaseType<DataType> NodeType;
-  typedef class deque<NodeType> NodeListType;
+  typedef class list<NodeType> NodeListType;
   typedef class map<const string, const NodeType * const> NodeMapType;
   typedef class set<const NodeType *> NodeSetType;
   typedef class map<const NodeType *, NodeSetType> ArcsMap;
@@ -542,7 +543,7 @@ Graph<DataType, NodeBaseType>::makeVisitList(
   const NodeType * node = rootNode;
   if (listOfNodes.size()) {
     if (!node) {
-      node = &listOfNodes[0];
+      node = &*listOfNodes.begin();
     }
 
     visited.insert(typename map<const NodeType *, bool>::value_type(node, true));
@@ -925,7 +926,7 @@ inline void
 InteferenceGraph::addNewNode(const string & _label, uint32_t _data)
 {
   Graph<uint32_t>::addNewNode(_label, _data);
-  const NodeType * const node = listOfNodes.back();
+  const NodeType * const node = &listOfNodes.back();
 
   moves.insert(ArcsMap::value_type(node, NodeSetType()));
 }
@@ -1052,7 +1053,7 @@ InteferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
   for(fg_nl_c_iterator nodeIt = flowGraph.getListOfNodes().begin();
       nodeIt != flowGraph.getListOfNodes().end(); nodeIt++)
   {
-    const FG_NodeType * const node = *nodeIt;
+    const FG_NodeType * const node = &*nodeIt;
     if (node->isMove) {
       const UIDMultiSetType & nodeDefs = flowGraph.getDefs().find(node)->second;
       const UIDMultiSetType & nodeUses = flowGraph.getUses().find(node)->second;
