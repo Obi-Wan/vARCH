@@ -204,9 +204,18 @@ public:
 };
 
 class InteferenceGraph : public Graph<uint32_t> {
+  ArcsMap moves;
+
+  void _addPartMoveRelation(const NodeType * const node1,
+      const NodeType * const node2);
+  void _removeMoves(const NodeType * const node);
 public:
   InteferenceGraph() { }
-  InteferenceGraph(const InteferenceGraph & other) : Graph<uint32_t>(other) { }
+  InteferenceGraph(const InteferenceGraph & other);
+
+  virtual void addNewNode(const string & _label, uint32_t _data);
+  virtual void removeNode(const string & _label);
+  virtual void removeNode(const NodeType * const node);
 
   template<typename DataType>
   void populateGraph(const FlowGraph<DataType> & flowGraph,
@@ -839,8 +848,103 @@ FlowGraph<DataType>::printFlowGraph() const
 ////////////////////////////////////////////////////////////////////////////////
 /// Class InterferenceGraph
 ///
+/// Private Members
+////////////////////////////////////////////////////////////////////////////////
+
+inline void
+InteferenceGraph::_addPartMoveRelation(const NodeType * const node1,
+    const NodeType * const node2)
+{
+  am_iterator moves1 = moves.find(node1);
+  if (moves1 != moves.end()) {
+    moves1->second.insert(node2);
+  } else {
+    throw WrongArgumentException("Not existing node '" + node1->label
+        + "' in moves map");
+  }
+}
+
+inline void
+InteferenceGraph::_removeMoves(const NodeType * const node)
+{
+  am_iterator nodeMoves = moves.find(node);
+  if (nodeMoves != moves.end()) {
+    NodeSetType & nodeSetMoves = nodeMoves->second;
+    for(ns_iterator moveIt = nodeSetMoves.begin(); moveIt != nodeSetMoves.end();
+        moveIt++)
+    {
+      am_iterator nodeOtherMoves = moves.find(*moveIt);
+      if (nodeOtherMoves != moves.end()) {
+        NodeSetType & nodeSetOtherMoves = nodeOtherMoves->second;
+        ns_iterator backRefMove = nodeSetOtherMoves.find(node);
+        if (backRefMove != nodeSetOtherMoves.end()) {
+          DebugPrintf(("Removing ref to node %p (%s) from %p (%s)",
+                        *backRefMove, (*backRefMove)->label.c_str(),
+                        nodeOtherMoves->first,
+                        nodeOtherMoves->first->label.c_str()));
+          nodeSetOtherMoves.erase(backRefMove);
+        }
+      } else {
+        throw WrongArgumentException("Not existing destination for node '"
+            + node->label + "' in moves map");
+      }
+    }
+    nodeSetMoves.clear();
+    DebugPrintf(("Size of moves %lu, removing %p (%s)\n", moves.size(),
+                  nodeMoves->first, nodeMoves->first->label.c_str()));
+    for(am_iterator movesIt = moves.begin(); movesIt != moves.end(); movesIt++)
+    {
+      DebugPrintf(("   Size of moves for %p (%s) is %lu\n",
+          movesIt->first, movesIt->first->label.c_str(),
+          movesIt->second.size()));
+    }
+    // FIXME there seems to be a bug in STL: erasing this, puts a huge number of
+    // elements
+    moves.erase(nodeMoves);
+    DebugPrintf(("Size of moves %lu\n", moves.size()));
+    for(am_iterator movesIt = moves.begin(); movesIt != moves.end(); movesIt++)
+    {
+      DebugPrintf(("   Size of moves for %p (%s) is %lu\n",
+          movesIt->first, movesIt->first->label.c_str(),
+          movesIt->second.size()));
+    }
+  } else {
+    throw WrongArgumentException("Not existing node '" + node->label
+        + "' in moves map");
+  }
+  DebugPrintf(("Removed moves of node %p\n", node));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/// Class InterferenceGraph
+///
 /// Public Members
 ////////////////////////////////////////////////////////////////////////////////
+
+inline void
+InteferenceGraph::addNewNode(const string & _label, uint32_t _data)
+{
+  Graph<uint32_t>::addNewNode(_label, _data);
+  const NodeType * const node = listOfNodes.back();
+
+  moves.insert(ArcsMap::value_type(node, NodeSetType()));
+}
+inline void
+InteferenceGraph::removeNode(const string & _label)
+{
+  const NodeType * const node =
+      checkLabel(_label, "Trying to remove a node that is not in the graph");
+  _removeMoves(node);
+  _removeNode(node);
+}
+
+inline void
+InteferenceGraph::removeNode(const NodeType * const node)
+{
+  checkNodePtr(node, "Trying to remove a node that is not in the graph");
+  _removeMoves(node);
+  _removeNode(node);
+}
 
 template<typename DataType>
 void
@@ -940,6 +1044,27 @@ InteferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
                               tempsMap.getLabel(*live_out) );
           }
         }
+      }
+    }
+  }
+
+  // Sub-optimal - Find move relations
+  for(fg_nl_c_iterator nodeIt = flowGraph.getListOfNodes().begin();
+      nodeIt != flowGraph.getListOfNodes().end(); nodeIt++)
+  {
+    const FG_NodeType * const node = *nodeIt;
+    if (node->isMove) {
+      const UIDMultiSetType & nodeDefs = flowGraph.getDefs().find(node)->second;
+      const UIDMultiSetType & nodeUses = flowGraph.getUses().find(node)->second;
+      const string & nodeDlabel = tempsMap.getLabel(*nodeDefs.begin());
+      const string & nodeUlabel = tempsMap.getLabel(*nodeUses.begin());
+      const NodeType * const nodeD = checkLabel(nodeDlabel, "");
+      const NodeType * const nodeU = checkLabel(nodeUlabel, "");
+
+      NodeSetType & nodeSuccs = succs.find(nodeD)->second;
+      if (nodeSuccs.find(nodeU) == nodeSuccs.end()) {
+        _addPartMoveRelation(nodeD, nodeU);
+        _addPartMoveRelation(nodeU, nodeD);
       }
     }
   }
