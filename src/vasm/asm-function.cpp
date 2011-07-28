@@ -62,7 +62,7 @@ asm_function::checkInstructions() const
 }
 
 bool
-asm_function::ensureNoTemps() const
+asm_function::ensureTempsUsage(const bool & used) const
 {
   bool error = false;
   for(deque<asm_statement *>::const_iterator stmt_it = this->stmts.begin();
@@ -71,7 +71,7 @@ asm_function::ensureNoTemps() const
     const asm_statement * stmt = *stmt_it;
     if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
       try {
-        ((const asm_instruction_statement *)stmt)->ensureNoTemps();
+        ((const asm_instruction_statement *)stmt)->ensureTempsUsage(used);
       } catch (const WrongArgumentException & e) {
         fprintf(stderr, "ERROR: in instruction!\n%s\n", e.what());
         error = true;

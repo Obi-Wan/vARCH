@@ -24,16 +24,17 @@ asm_program::checkInstructions() const
 }
 
 void
-asm_program::ensureNoTemps() const
+asm_program::ensureTempsUsage(const bool & used) const
 {
   bool error = false;
   for(deque<asm_function *>::const_iterator iter = functions.begin();
       iter != functions.end(); iter++)
   {
-    error |= (*iter)->ensureNoTemps();
+    error |= (*iter)->ensureTempsUsage(used);
   }
   if (error) {
-    throw WrongArgumentException("Temporaries were found");
+    throw WrongArgumentException(used
+        ? "Explicit registers were found" : "Temporaries were found");
   }
 }
 

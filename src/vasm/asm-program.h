@@ -55,7 +55,7 @@ public:
   }
 
   void checkInstructions() const;
-  void ensureNoTemps() const;
+  void ensureTempsUsage(const bool & used) const;
 
   void addFunctionLabelsToGlobals();
   void assignValuesToLabels();

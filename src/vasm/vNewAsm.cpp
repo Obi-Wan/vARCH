@@ -52,6 +52,7 @@ main(int argc, char** argv)
 #ifdef DEBUG
       printAbstractTree(program);
 #endif
+      program->ensureTempsUsage(args.getRegAutoAlloc());
       if (args.getRegAutoAlloc()) {
         AssemFlowGraph flowGraph;
         flowGraph.populateGraph(*(program->functions[0]));
@@ -78,8 +79,6 @@ main(int argc, char** argv)
         DebugPrintf((" --> Printed Allocator Stack!! <--\n\n"));
 
         flowGraph.applySelectedRegisters(regAlloc.getAssignedRegs());
-      } else {
-        program->ensureNoTemps();
       }
 
       program->assignValuesToLabels();

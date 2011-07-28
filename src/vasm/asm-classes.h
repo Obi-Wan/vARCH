@@ -179,7 +179,7 @@ struct asm_instruction_statement : asm_statement {
   }
 
   void checkArgs() const;
-  void ensureNoTemps() const;
+  void ensureTempsUsage(const bool & used) const;
 
   const string toString() const {
     string output = "(instr, ";

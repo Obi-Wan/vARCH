@@ -74,21 +74,27 @@ asm_instruction_statement::checkArgs() const
 }
 
 void
-asm_instruction_statement::ensureNoTemps() const
+asm_instruction_statement::ensureTempsUsage(const bool & used) const
 {
   for(size_t numArg = 0; numArg < args.size(); numArg++)
   {
-    if (args[numArg]->getType() == ASM_IMMEDIATE_ARG
-        && ((const asm_immediate_arg *)args[numArg])->isTemp)
+    if (args[numArg]->getType() == ASM_IMMEDIATE_ARG)
     {
-      stringstream stream;
-      stream  << "Found a temporary when not compiling for temporaries,"
-                << " as argument of instruction '"
-                << ISet.getIstr(instruction)
-                << "' (" << instruction << ") at position:" << endl
-              << position.fileNode->printString()
-                << " Line: " << position.first_line << endl;
-      throw WrongArgumentException(stream.str());
+      const asm_immediate_arg * arg = (const asm_immediate_arg *) args[numArg];
+      if (!(arg->type == COST || arg->type == ADDR) && (used ^ arg->isTemp))
+      {
+        stringstream stream;
+        if (used) {
+          stream << "Found an explicit register when compiling for temporaries";
+        } else {
+          stream << "Found a temporary when not compiling for temporaries,";
+        }
+        stream  << " as argument of instruction '" << ISet.getIstr(instruction)
+                  << "' (" << instruction << ") at position:" << endl
+                << position.fileNode->printString()
+                  << " Line: " << position.first_line << endl;
+        throw WrongArgumentException(stream.str());
+      }
     }
   }
 }
