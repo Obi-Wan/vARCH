@@ -40,6 +40,15 @@ AsmArgs::parse() throw (WrongArgumentException)
     } else if (!tempArg.compare("-reg-auto-alloc")) {
       regAutoAlloc = true;
 
+    } else if (!tempArg.compare("-d")) {
+      /* Tells which file will be the output */
+      CHECK_THROW( debugSymbolsName.empty(),
+          WrongArgumentException("Double definition of Debug Symbols file") );
+      CHECK_THROW( (++argNum < argc),
+          WrongArgumentException(
+              "You didn't specify the Debug Symbols file name") );
+      debugSymbolsName.assign(argv[argNum]);
+
     } else if (!tempArg.compare("-h")) {
       throw WrongArgumentException("");
     } else {
@@ -56,6 +65,7 @@ AsmArgs::parse() throw (WrongArgumentException)
   }
 #endif
   DebugPrintf(("Include dirs: %s\n", includes.c_str()));
+  DebugPrintf(("DebugSymbols filename: %s\n", debugSymbolsName.c_str()));
   DebugPrintf(("Register auto allocation: %s\n\n",
                 regAutoAlloc ? "Enabled" : "Disabled"));
 
@@ -71,6 +81,9 @@ AsmArgs::printHelp() const throw()
   cout << "Syntax is: 'new-asm -c <input_file> -o <output_file>'" << endl;
   cout << "To specify additional paths for searching the include files:" << endl
         << "  -I<include_path> as many times as you want" << endl;
+  cout << "To generate a file containing debug symbols:" << endl
+        << "  -d <output_file> (if extension is .xml, an XML file will be "
+            "generated)" << endl;
   cout << "To let the assembler auto allocate registers:" << endl
         << "  add flag -reg-auto-alloc" << endl;
 }

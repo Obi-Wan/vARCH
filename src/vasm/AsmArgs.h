@@ -20,6 +20,7 @@ class AsmArgs {
 
   string inputName;
   string outputName;
+  string debugSymbolsName;
   vector<string> includeDirs;
 
   bool regAutoAlloc;
@@ -33,6 +34,7 @@ public:
 
   const string &getInputName() const throw() { return inputName; }
   const string &getOutputName() const throw() { return outputName; }
+  const string &getDebugSymbolsName() const throw() { return debugSymbolsName; }
   const vector<string> &getIncludeDirs() const throw() { return includeDirs; }
   const bool &getRegAutoAlloc() const throw() { return regAutoAlloc; }
 };

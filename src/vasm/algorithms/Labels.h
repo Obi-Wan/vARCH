@@ -36,6 +36,9 @@ public:
       return iter->second;
     } else return NULL;
   }
+
+  string emitDebugSymbols() const;
+  string emitXMLDebugSymbols() const;
 };
 
 struct ArgLabelRecord {

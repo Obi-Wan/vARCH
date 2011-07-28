@@ -58,6 +58,9 @@ public:
   void addFunctionLabelsToGlobals();
   void assignValuesToLabels();
   void assemble(const string & outputName);
+
+  void emitDebugSymbols(const string & outputName) const;
+  void emitXMLDebugSymbols(const string & outputName) const;
 };
 
 #endif	/* ASM_PROGRAM_H */

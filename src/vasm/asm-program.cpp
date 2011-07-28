@@ -182,3 +182,38 @@ asm_program::assemble(const string & outputName)
   writer.saveBinFileContent(bytecode);
 }
 
+void
+asm_program::emitDebugSymbols(const string & outputName) const
+{
+  TextWriter writer(outputName);
+  writer << "GLOBAL_SYMBOLS" << endl
+          << globalSymbols.emitDebugSymbols()
+          << "END" << endl << endl;
+
+  for (size_t funcIndex = 0; funcIndex < functions.size(); funcIndex++)
+  {
+    asm_function & func = *functions[funcIndex];
+    writer << "FUNCTION \"" << func.name << "\"" << endl
+            << func.localSymbols.emitDebugSymbols()
+            << "END" << endl << endl;
+  }
+}
+
+void
+asm_program::emitXMLDebugSymbols(const string & outputName) const
+{
+  TextWriter writer(outputName);
+  writer << "<global_symbols>" << endl
+          << globalSymbols.emitXMLDebugSymbols()
+          << "</global_symbols>" << endl;
+
+  for (size_t funcIndex = 0; funcIndex < functions.size(); funcIndex++)
+  {
+    asm_function & func = *functions[funcIndex];
+    writer << "<function name=\"" << func.name << "\">" << endl
+            << func.localSymbols.emitXMLDebugSymbols()
+            << "</function>" << endl;
+  }
+}
+
+

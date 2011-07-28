@@ -83,6 +83,17 @@ main(int argc, char** argv)
       program->assignValuesToLabels();
       program->assemble( args.getOutputName() );
 
+      if (!args.getDebugSymbolsName().empty()) {
+        const string & symName = args.getDebugSymbolsName();
+        const size_t & symNameSize = symName.size();
+        if (symNameSize > 4 && !symName.substr(symNameSize-4,4).compare(".xml"))
+        {
+          program->emitXMLDebugSymbols(args.getDebugSymbolsName());
+        } else {
+          program->emitDebugSymbols(args.getDebugSymbolsName());
+        }
+      }
+
       cleanParser();
     } catch (BasicException e) {
       fprintf(stderr, "Error: %s\n", e.what());

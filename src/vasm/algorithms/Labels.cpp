@@ -35,3 +35,31 @@ TableOfSymbols::addLabel(asm_label_statement * lab)
   }
 }
 
+string
+TableOfSymbols::emitDebugSymbols() const
+{
+  stringstream output;
+  for(LabelsMap::const_iterator labelIt = defLabels.begin();
+      labelIt != defLabels.end(); labelIt++)
+  {
+    output << "  \"" << labelIt->first << "\""
+            << "  " << labelIt->second->offset << endl;
+  }
+  return output.str();
+}
+
+string
+TableOfSymbols::emitXMLDebugSymbols() const
+{
+  stringstream output;
+  for(LabelsMap::const_iterator labelIt = defLabels.begin();
+      labelIt != defLabels.end(); labelIt++)
+  {
+    output << "  <symbol>" << endl
+            << "    <id>" << labelIt->first << "</id>" << endl
+            << "    <offset>" << labelIt->second->offset << "</offset>" << endl
+            << "  </symbol>" << endl;
+  }
+  return output.str();
+}
+
