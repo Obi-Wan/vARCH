@@ -72,3 +72,23 @@ asm_instruction_statement::checkArgs() const
       break;
   }
 }
+
+void
+asm_instruction_statement::ensureNoTemps() const
+{
+  for(size_t numArg = 0; numArg < args.size(); numArg++)
+  {
+    if (args[numArg]->getType() == ASM_IMMEDIATE_ARG
+        && ((const asm_immediate_arg *)args[numArg])->isTemp)
+    {
+      stringstream stream;
+      stream  << "Found a temporary when not compiling for temporaries,"
+                << " as argument of instruction '"
+                << ISet.getIstr(instruction)
+                << "' (" << instruction << ") at position:" << endl
+              << position.fileNode->printString()
+                << " Line: " << position.first_line << endl;
+      throw WrongArgumentException(stream.str());
+    }
+  }
+}

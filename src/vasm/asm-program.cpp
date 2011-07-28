@@ -24,6 +24,20 @@ asm_program::checkInstructions() const
 }
 
 void
+asm_program::ensureNoTemps() const
+{
+  bool error = false;
+  for(deque<asm_function *>::const_iterator iter = functions.begin();
+      iter != functions.end(); iter++)
+  {
+    error |= (*iter)->ensureNoTemps();
+  }
+  if (error) {
+    throw WrongArgumentException("Temporaries were found");
+  }
+}
+
+void
 asm_program::addFunctionLabelsToGlobals()
 {
   /* Let's put the main function in front of all the others */

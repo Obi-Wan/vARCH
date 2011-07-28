@@ -61,6 +61,26 @@ asm_function::checkInstructions() const
   return error;
 }
 
+bool
+asm_function::ensureNoTemps() const
+{
+  bool error = false;
+  for(deque<asm_statement *>::const_iterator stmt_it = this->stmts.begin();
+      stmt_it != stmts.end(); stmt_it++)
+  {
+    const asm_statement * stmt = *stmt_it;
+    if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
+      try {
+        ((const asm_instruction_statement *)stmt)->ensureNoTemps();
+      } catch (const WrongArgumentException & e) {
+        fprintf(stderr, "ERROR: in instruction!\n%s\n", e.what());
+        error = true;
+      }
+    }
+  }
+  return error;
+}
+
 inline void
 asm_function::checkLabel(asm_statement * stmt)
 {

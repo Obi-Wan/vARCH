@@ -78,6 +78,8 @@ main(int argc, char** argv)
         DebugPrintf((" --> Printed Allocator Stack!! <--\n\n"));
 
         flowGraph.applySelectedRegisters(regAlloc.getAssignedRegs());
+      } else {
+        program->ensureNoTemps();
       }
 
       program->assignValuesToLabels();

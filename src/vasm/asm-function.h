@@ -34,6 +34,7 @@ struct asm_function {
 
   void finalize();
   bool checkInstructions() const;
+  bool ensureNoTemps() const;
   void checkLabel(asm_statement * stmt);
 
   void addStmt(asm_statement * stmt) { if (stmt) stmts.push_back(stmt); }

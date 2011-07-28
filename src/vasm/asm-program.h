@@ -55,6 +55,8 @@ public:
   }
 
   void checkInstructions() const;
+  void ensureNoTemps() const;
+
   void addFunctionLabelsToGlobals();
   void assignValuesToLabels();
   void assemble(const string & outputName);
