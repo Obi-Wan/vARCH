@@ -54,10 +54,10 @@ AsmArgs::parse() throw (WrongArgumentException)
   for(uint32_t inclNum = 0; inclNum < includeDirs.size(); inclNum++) {
     includes += " " + includeDirs[inclNum];
   }
+#endif
   DebugPrintf(("Include dirs: %s\n", includes.c_str()));
   DebugPrintf(("Register auto allocation: %s\n\n",
                 regAutoAlloc ? "Enabled" : "Disabled"));
-#endif
 
   CHECK_THROW( !inputName.empty(),
           WrongArgumentException("you didn't specify the input file") );

@@ -14,8 +14,8 @@ using namespace std;
 void
 TableOfSymbols::addLabel(asm_label_statement * lab)
 {
-  DebugPrintf(("TableOfSymbols: adding label at position %03d: %s\n",
-         lab->offset, lab->label.c_str()));
+  DebugPrintf(("TableOfSymbols: adding label at position %03lu: %s\n",
+         (uint64_t)lab->offset, lab->label.c_str()));
   const LabelsMap::iterator previousDeclaration =
       defLabels.find(lab->label);
   if (previousDeclaration == defLabels.end()) {
