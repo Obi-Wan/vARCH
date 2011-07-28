@@ -90,8 +90,9 @@ asm_program::addFunctionLabelsToGlobals()
   }
 }
 
-void asm_program::assignValuesToLabels() {
-
+void
+asm_program::assignValuesToLabels()
+{
   bool error = false;
 
   DebugPrintf(("-- Assign labels - Phase --\n"));
@@ -130,9 +131,10 @@ void asm_program::assignValuesToLabels() {
       } else {
         DebugPrintf(("    It's local since it returned: %3d\n", pos));
         DebugPrintf(("    Calculating sizes:\n"));
-        DebugPrintf(("      position of stmt: %03d\n", (*ref)->parent->offset));
-        DebugPrintf(("      size of statement and args: %03d\n",
-                      (*ref)->parent->getSize()));
+        DebugPrintf(("      position of stmt: %03u\n",
+                      (uint32_t)(*ref)->parent->offset));
+        DebugPrintf(("      size of statement and args: %03u\n",
+                      (uint32_t)(*ref)->parent->getSize()));
         DebugPrintf(("      position of the arg relative to the stmt: %03d\n",
                       argument.relOffset));
 
@@ -148,7 +150,9 @@ void asm_program::assignValuesToLabels() {
   }
 }
 
-void asm_program::assemble(const string & outputName) {
+void
+asm_program::assemble(const string & outputName)
+{
   Bloat bytecode;
   bytecode.resize(tempOffset,0);
   Bloat::iterator pos = bytecode.begin();
