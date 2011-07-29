@@ -8,7 +8,6 @@
 #ifndef ASM_PROGRAM_H
 #define	ASM_PROGRAM_H
 
-#include "asm-classes.h"
 #include "asm-function.h"
 #include "exceptions.h"
 

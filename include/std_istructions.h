@@ -8,12 +8,6 @@
 #ifndef _STDISTRUCTIONS_H
 #define	_STDISTRUCTIONS_H
 
-#include <map>
-#include <string>
-#include "exceptions.h"
-
-using namespace std;
-
 #define N_ARGS_ZERO   0
 #define N_ARGS_ONE    (1 << 30)
 #define N_ARGS_TWO    (2 << 30)

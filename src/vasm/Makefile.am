@@ -7,11 +7,11 @@ vasm_SOURCES = \
 			asm-parser.ypp \
 		  IncludesTree.cpp \
 		  asm-lexer.lpp \
-		  asm-classes.cpp \
 		  ../FileHandler.cpp \
 		  asm-function.cpp \
 		  asm-program.cpp \
 		  AsmArgs.cpp \
+		  IR/IR_LowLevel_Statements.cpp \
 		  algorithms/Labels.cpp	\
 		  algorithms/TempsMap.cpp	\
 		  algorithms/Graphs.cpp	\

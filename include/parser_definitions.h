@@ -10,6 +10,7 @@
 
 #include "asm_helpers.h"
 #include "std_istructions.h"
+#include "exceptions.h"
 
 #include <string>
 #include <map>

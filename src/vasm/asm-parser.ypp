@@ -3,7 +3,7 @@
 #define ASM_PARSER_YPP
 
 #include "parser_definitions.h"
-#include "asm-classes.h"
+#include "IR/IR_LowLevel_Statements.h"
 #include "asm-program.h"
 #include "asm-function.h"
 

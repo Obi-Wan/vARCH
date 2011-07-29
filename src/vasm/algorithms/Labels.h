@@ -8,7 +8,11 @@
 #ifndef LABELS_H_
 #define LABELS_H_
 
-#include "../asm-classes.h"
+#include "../IR/IR_LowLevel_Statements.h"
+
+#include <map>
+
+using namespace std;
 
 ///////////////////////
 // Labels Management //

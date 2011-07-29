@@ -8,7 +8,7 @@
 #ifndef INCLUDESTREE_H_
 #define INCLUDESTREE_H_
 
-#include "asm-classes.h"
+#include "IR/IR_LowLevel_Defs.h"
 
 #include <string>
 #include <vector>

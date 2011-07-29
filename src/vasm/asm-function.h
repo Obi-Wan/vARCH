@@ -8,8 +8,13 @@
 #ifndef ASM_FUNCTION_H
 #define	ASM_FUNCTION_H
 
-#include "asm-classes.h"
+#include "IR/IR_LowLevel_Statements.h"
 #include "algorithms/Labels.h"
+
+#include <deque>
+#include <list>
+
+using namespace std;
 
 struct asm_function {
   const string name;
