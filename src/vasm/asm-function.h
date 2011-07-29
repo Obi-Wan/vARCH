@@ -38,7 +38,6 @@ struct asm_function {
   { }
 
   void finalize();
-  bool checkInstructions() const;
   bool ensureTempsUsage(const bool & used) const;
   void checkLabel(asm_statement * stmt);
 

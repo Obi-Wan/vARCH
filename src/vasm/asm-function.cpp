@@ -42,26 +42,6 @@ asm_function::finalize()
 }
 
 bool
-asm_function::checkInstructions() const
-{
-  bool error = false;
-  for(deque<asm_statement *>::const_iterator stmt_it = this->stmts.begin();
-      stmt_it != stmts.end(); stmt_it++)
-  {
-    const asm_statement * stmt = *stmt_it;
-    if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
-      try {
-        ((const asm_instruction_statement *)stmt)->checkArgs();
-      } catch (const WrongArgumentException & e) {
-        fprintf(stderr, "ERROR: in instruction!\n%s\n", e.what());
-        error = true;
-      }
-    }
-  }
-  return error;
-}
-
-bool
 asm_function::ensureTempsUsage(const bool & used) const
 {
   bool error = false;

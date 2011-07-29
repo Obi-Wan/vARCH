@@ -9,14 +9,59 @@
 
 #include "IncludesTree.h"
 
+#include <sstream>
+using namespace std;
+
 void
-asm_program::checkInstructions() const
+asm_program::checkInstructions(const bool & usingTemps) const
 {
   bool error = false;
   for(deque<asm_function *>::const_iterator iter = functions.begin();
       iter != functions.end(); iter++)
   {
-    error |= (*iter)->checkInstructions();
+    asm_function * func = (*iter);
+    for(deque<asm_statement *>::const_iterator stmt_it = func->stmts.begin();
+        stmt_it != func->stmts.end(); stmt_it++)
+    {
+      const asm_statement * stmt = *stmt_it;
+      if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
+        try {
+          ((const asm_instruction_statement *)stmt)->checkArgs();
+        } catch (const WrongArgumentException & e) {
+          fprintf(stderr, "ERROR: in instruction!\n%s\n", e.what());
+          error = true;
+        }
+      } else if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
+        const asm_function_call * f_stmt = (const asm_function_call *) stmt;
+        try {
+          f_stmt->checkArgs();
+
+          if (usingTemps) {
+            const vector<asm_arg *> & args = f_stmt->args;
+            const string & f_name = ((const asm_label_arg *)args[0])->label;
+            for(size_t funcNum = 0; funcNum < functions.size(); funcNum++)
+            {
+              const asm_function & func = *functions[funcNum];
+              if (func.name == f_name) {
+                if (func.parameters.size() != (args.size() -1)) {
+                  stringstream stream;
+                  stream  << "Not enough arguments for function call at:"
+                          << endl << f_stmt->position.fileNode->printString()
+                            << " Line: " << f_stmt->position.first_line << endl
+                          << " - Function '" << f_name << "' requires "
+                            << func.parameters.size() << " parameters, while "
+                            << (args.size() -1) << " were provided." << endl;
+                  throw WrongArgumentException(stream.str());
+                }
+              }
+            }
+          }
+        } catch (const WrongArgumentException & e) {
+          fprintf(stderr, "ERROR: in instruction!\n%s\n", e.what());
+          error = true;
+        }
+      }
+    }
   }
   if (error) {
     throw WrongArgumentException("Errors in instructions definition");

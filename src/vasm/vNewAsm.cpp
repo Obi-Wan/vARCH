@@ -40,6 +40,7 @@ main(int argc, char** argv)
 
   if (openFirstFile(args.getInputName().c_str()))
   {
+    const bool & usingTemps = args.getRegAutoAlloc();
     try {
       asm_program * program = new asm_program();
       int res = yyparse(program);
@@ -47,13 +48,13 @@ main(int argc, char** argv)
         fprintf(stderr, "An error may have occurred, code: %3d\n", res);
         throw BasicException("Error parsing\n");
       }
-      program->checkInstructions();
+      program->checkInstructions(usingTemps);
       program->addFunctionLabelsToGlobals();
 #ifdef DEBUG
       printAbstractTree(program);
 #endif
-      program->ensureTempsUsage(args.getRegAutoAlloc());
-      if (args.getRegAutoAlloc()) {
+      program->ensureTempsUsage(usingTemps);
+      if (usingTemps) {
         AssemFlowGraph flowGraph;
         flowGraph.populateGraph(*(program->functions[0]));
         DebugPrintf((" --> Printing Flow Graph!! <--\n"));

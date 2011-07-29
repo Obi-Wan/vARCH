@@ -53,7 +53,7 @@ public:
     return totSize;
   }
 
-  void checkInstructions() const;
+  void checkInstructions(const bool & usingTemps) const;
   void ensureTempsUsage(const bool & used) const;
 
   void addFunctionLabelsToGlobals();
