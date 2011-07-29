@@ -3,7 +3,7 @@
 #define ASM_PARSER_YPP
 
 #include "parser_definitions.h"
-#include "IR/IR_LowLevel_Statements.h"
+#include "IR/IR_LowLevel_ParserHelpers.h"
 #include "asm-program.h"
 #include "asm-function.h"
 
@@ -193,7 +193,7 @@ stmt
 instruction_stmt
       : instruction_stmt arg  { $$ = $1->addArg( $2 ); }
       | INSTRUCTION
-                  { $$ = new asm_instruction_statement( yylloc, $1 ); }
+                  { $$ = InstructionsHandler::getStmt( yylloc, $1 ); }
       ;
 
 data_stmts

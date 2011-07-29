@@ -46,7 +46,7 @@ struct asm_instruction_statement : asm_statement {
     return this;
   }
 
-  void checkArgs() const;
+  virtual void checkArgs() const;
   void ensureTempsUsage(const bool & used) const;
 
   const string toString() const {
@@ -73,6 +73,32 @@ struct asm_instruction_statement : asm_statement {
 
   size_t getSize() const throw() { return 1 + args.size(); }
   const ObjType getType() const throw() { return ASM_INSTRUCTION_STATEMENT; }
+};
+
+/**
+ * IR Class holding function calls
+ *
+ * The first argument is the label of the function, while the other arguments
+ * are the parameters
+ */
+struct asm_function_call : asm_instruction_statement {
+
+  asm_function_call(const YYLTYPE& pos, const int _instr)
+    : asm_instruction_statement(pos, _instr)
+  { }
+
+  virtual void checkArgs() const;
+
+  void emitCode(Bloat::iterator & position) {
+    const asm_arg * arg = args[0];
+
+    *(position++) = instruction
+        + ARG_1( arg->type + (arg->relative ? RELATIVE_ARG : 0) );
+    *(position++) = arg->getCode();
+  }
+
+  size_t getSize() const throw() { return 2; }
+  const ObjType getType() const throw() { return ASM_FUNCTION_CALL; }
 };
 
 ///////////////////////

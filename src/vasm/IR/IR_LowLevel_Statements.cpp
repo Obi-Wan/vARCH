@@ -99,3 +99,24 @@ asm_instruction_statement::ensureTempsUsage(const bool & used) const
   }
 }
 
+void
+asm_function_call::checkArgs() const
+{
+  if (args.size() < 1) {
+    stringstream stream;
+    stream  << "Not enough arguments for function call at position:" << endl
+            << position.fileNode->printString()
+              << " Line: " << position.first_line << endl
+            << " - At least the function label needs to be specified " << endl;
+    throw WrongArgumentException(stream.str());
+  }
+  if (args[0]->getType() != ASM_LABEL_ARG) {
+    stringstream stream;
+    stream  << "Expected label as first argument of function call at position:"
+              << endl
+            << position.fileNode->printString()
+              << " Line: " << position.first_line << endl;
+    throw WrongArgumentException(stream.str());
+  }
+}
+
