@@ -43,7 +43,6 @@ Chipset::~Chipset() { }
 
 const int32_t
 Chipset::bios[] = {
-  STACK + ARG_1(COST)             , 20          ,
   MOV   + ARG_1(COST) + ARG_2(REG), 10          , REG_DATA_1,
   MOV   + ARG_1(COST) + ARG_2(REG), 20          , REG_DATA_2,
   ADD   + ARG_1(REG)  + ARG_2(REG), REG_DATA_1  , REG_DATA_2,
@@ -66,7 +65,7 @@ Chipset::loadBiosFromFile(const char * file) {
   return handler.getBinFileContent();
 }
 
-inline int
+inline void
 Chipset::initMem() {
   uint32_t i = 0;
   try {
@@ -80,11 +79,9 @@ Chipset::initMem() {
       mainMem[i] = bios[i];
     }
   }
-  const int stackBasePointer = i;
   for (; i < maxMem; i++) {
     mainMem[i] = 0;
   }
-  return stackBasePointer;
 }
 
 void
@@ -106,8 +103,8 @@ Chipset::startClock() {
 
     // Reset if REBOOT istruction got.
     if (result == REBOOT) {
-      const int SPbase = initMem();
-      cpu.init(SPbase);
+      initMem();
+      cpu.init();
     }
   } while (result != HALT);
 

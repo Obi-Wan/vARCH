@@ -38,7 +38,7 @@ class Cpu {
 public:
   Cpu(Chipset&, Mmu&);
 
-  void init(const int & stackPointerBase);
+  void init();
 
   void dumpRegistersAndMemory() const;
 
@@ -80,25 +80,25 @@ private:
 
     void push(const int& data) {
       int& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
-      cpu.memoryController.storeToMem(data,ref++);
+      cpu.memoryController.storeToMem(data,--ref);
     }
     int pop() {
       int& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
-      return cpu.memoryController.loadFromMem(--ref);
+      return cpu.memoryController.loadFromMem(ref++);
     }
 
     void pushAllRegs() {
       int& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
       for(int i = 0; i < NUM_REGS; i++) {
-        cpu.memoryController.storeToMem(cpu.regsData[i],ref++);
-        cpu.memoryController.storeToMem(cpu.regsAddr[i],ref++);
+        cpu.memoryController.storeToMem(cpu.regsData[i],--ref);
+        cpu.memoryController.storeToMem(cpu.regsAddr[i],--ref);
       }
     }
     void popAllRegs() {
       int& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
       for(int i = NUM_REGS-1; i >= 0; i--) {
-        cpu.regsAddr[i] = cpu.memoryController.loadFromMem(--ref);
-        cpu.regsData[i] = cpu.memoryController.loadFromMem(--ref);
+        cpu.regsAddr[i] = cpu.memoryController.loadFromMem(ref++);
+        cpu.regsData[i] = cpu.memoryController.loadFromMem(ref++);
       }
     }
   } sP;

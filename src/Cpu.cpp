@@ -20,16 +20,16 @@ Cpu::Cpu(Chipset& _chipset, Mmu& mC)
         , memoryController(mC)
         , sP(*this)
 {
-  init(0);
+  init();
 }
 
 void
-Cpu::init(const int & stackPointerBase) {
+Cpu::init() {
   progCounter = 0;
   resetFlags(flags);
   flags += F_SVISOR | INT_PUT( INT_MAX_S_PR ); // start in supervisor mode
   resetRegs();
-  sP.setStackPointer(stackPointerBase);
+  sP.setStackPointer(memoryController.getMaxMem());
 }
 
 /** Writes to standard output the content of registers, program counter
