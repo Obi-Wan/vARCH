@@ -19,10 +19,13 @@ public:
 inline asm_instruction_statement *
 InstructionsHandler::getStmt(const YYLTYPE& pos, const int _instr)
 {
-  if (_instr == JSR) {
-    return new asm_function_call(pos, _instr);
-  } else {
-    return new asm_instruction_statement(pos, _instr);
+  switch (_instr) {
+    case JSR:
+      return new asm_function_call(pos, _instr);
+    case RET:
+      return new asm_return_statement(pos, _instr);
+    default:
+      return new asm_instruction_statement(pos, _instr);
   }
 }
 

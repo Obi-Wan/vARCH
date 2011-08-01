@@ -120,3 +120,16 @@ asm_function_call::checkArgs() const
   }
 }
 
+void
+asm_return_statement::checkArgs() const
+{
+  if (args.size() > 1) {
+    stringstream stream;
+    stream  << "Too many arguments for return statement at:" << endl
+            << position.fileNode->printString()
+              << " Line: " << position.first_line << endl
+            << " - At most, you should specify a returned value" << endl;
+    throw WrongArgumentException(stream.str());
+  }
+}
+

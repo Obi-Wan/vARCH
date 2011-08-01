@@ -22,6 +22,8 @@ struct asm_statement {
   asm_statement(const YYLTYPE& pos, const int& _offs)
     : offset(_offs), position(pos) { }
 
+  virtual bool isInstruction() const throw() { return false; }
+
   virtual const string toString() const { return ""; }
   virtual size_t getSize() const throw() { return 0; }
 
@@ -39,6 +41,8 @@ struct asm_instruction_statement : asm_statement {
 
   asm_instruction_statement(const YYLTYPE& pos, const int _instr)
     : asm_statement(pos), instruction(_instr) { }
+
+  virtual bool isInstruction() const throw() { return true; }
 
   asm_instruction_statement * addArg(asm_arg * newArg) {
     args.push_back(newArg);
@@ -99,6 +103,25 @@ struct asm_function_call : asm_instruction_statement {
 
   size_t getSize() const throw() { return 2; }
   const ObjType getType() const throw() { return ASM_FUNCTION_CALL; }
+};
+
+/**
+ * IR Class holding function returns
+ *
+ * The first and only argument is
+ */
+struct asm_return_statement : asm_instruction_statement {
+
+  asm_return_statement(const YYLTYPE& pos, const int _instr)
+    : asm_instruction_statement(pos, _instr)
+  { }
+
+  virtual void checkArgs() const;
+
+  void emitCode(Bloat::iterator & position) { *(position++) = instruction; }
+
+  size_t getSize() const throw() { return 1; }
+  const ObjType getType() const throw() { return ASM_RETURN_STATEMENT; }
 };
 
 ///////////////////////
