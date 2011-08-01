@@ -6,19 +6,18 @@
  */
 
 #include "Cpu.h"
+
 #include "Chipset.h"
-#include "../include/std_istructions.h"
-#include "../include/asm_helpers.h"
-#include "../include/macros.h"
+#include "std_istructions.h"
+#include "asm_helpers.h"
+#include "macros.h"
 
 #include <cstdio>
 
 #define SET_ARITM_FLAGS( x ) ( x < 0) ? F_NEGATIVE : ( (! x ) ? F_ZERO : 0 )
 
 Cpu::Cpu(Chipset& _chipset, Mmu& mC)
-        : chipset(_chipset)
-        , memoryController(mC)
-        , sP(*this)
+    : chipset(_chipset), memoryController(mC), sP(*this)
 {
   init();
 }
@@ -111,9 +110,9 @@ Cpu::coreStep()
         res = istructsThreeArg(currentIstr, newFlags);
         break;
     }
-  } catch (WrongArgumentException e) {
+  } catch (const WrongArgumentException & e) {
     printf("Wrong argument of the istruction. %s\n", e.what());
-  } catch (WrongIstructionException e) {
+  } catch (const WrongIstructionException & e) {
     printf("Wrong istruction. %s\n", e.what());
   }
   flags = newFlags;
