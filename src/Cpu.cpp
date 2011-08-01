@@ -86,6 +86,7 @@ Cpu::coreStep()
 
   //DebugPrintf(("Proceding with instructions execution\n"));
   // Now proced with instruction execution
+  timeDelay = 0;
   int newFlags = flags;
   resetFlags(newFlags);
   int currentIstr = memoryController.loadFromMem(progCounter++);
@@ -483,14 +484,17 @@ Cpu::storeArg(const int& arg, const int& typeArg, int value)
     case ADDR_PRE_DECR:
       DebugPrintf(("  ADDR / ADDR_PRE_*: %d\n", arg));
       memoryController.storeToMem(value, arg + relative);
+      timeDelay += Mmu::accessTime;
       break;
     case ADDR_POST_INCR:
       DebugPrintf(("  ADDR_POST_INCR: %d\n", arg));
       memoryController.storeToMem(++value, arg + relative);
+      timeDelay += Mmu::accessTime;
       break;
     case ADDR_POST_DECR:
       DebugPrintf(("  ADDR_POST_DECR: %d\n", arg));
       memoryController.storeToMem(--value, arg + relative);
+      timeDelay += Mmu::accessTime;
       break;
 
     case ADDR_IN_REG:
@@ -498,14 +502,17 @@ Cpu::storeArg(const int& arg, const int& typeArg, int value)
     case ADDR_IN_REG_PRE_DECR:
       DebugPrintf(("  ADDR_IN_REG / ADDR_IN_REG_PRE_*: %d\n", arg));
       memoryController.storeToMem(value, getReg(arg) + relative);
+      timeDelay += Mmu::accessTime;
       break;
     case ADDR_IN_REG_POST_INCR:
       DebugPrintf(("  ADDR_IN_REG_POST_INCR: %d\n", arg));
       memoryController.storeToMem(++value, getReg(arg) + relative);
+      timeDelay += Mmu::accessTime;
       break;
     case ADDR_IN_REG_POST_DECR:
       DebugPrintf(("  ADDR_IN_REG_POST_DECR: %d\n", arg));
       memoryController.storeToMem(--value, getReg(arg) + relative);
+      timeDelay += Mmu::accessTime;
       break;
     default:
       throw WrongArgumentException("Failed in storing: wrong argument type");

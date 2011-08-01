@@ -85,8 +85,10 @@ Chipset::initMem() {
 }
 
 void
-Chipset::startClock() {
+Chipset::startClock()
+{
   DebugPrintf(("Starting execution\n"));
+  uint32_t timeOfExecution = 0;
 
   int result = 0;
   do {
@@ -98,8 +100,11 @@ Chipset::startClock() {
 
     // Let's execute the next istruction
     result = cpu.coreStep();
+
+    const uint32_t waitTime = 100 + cpu.getTimeDelay();
+    timeOfExecution += waitTime;
     // Sleep for a while
-    usleep(100);
+    usleep(waitTime);
 
     // Reset if REBOOT istruction got.
     if (result == REBOOT) {
@@ -109,6 +114,7 @@ Chipset::startClock() {
   } while (result != HALT);
 
   DebugPrintf(("Exiting\n"));
+  printf("\nExecution time (in pseudo-microseconds): %u\n\n", timeOfExecution);
 }
 
 

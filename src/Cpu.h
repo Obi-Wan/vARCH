@@ -44,7 +44,11 @@ public:
 
   int coreStep();
   
+  const uint32_t & getTimeDelay() const throw() { return timeDelay; }
+
 private:
+
+  uint32_t timeDelay;
 
   /** The actual flags of the cpu */
   int flags;

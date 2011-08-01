@@ -22,6 +22,8 @@ public:
   const int32_t &loadFromMem(const uint32_t & addr) const;
   void resetLimits(const uint32_t & base_new, const uint32_t & limit_new);
   
+  static const uint32_t accessTime = 100;
+
 private:
   /** max lenth of istructions and data */
   uint32_t maxMem;

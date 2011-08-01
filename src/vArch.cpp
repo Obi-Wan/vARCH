@@ -8,7 +8,7 @@
 #include <stdlib.h>
 
 #include "Chipset.h"
-#include "../include/exceptions.h"
+#include "exceptions.h"
 
 #define MAX_MEM 100
 
