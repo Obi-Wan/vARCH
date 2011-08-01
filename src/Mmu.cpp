@@ -6,10 +6,11 @@
  */
 
 #include "Mmu.h"
-#include <stdio.h>
+
 #include <sstream>
 
-Mmu::Mmu(const int _maxMem, int * _mem) : maxMem(_maxMem), mainMem(_mem) {
+Mmu::Mmu(const uint32_t & _maxMem, int * _mem) : maxMem(_maxMem), mainMem(_mem)
+{
   base = 0;
   limit = maxMem;
 }
@@ -29,8 +30,9 @@ Mmu::Mmu(const Mmu& orig) : maxMem(orig.maxMem), mainMem(orig.mainMem) {
  * @throws RuntimeException when address is wrong
  */
 void
-Mmu::storeToMem(int data, int addr) throw(MmuException) {
-  if ((addr >= limit) || (addr < 0)) {
+Mmu::storeToMem(const int32_t & data, const uint32_t & addr)
+{
+  if (addr >= limit) {
     stringstream errorMess(string(""));
     errorMess << "StoreToMem Failed, wrong addr: " << addr
               << " upper limit: " << limit << "\n";
@@ -46,9 +48,10 @@ Mmu::storeToMem(int data, int addr) throw(MmuException) {
  *
  * @throws RuntimeException when address is wrong
  */
-int
-Mmu::loadFromMem(const int addr) const throw(MmuException) {
-  if ((addr >= limit) || (addr < 0)) {
+const int32_t &
+Mmu::loadFromMem(const uint32_t & addr) const
+{
+  if (addr >= limit) {
     stringstream errorMess(string(""));
     errorMess << "LoadFromMem Failed, wrong addr: " << addr
               << " upper limit: " << limit << "\n";
@@ -66,10 +69,11 @@ Mmu::loadFromMem(const int addr) const throw(MmuException) {
  * @throws RuntimeException when one of the two is wrong
  */
 void
-Mmu::resetLimits(int base_new,int limit_new) throw(MmuException) {
-  if ((base_new < 0) || (base_new > maxMem) ||
-      (limit_new < 0) || (limit_new > maxMem) ||
-      ((base_new + limit_new) > maxMem)) {
+Mmu::resetLimits(const uint32_t & base_new, const uint32_t & limit_new)
+{
+  if ( (base_new > maxMem) || (limit_new > maxMem)
+       || ((base_new + limit_new) > maxMem))
+  {
     stringstream errorMess(string(""));
     errorMess << "ReseLimits failed: Wrong Base or Limit. Base: " << base_new
               << " Limit: " << limit_new << " HardLimit: " << maxMem << "\n";

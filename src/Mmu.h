@@ -8,31 +8,32 @@
 #ifndef _MMU_H
 #define	_MMU_H
 
-#include "../include/exceptions.h"
+#include "exceptions.h"
+#include "macros.h"
 
 class Mmu {
 public:
-  Mmu(const int _maxMem, int * _mem);
+  Mmu(const uint32_t & _maxMem, int32_t * _mem);
   Mmu(const Mmu& orig);
 
-  int getMaxMem() { return maxMem; }
+  const uint32_t &getMaxMem() const throw() { return maxMem; }
   
-  void storeToMem(int data, int addr) throw(MmuException);
-  int loadFromMem(const int addr) const throw(MmuException);
-  void resetLimits(int base_new,int limit_new) throw(MmuException);
+  void storeToMem(const int32_t & data, const uint32_t & addr);
+  const int32_t &loadFromMem(const uint32_t & addr) const;
+  void resetLimits(const uint32_t & base_new, const uint32_t & limit_new);
   
 private:
   /** max lenth of istructions and data */
-  int maxMem;
+  uint32_t maxMem;
 
   /** the main memory */
-  int *mainMem;
+  int32_t *mainMem;
 
   /** Base for program memory */
-  int base;
+  uint32_t base;
 
   /** Limit for program memory */
-  int limit;
+  uint32_t limit;
 };
 
 #endif	/* _MMU_H */

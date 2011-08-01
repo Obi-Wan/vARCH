@@ -41,7 +41,7 @@ Chipset::~Chipset() { }
 //  MOV + ARG_1(REG) + ARG_2(ADDR), REG_DATA_2, 16,
 //  HALT, 0, 0 };
 
-const int
+const int32_t
 Chipset::bios[] = {
   STACK + ARG_1(COST)             , 20          ,
   MOV   + ARG_1(COST) + ARG_2(REG), 10          , REG_DATA_1,
@@ -50,7 +50,7 @@ Chipset::bios[] = {
   PUSH  + ARG_1(REG)              , REG_DATA_2  ,
   HALT, 0, 0 };
 
-//const int
+//const int32_t
 //Chipset::bios[] = {
 //  MOV + ARG_1(COST) + ARG_2(REG),                   7,          REG_DATA_1,
 //  MOV + ARG_1(COST) + ARG_2(REG),                   1,          REG_DATA_2,
@@ -68,7 +68,7 @@ Chipset::loadBiosFromFile(const char * file) {
 
 inline int
 Chipset::initMem() {
-  int i = 0;
+  uint32_t i = 0;
   try {
     Bloat biosLoad = loadBiosFromFile("bios.bin");
     for (i = 0; i < biosLoad.size(); i++) {
@@ -95,7 +95,7 @@ Chipset::startClock() {
   do {
 
     // Let's trigger events
-    for (unsigned int i = 0; i < components.size(); i++) {
+    for (size_t i = 0; i < components.size(); i++) {
       components[i]->checkInterruptEvents();
     }
 
@@ -126,7 +126,7 @@ Chipset::addComponent(Component* comp) {
 //}
 
 const Cpu&
-Chipset::getCpu(int num) const {
+Chipset::getCpu(const uint32_t & num) const {
   /* for now num is just an API placeholder */
   return cpu;
 }

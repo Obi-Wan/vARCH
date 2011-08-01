@@ -36,8 +36,8 @@ Cpu::init(const int & stackPointerBase) {
  * and the content of the first region of memory
  */
 void
-Cpu::dumpRegistersAndMemory() const {
-
+Cpu::dumpRegistersAndMemory() const
+{
 //  int old = setFlags(F_SVISOR);
 
   printf("Data Registers:");
@@ -63,8 +63,8 @@ Cpu::dumpRegistersAndMemory() const {
 }
 
 int
-Cpu::coreStep() {
-
+Cpu::coreStep()
+{
   //DebugPrintf(("Processing interrupts to see if they can stop execution\n"));
   // Let's now consider interrupts
   if (chipset.hasInterruptReady()) {
@@ -121,7 +121,8 @@ Cpu::coreStep() {
 }
 
 inline int
-Cpu::istructsZeroArg(const int& istr, int& newFlags) {
+Cpu::istructsZeroArg(const int& istr, int& newFlags)
+{
   switch (istr) {
     case SLEEP:
       return istr;
@@ -152,8 +153,8 @@ Cpu::istructsZeroArg(const int& istr, int& newFlags) {
 }
 
 inline int
-Cpu::istructsOneArg(const int& istr, int& newFlags) {
-
+Cpu::istructsOneArg(const int& istr, int& newFlags)
+{
   int typeArg = GET_ARG_1(istr);
   int arg = memoryController.loadFromMem(progCounter++);
   DebugPrintf(("Type arg 1: 0x%X arg: 0x%X\n", typeArg, arg));
@@ -242,8 +243,8 @@ Cpu::istructsOneArg(const int& istr, int& newFlags) {
 }
 
 inline int
-Cpu::istructsTwoArg(const int& istr, int& newFlags) {
-
+Cpu::istructsTwoArg(const int& istr, int& newFlags)
+{
   int typeArg1 = GET_ARG_1(istr);
   int arg1 = memoryController.loadFromMem(progCounter++);
   DebugPrintf(("Type arg 1: 0x%X arg: 0x%X\n", typeArg1, arg1));
@@ -344,8 +345,8 @@ Cpu::istructsTwoArg(const int& istr, int& newFlags) {
 }
 
 inline int
-Cpu::istructsThreeArg(const int& istr, int& newFlags) {
-
+Cpu::istructsThreeArg(const int& istr, int& newFlags)
+{
   int typeArg1 = GET_ARG_1(istr);
   int arg1 = memoryController.loadFromMem(progCounter++);
   int temp1 = loadArg(arg1, typeArg1);
@@ -406,48 +407,49 @@ Cpu::istructsThreeArg(const int& istr, int& newFlags) {
 }
 
 inline int
-Cpu::loadArg(const int& arg,const int& typeArg) {
+Cpu::loadArg(const int& arg,const int& typeArg)
+{
   const int relative = (typeArg & 0x10) ? (progCounter -1) : 0;
-  DebugPrintf(("Relative: %d\n", relative));
+  DebugPrintf(("  Relative: %d\n", relative));
   switch (typeArg & 0xf) {
     case COST:
-      DebugPrintf(("COST: %d\n", arg));
+      DebugPrintf(("  COST: %d\n", arg));
       return (arg + relative);
 
     case REG_PRE_INCR:
-      DebugPrintf(("REG_PRE_INCR: %d\n", arg));
+      DebugPrintf(("  REG_PRE_INCR: %d\n", arg));
       return (getReg(arg) +1);
     case REG_PRE_DECR:
-      DebugPrintf(("REG_PRE_DECR: %d\n", arg));
+      DebugPrintf(("  REG_PRE_DECR: %d\n", arg));
       return (getReg(arg) -1);
     case REG:
     case REG_POST_INCR:
     case REG_POST_DECR:
-      DebugPrintf(("REG / REG_POST_*: %d\n", arg));
+      DebugPrintf(("  REG / REG_POST_*: %d\n", arg));
       return getReg(arg);
 
     case ADDR_PRE_INCR:
-      DebugPrintf(("ADDR_PRE_INCR: %d\n", arg));
+      DebugPrintf(("  ADDR_PRE_INCR: %d\n", arg));
       return (memoryController.loadFromMem(arg + relative) +1);
     case ADDR_PRE_DECR:
-      DebugPrintf(("ADDR_PRE_DECR: %d\n", arg));
+      DebugPrintf(("  ADDR_PRE_DECR: %d\n", arg));
       return (memoryController.loadFromMem(arg + relative) -1);
     case ADDR:
     case ADDR_POST_INCR:
     case ADDR_POST_DECR:
-      DebugPrintf(("ADDR / ADDR_POST_*: %d\n", arg));
+      DebugPrintf(("  ADDR / ADDR_POST_*: %d\n", arg));
       return memoryController.loadFromMem(arg + relative);
 
     case ADDR_IN_REG_PRE_INCR:
-      DebugPrintf(("ADDR_IN_REG_PRE_INCR: %d\n", arg));
+      DebugPrintf(("  ADDR_IN_REG_PRE_INCR: %d\n", arg));
       return (memoryController.loadFromMem(getReg(arg) + relative) +1);
     case ADDR_IN_REG_PRE_DECR:
-      DebugPrintf(("ADDR_IN_REG_PRE_DECR: %d\n", arg));
+      DebugPrintf(("  ADDR_IN_REG_PRE_DECR: %d\n", arg));
       return (memoryController.loadFromMem(getReg(arg) + relative) -1);
     case ADDR_IN_REG:
     case ADDR_IN_REG_POST_INCR:
     case ADDR_IN_REG_POST_DECR:
-      DebugPrintf(("ADDR_IN_REG / ADDR_IN_REG_POST_*: %d\n", arg));
+      DebugPrintf(("  ADDR_IN_REG / ADDR_IN_REG_POST_*: %d\n", arg));
       return memoryController.loadFromMem(getReg(arg) + relative);
       
     default:
@@ -457,52 +459,53 @@ Cpu::loadArg(const int& arg,const int& typeArg) {
 }
 
 inline void
-Cpu::storeArg(const int& arg, const int& typeArg, int value) {
+Cpu::storeArg(const int& arg, const int& typeArg, int value)
+{
   const int relative = (typeArg & 0x10) ? (progCounter -1) : 0;
-  DebugPrintf(("Relative: %d\n", relative));
+  DebugPrintf(("  Relative: %d\n", relative));
   switch (typeArg & 0xf) {
     case REG:
     case REG_PRE_INCR:
     case REG_PRE_DECR:
-      DebugPrintf(("REG / REG_PRE_*: %d\n", arg));
+      DebugPrintf(("  REG / REG_PRE_*: %d\n", arg));
       setReg(arg, value);
       break;
     case REG_POST_INCR:
-      DebugPrintf(("REG_POST_INCR: %d\n", arg));
+      DebugPrintf(("  REG_POST_INCR: %d\n", arg));
       setReg(arg, ++value);
       break;
     case REG_POST_DECR:
-      DebugPrintf(("REG_POST_DECR: %d\n", arg));
+      DebugPrintf(("  REG_POST_DECR: %d\n", arg));
       setReg(arg, --value);
       break;
 
     case ADDR:
     case ADDR_PRE_INCR:
     case ADDR_PRE_DECR:
-      DebugPrintf(("ADDR / ADDR_PRE_*: %d\n", arg));
+      DebugPrintf(("  ADDR / ADDR_PRE_*: %d\n", arg));
       memoryController.storeToMem(value, arg + relative);
       break;
     case ADDR_POST_INCR:
-      DebugPrintf(("ADDR_POST_INCR: %d\n", arg));
+      DebugPrintf(("  ADDR_POST_INCR: %d\n", arg));
       memoryController.storeToMem(++value, arg + relative);
       break;
     case ADDR_POST_DECR:
-      DebugPrintf(("ADDR_POST_DECR: %d\n", arg));
+      DebugPrintf(("  ADDR_POST_DECR: %d\n", arg));
       memoryController.storeToMem(--value, arg + relative);
       break;
 
     case ADDR_IN_REG:
     case ADDR_IN_REG_PRE_INCR:
     case ADDR_IN_REG_PRE_DECR:
-      DebugPrintf(("ADDR_IN_REG / ADDR_IN_REG_PRE_*: %d\n", arg));
+      DebugPrintf(("  ADDR_IN_REG / ADDR_IN_REG_PRE_*: %d\n", arg));
       memoryController.storeToMem(value, getReg(arg) + relative);
       break;
     case ADDR_IN_REG_POST_INCR:
-      DebugPrintf(("ADDR_IN_REG_POST_INCR: %d\n", arg));
+      DebugPrintf(("  ADDR_IN_REG_POST_INCR: %d\n", arg));
       memoryController.storeToMem(++value, getReg(arg) + relative);
       break;
     case ADDR_IN_REG_POST_DECR:
-      DebugPrintf(("ADDR_IN_REG_POST_DECR: %d\n", arg));
+      DebugPrintf(("  ADDR_IN_REG_POST_DECR: %d\n", arg));
       memoryController.storeToMem(--value, getReg(arg) + relative);
       break;
     default:
@@ -512,7 +515,8 @@ Cpu::storeArg(const int& arg, const int& typeArg, int value) {
 }
 
 inline int
-Cpu::getReg(const int& arg) {
+Cpu::getReg(const int& arg)
+{
   int type = arg / OFFSET_REGS;
   DebugPrintf(("arg: %d type: %d, spec: %d\n",arg,type,arg % OFFSET_REGS));
   switch (type) {
@@ -536,7 +540,8 @@ Cpu::getReg(const int& arg) {
 
 
 inline void
-Cpu::setReg(const int& arg, const int& value) {
+Cpu::setReg(const int& arg, const int& value)
+{
   int type = arg / OFFSET_REGS;
   DebugPrintf( ("arg: %d type: %d, spec: %d\n",arg,type,arg % OFFSET_REGS) );
   switch (type) {

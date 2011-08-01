@@ -28,7 +28,7 @@ public:
 
   void addComponent(Component *);
   //  void addCpu(Cpu &);
-  const Cpu& getCpu(int num = 0) const;
+  const Cpu& getCpu(const uint32_t & num = 0) const;
 
   void singlePutToComponent(const int& numComp, const int& signal);
   int singleGetFromComponent(const int& numComp);
@@ -37,13 +37,13 @@ private:
   Cpu & cpu;
 
   int * mainMem;
-  const int maxMem;
+  const uint32_t maxMem;
 
   static const int bios[];
 
   vector<Component *> components;
 
-  int initMem();
+  void initMem();
 
   Bloat loadBiosFromFile(const char * file);
 };
