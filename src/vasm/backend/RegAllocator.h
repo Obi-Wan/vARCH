@@ -9,6 +9,7 @@
 #define REGALLOCATOR_H_
 
 #include "AssemFlowGraph.h"
+#include "algorithms/InterferenceGraph.h"
 #include "../Cpu.h"
 
 #include <stack>

@@ -11,6 +11,17 @@
 #include "Graphs.h"
 
 template<typename DataType>
+class NodeFlowGraph : public NodeGraph<DataType> {
+public:
+  bool isMove;
+
+  bool operator==(const NodeFlowGraph<DataType> & other) const throw()
+  {
+    return NodeGraph<DataType>::operator ==(other) && (isMove == other.isMove);
+  }
+};
+
+template<typename DataType>
 struct LiveMap {
   typedef class NodeGraph<DataType> NodeType;
 

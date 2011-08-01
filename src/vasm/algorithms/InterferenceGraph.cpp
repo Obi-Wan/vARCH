@@ -14,7 +14,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 InterferenceGraph::InterferenceGraph(const InterferenceGraph & other)
-  : Graph<uint32_t>(other)
+  : Graph<uint32_t, NodeInterfGraph>(other)
 {
   for(am_c_iterator moveIt = other.moves.begin(); moveIt != other.moves.end();
       moveIt++)
@@ -45,7 +45,8 @@ InterferenceGraph::printInterferenceGraph() const
       nodeIt != this->listOfNodes.end(); nodeIt++)
   {
     const NodeType * const node = &*nodeIt;
-    cout << "Node - pointer: " << node << ", label: " << node->label;
+    cout << "Node - pointer: " << node << ", label: " << node->label
+          << ", precolored: " << boolalpha << node->isPrecolored;
     cout << "\n  Preds:";
     const NodeSetType & nodePreds = this->preds.find(node)->second;
     for(ns_c_iterator predIt = nodePreds.begin(); predIt != nodePreds.end();

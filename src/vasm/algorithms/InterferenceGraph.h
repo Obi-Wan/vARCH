@@ -10,7 +10,19 @@
 
 #include "FlowGraph.h"
 
-class InterferenceGraph : public Graph<uint32_t> {
+template<typename DataType>
+class NodeInterfGraph : public NodeGraph<DataType> {
+public:
+  bool isPrecolored;
+
+  bool operator==(const NodeInterfGraph<DataType> & other) const throw()
+  {
+    return NodeGraph<DataType>::operator ==(other)
+            && (isPrecolored == other.isPrecolored);
+  }
+};
+
+class InterferenceGraph : public Graph<uint32_t, NodeInterfGraph> {
   ArcsMap moves;
 
   void _addPartMoveRelation(const NodeType * const node1,
@@ -89,7 +101,7 @@ InterferenceGraph::_removeMoves(const NodeType * const node)
 inline void
 InterferenceGraph::addNewNode(const string & _label, uint32_t _data)
 {
-  Graph<uint32_t>::addNewNode(_label, _data);
+  Graph<uint32_t, NodeInterfGraph>::addNewNode(_label, _data);
   const NodeType * const node = &listOfNodes.back();
 
   moves.insert(ArcsMap::value_type(node, NodeSetType()));
