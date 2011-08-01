@@ -82,3 +82,16 @@ InterferenceGraph::printInterferenceGraph() const
     DebugPrintf((" label: %s, pointer %p\n", mapIter->first.c_str(), mapIter->second));
   }
 }
+
+bool
+InterferenceGraph::hasOnlyPrecolored() const
+{
+  for(nl_c_iterator nodeIt = this->listOfNodes.begin();
+      nodeIt != this->listOfNodes.end(); nodeIt++)
+  {
+    const NodeType * const node = &*nodeIt;
+    if (!node->isPrecolored) { return false; }
+  }
+  return true;
+}
+

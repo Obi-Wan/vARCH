@@ -27,7 +27,7 @@ bool
 RegAllocator::simpleAllocateRegs(const InterferenceGraph & interf)
 {
   InterferenceGraph workGraph(interf);
-  for(; workGraph.getListOfNodes().size();)
+  for(; !workGraph.hasOnlyPrecolored();)
   {
     DebugPrintf(("Iteration of simplify. Graph Size: %lu\n",
         workGraph.getListOfNodes().size()));
@@ -41,13 +41,15 @@ RegAllocator::simpleAllocateRegs(const InterferenceGraph & interf)
         nodeIt != workGraph.getListOfNodes().end(); nodeIt++)
     {
       const NodeType * const node = &*nodeIt;
-      const uint32_t degree = workGraph.outDegree(node);
-      if (degree < maxRegs) {
-        notSignificantNodes.push_back(node);
-        notSignificantDegrees.push_back(degree);
-      } else {
-        significantNodes.push_back(node);
-        significantDegrees.push_back(degree);
+      if (!node->isPrecolored) {
+        const uint32_t degree = workGraph.outDegree(node);
+        if (degree < maxRegs) {
+          notSignificantNodes.push_back(node);
+          notSignificantDegrees.push_back(degree);
+        } else {
+          significantNodes.push_back(node);
+          significantDegrees.push_back(degree);
+        }
       }
     }
 
@@ -65,12 +67,14 @@ RegAllocator::simpleAllocateRegs(const InterferenceGraph & interf)
 
     workGraph.removeNode(tempLbl);
   }
-//  DebugPrintf(("Iteration of simplify. Graph Size: %lu\n",
-//      workGraph.getListOfNodes().size()));
-//  workGraph.printInterferenceGraph();
-//  DebugPrintf(("Printed partial InterfGraph\n"));
+  // Debug Section
+  DebugPrintf(("End of iterations for simplify. Graph Size: %lu\n",
+      workGraph.getListOfNodes().size()));
+  workGraph.printInterferenceGraph();
+  DebugPrintf(("Printed final InterfGraph (with just precolored nodes)\n"));
 
   printStack();
+  // End Debug section
 
   // Registers run from 1 to 8, 0 is for Actual Spill
   vector<bool> regs;
@@ -86,11 +90,15 @@ RegAllocator::simpleAllocateRegs(const InterferenceGraph & interf)
     DebugPrintf(("Node %s\n", tempLbl.c_str()));
     for(ns_c_iterator relIt = rels.begin(); relIt != rels.end(); relIt++)
     {
-      DebugPrintf(("Interferisce con %p, %s\n", *relIt, (*relIt)->label.c_str()));
-      AssignedRegs::iterator prevAssigned = assignedRegs.find((*relIt)->data);
+      const NodeType * const rel = *relIt;
+      DebugPrintf(("Interferisce con %p, %s\n", rel, rel->label.c_str()));
+      AssignedRegs::iterator prevAssigned = assignedRegs.find(rel->data);
       if (prevAssigned != assignedRegs.end()) {
         DebugPrintf(("  Con assegnato: %u\n", prevAssigned->second -1));
         regs[prevAssigned->second -1] = false;
+      } else if (rel->isPrecolored) {
+        DebugPrintf(("  Con Pre-assegnato: %u\n", rel->data -1));
+        regs[rel->data -1] = false;
       }
     }
     uint32_t assigned = 0;

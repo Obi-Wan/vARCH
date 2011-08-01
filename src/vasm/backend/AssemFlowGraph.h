@@ -27,10 +27,12 @@ class AssemFlowGraph : public FlowGraph<asm_statement *> {
   void _findUsesDefines();
 
   bool _argIsTemp(const asm_arg * const arg) const;
+  bool _argIsReg(const asm_arg * const arg) const;
   bool _moveInstr(const vector<asm_arg *> & args, UIDMultiSetType & nodeUses,
       UIDMultiSetType & nodeDefs);
   bool _argIsDefined(const int & instruction, const size_t & argNum,
       const TypeOfArgument & argType) const;
+  uint32_t shiftArgUID(const asm_immediate_arg * arg, const bool &isTemp) const;
 
 public:
 //  AssemFlowGraph();

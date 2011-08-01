@@ -313,7 +313,7 @@ FlowGraph<DataType>::populateLiveMap(LiveMap<DataType> & liveMap)
           UIDSetType & outPred = liveMap.liveOut[pred];
 
           if (outPred.find(*live_in) == outPred.end()) {
-            DebugPrintf(( "Adding Live-Out: T%5d to node %s\n",
+            DebugPrintf(( "Adding Live-Out: T%05d to node %s\n",
                           *live_in, pred->label.c_str()));
             outPred.insert(*live_in);
             modified = true;

@@ -10,6 +10,8 @@
 
 #include "FlowGraph.h"
 
+#include "../Cpu.h"
+
 template<typename DataType>
 class NodeInterfGraph : public NodeGraph<DataType> {
 public:
@@ -41,6 +43,8 @@ public:
       const LiveMap<DataType> & liveMap, const TempsMap & tempsMap);
 
   void printInterferenceGraph() const;
+
+  bool hasOnlyPrecolored() const;
 };
 
 
@@ -102,7 +106,9 @@ inline void
 InterferenceGraph::addNewNode(const string & _label, uint32_t _data)
 {
   Graph<uint32_t, NodeInterfGraph>::addNewNode(_label, _data);
-  const NodeType * const node = &listOfNodes.back();
+  NodeType * node = &listOfNodes.back();
+
+  node->isPrecolored = (_data <= NUM_REGS);
 
   moves.insert(ArcsMap::value_type(node, NodeSetType()));
 }
@@ -157,33 +163,13 @@ InterferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
   this->clear();
 
   // Populate with nodes
-  const fg_nl_c_iterator endOfNodes = flowGraph.getListOfNodes().end();
-  for(fg_nl_c_iterator nodeIt = flowGraph.getListOfNodes().begin();
-      nodeIt != endOfNodes; nodeIt++)
-  {
-    const FG_NodeType * const node = &*nodeIt;
-
-    const UIDSetType & nodeLiveIn = liveMap.liveIn.find(node)->second;
-    const UIDSetType & nodeLiveOut = liveMap.liveOut.find(node)->second;
-
-    const us_iterator endLivesIn = nodeLiveIn.end();
-    for(us_iterator live_in = nodeLiveIn.begin(); live_in != endLivesIn;
-        live_in++)
-    {
-      const string & tempLabel = tempsMap.getLabel(*live_in);
-      if (!this->mapOfNodes.count(tempLabel)) {
-        this->addNewNode(tempLabel, *live_in);
-      }
-    }
-
-    const us_iterator endLivesOut = nodeLiveOut.end();
-    for(us_iterator live_out = nodeLiveOut.begin(); live_out != endLivesOut;
-        live_out++)
-    {
-      const string & tempLabel = tempsMap.getLabel(*live_out);
-      if (!this->mapOfNodes.count(tempLabel)) {
-        this->addNewNode(tempLabel, *live_out);
-      }
+  const TempsMap::LabelToUID::const_iterator endMap =
+                                                 tempsMap.getLabelTable().end();
+  TempsMap::LabelToUID::const_iterator itMap = tempsMap.getLabelTable().begin();
+  for(; itMap != endMap; itMap++) {
+    const string & tempLabel = itMap->first;
+    if (!this->mapOfNodes.count(tempLabel)) {
+      this->addNewNode(tempLabel, itMap->second);
     }
   }
 

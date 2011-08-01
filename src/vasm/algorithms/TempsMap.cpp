@@ -8,6 +8,7 @@
 #include "TempsMap.h"
 
 #include "exceptions.h"
+#include "../../Cpu.h"
 
 #include <iostream>
 #include <sstream>
@@ -43,8 +44,13 @@ void
 TempsMap::putTemp(const uint32_t & uid, const bool & ignoreDups)
 {
   stringstream stream;
-  stream << "T";
-  stream.width(10);
+  if (uid <= NUM_REGS) {
+    stream << "R";
+    stream.width(2);
+  } else {
+    stream << "T";
+    stream.width(10);
+  }
   stream.fill('0');
   stream << uid;
 

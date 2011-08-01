@@ -19,9 +19,11 @@ using namespace std;
 typedef map<uint32_t, uint32_t>       AssignedRegs;
 
 class TempsMap {
+public:
   typedef class map<string, uint32_t> LabelToUID;
   typedef class map<uint32_t, string> UIDToLabel;
 
+private:
   LabelToUID labelToUID;
   UIDToLabel uidToLabel;
 public:
@@ -33,6 +35,8 @@ public:
 
   const string & getLabel(const uint32_t & uid) const;
   const uint32_t & getUID(const string & label) const;
+
+  const LabelToUID & getLabelTable() const throw() { return labelToUID; }
 };
 
 #endif /* TEMPSMAP_H_ */

@@ -8,19 +8,35 @@
 #include "AssemFlowGraph.h"
 
 #include "exceptions.h"
+#include "../Cpu.h"
 
 #include <sstream>
 
 using namespace std;
 
-bool
+inline bool
 AssemFlowGraph::_argIsTemp(const asm_arg * const arg) const
 {
   return (arg->getType() == ASM_IMMEDIATE_ARG
           && ((const asm_immediate_arg * const)arg)->isTemp);
 }
 
-string
+inline bool
+AssemFlowGraph::_argIsReg(const asm_arg * const arg) const
+{
+  return (arg->getType() == ASM_IMMEDIATE_ARG
+          && ((const asm_immediate_arg * const)arg)->type != COST
+          && ((const asm_immediate_arg * const)arg)->type != ADDR);
+}
+
+inline uint32_t
+AssemFlowGraph::shiftArgUID(const asm_immediate_arg * arg, const bool & isTemp)
+  const
+{
+  return isTemp*(NUM_REGS) + 1 + arg->content.tempUID;
+}
+
+inline string
 AssemFlowGraph::buildLabel(const asm_statement * const stmt,
     const uint32_t & progr) const
 {
@@ -127,12 +143,14 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
 
   bool isMove = arg0_temp && arg1_temp;
 
-  if (arg0_temp) {
+  if (arg0_temp || _argIsReg(args[0])) {
     asm_immediate_arg * arg = (asm_immediate_arg *) args[0];
+    const uint32_t shiftedTempUID = shiftArgUID(arg, arg0_temp);
     // Add to temps map
-    tempsMap.putTemp( arg->content.tempUID, true);
+    tempsMap.putTemp( shiftedTempUID, true);
     // Add to uses
-    nodeUses.insert( arg->content.tempUID );
+    nodeUses.insert( shiftedTempUID );
+    // Test if it should be in Defines, too
     switch(arg->type) {
       case REG_PRE_INCR:
       case REG_PRE_DECR:
@@ -142,17 +160,18 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
       case ADDR_IN_REG_PRE_DECR:
       case ADDR_IN_REG_POST_INCR:
       case ADDR_IN_REG_POST_DECR:
-        nodeDefs.insert( arg->content.tempUID );
+        nodeDefs.insert( shiftedTempUID );
         isMove = false;
       default: break;
     }
   }
-  if (arg1_temp) {
+  if (arg1_temp || _argIsReg(args[1])) {
     asm_immediate_arg * arg = (asm_immediate_arg *) args[1];
+    const uint32_t shiftedTempUID = shiftArgUID(arg, arg1_temp);
     // Add to temps map
-    tempsMap.putTemp( arg->content.tempUID, true);
+    tempsMap.putTemp( shiftedTempUID, true);
     // Add to defs
-    nodeDefs.insert( arg->content.tempUID );
+    nodeDefs.insert( shiftedTempUID );
   }
   return isMove;
 }
@@ -223,16 +242,18 @@ AssemFlowGraph::_findUsesDefines()
         // Other instructions
         for(size_t argNum = 0; argNum < i_stmt->args.size(); argNum++)
         {
-          if ( _argIsTemp(i_stmt->args[argNum]) ) {
+          const bool isTemp = _argIsTemp(i_stmt->args[argNum]);
+          if ( isTemp || _argIsReg(i_stmt->args[argNum]) ) {
             asm_immediate_arg * arg = (asm_immediate_arg *)i_stmt->args[argNum];
+            const uint32_t shiftedTempUID = shiftArgUID(arg, isTemp);
             // to temps map
-            tempsMap.putTemp(arg->content.tempUID, true);
+            tempsMap.putTemp( shiftedTempUID, true);
             // uses
-            nodeUses.insert(arg->content.tempUID);
+            nodeUses.insert( shiftedTempUID );
 
             // defines
             if (_argIsDefined(i_stmt->instruction, argNum, arg->type)) {
-              nodeDefs.insert(arg->content.tempUID);
+              nodeDefs.insert( shiftedTempUID );
             }
           }
         } // End loop arguments
@@ -280,12 +301,13 @@ AssemFlowGraph::applySelectedRegisters(const AssignedRegs & regs)
       {
         if (_argIsTemp(*argIt)) {
           asm_immediate_arg * arg = (asm_immediate_arg *) *argIt;
-          const uint32_t temp_uid = arg->content.tempUID;
+          const uint32_t temp_uid = shiftArgUID(arg, true);
 
           AssignedRegs::const_iterator reg = regs.find(temp_uid);
           if (reg == regs.end()) {
             throw WrongArgumentException(
-                "A temporary in instruction was not considered!");
+                "A temporary in instruction was not considered! ("
+                + tempsMap.getLabel(temp_uid) + ")");
           }
           if (reg->second) {
             arg->content.tempUID = reg->second -1;
