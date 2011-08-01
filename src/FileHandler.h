@@ -8,14 +8,15 @@
 #ifndef _FILEHANDLER_H
 #define	_FILEHANDLER_H
 
+#include "macros.h"
+#include "BinaryVectors.h"
+
 #include <vector>
 #include <fstream>
 #include <string>
 #include "exceptions.h"
 
 using namespace std;
-
-typedef vector<int> Bloat;
 
 static const char * openFileError = "Error opening file: ";
 

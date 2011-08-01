@@ -7,6 +7,7 @@
 
 #include "Labels.h"
 #include "../IncludesTree.h"
+#include "exceptions.h"
 
 #include <sstream>
 using namespace std;

@@ -11,7 +11,7 @@
 #include "IR_LowLevel_Arguments.h"
 
 #include "masks.h"
-#include "../FileHandler.h"
+#include "BinaryVectors.h"
 
 struct asm_statement {
   size_t offset;

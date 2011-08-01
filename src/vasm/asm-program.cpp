@@ -8,6 +8,7 @@
 #include "asm-program.h"
 
 #include "IncludesTree.h"
+#include "../FileHandler.h"
 
 #include <sstream>
 using namespace std;

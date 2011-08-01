@@ -7,6 +7,8 @@
 
 #include "asm-function.h"
 
+#include "exceptions.h"
+
 void
 asm_function::finalize()
 {
