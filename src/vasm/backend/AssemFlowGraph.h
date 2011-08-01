@@ -17,7 +17,7 @@ class AssemFlowGraph : public FlowGraph<asm_statement *> {
 
   StmtToNode backReference;
 
-  string buildLabel(const asm_statement * const stmt, const uint32_t & progr)
+  string buildStmtLabel(const asm_statement * const stmt, const uint32_t & progr)
     const;
 
   TempsMap tempsMap;

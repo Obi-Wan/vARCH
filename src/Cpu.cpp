@@ -155,8 +155,8 @@ Cpu::istructsZeroArg(const int& istr, int& newFlags)
 inline int
 Cpu::istructsOneArg(const int& istr, int& newFlags)
 {
-  int typeArg = GET_ARG_1(istr);
-  int arg = memoryController.loadFromMem(progCounter++);
+  const int typeArg = GET_ARG_1(istr);
+  const int arg = memoryController.loadFromMem(progCounter++);
   DebugPrintf(("Type arg 1: 0x%X arg: 0x%X\n", typeArg, arg));
   int temp = loadArg(arg, typeArg);
 
@@ -245,13 +245,13 @@ Cpu::istructsOneArg(const int& istr, int& newFlags)
 inline int
 Cpu::istructsTwoArg(const int& istr, int& newFlags)
 {
-  int typeArg1 = GET_ARG_1(istr);
-  int arg1 = memoryController.loadFromMem(progCounter++);
+  const int typeArg1 = GET_ARG_1(istr);
+  const int arg1 = memoryController.loadFromMem(progCounter++);
   DebugPrintf(("Type arg 1: 0x%X arg: 0x%X\n", typeArg1, arg1));
   int temp1 = loadArg(arg1, typeArg1);
 
-  int typeArg2 = GET_ARG_2(istr);
-  int arg2 = memoryController.loadFromMem(progCounter++);
+  const int typeArg2 = GET_ARG_2(istr);
+  const int arg2 = memoryController.loadFromMem(progCounter++);
   DebugPrintf(("Type arg 2: 0x%X arg: 0x%X\n", typeArg2, arg2));
   int temp2 = loadArg(arg2, typeArg2);
 
@@ -347,16 +347,16 @@ Cpu::istructsTwoArg(const int& istr, int& newFlags)
 inline int
 Cpu::istructsThreeArg(const int& istr, int& newFlags)
 {
-  int typeArg1 = GET_ARG_1(istr);
-  int arg1 = memoryController.loadFromMem(progCounter++);
+  const int typeArg1 = GET_ARG_1(istr);
+  const int arg1 = memoryController.loadFromMem(progCounter++);
   int temp1 = loadArg(arg1, typeArg1);
 
-  int typeArg2 = GET_ARG_2(istr);
-  int arg2 = memoryController.loadFromMem(progCounter++);
+  const int typeArg2 = GET_ARG_2(istr);
+  const int arg2 = memoryController.loadFromMem(progCounter++);
   int temp2 = loadArg(arg2, typeArg2);
 
-  int typeArg3 = GET_ARG_3(istr);
-  int arg3 = memoryController.loadFromMem(progCounter++);
+  const int typeArg3 = GET_ARG_3(istr);
+  const int arg3 = memoryController.loadFromMem(progCounter++);
   int temp3 = loadArg(arg3, typeArg3);
 
   const int polishedIstr = istr - ARG_1(typeArg1) - ARG_2(typeArg2)
@@ -405,6 +405,7 @@ Cpu::istructsThreeArg(const int& istr, int& newFlags)
 
   return 0;
 }
+
 
 inline int
 Cpu::loadArg(const int& arg,const int& typeArg)
@@ -520,23 +521,21 @@ Cpu::storeArg(const int& arg, const int& typeArg, int value)
   }
 }
 
+
 inline int
 Cpu::getReg(const int& arg)
 {
-  int type = arg / OFFSET_REGS;
-  DebugPrintf(("arg: %d type: %d, spec: %d\n",arg,type,arg % OFFSET_REGS));
-  switch (type) {
-    case DATA_REGS:
-      return regsData[ arg % OFFSET_REGS ];
-    case ADDR_REGS:
-      return regsAddr[ arg % OFFSET_REGS ];
-    case STCK_PTRS:
-      if (arg == USER_STACK_POINTER) {
-        return (flags & F_SVISOR) ? sP.getUStackPointer() : sP.getStackPointer();
-      } else if (arg == STACK_POINTER) {
-        return sP.getStackPointer();
-      }
-      throw WrongArgumentException("No such stack pointer");
+  DebugPrintf( ("arg: %d type: %d, spec: %d\n", arg, arg / NUM_REGS,
+                arg % NUM_REGS) );
+  switch (arg) {
+    case REG_DATA_1 ... REG_DATA_8:
+      return regsData[ arg % NUM_REGS ];
+    case REG_ADDR_1 ... REG_ADDR_8:
+      return regsAddr[ arg % NUM_REGS ];
+    case USER_STACK_POINTER:
+      return (flags & F_SVISOR) ? sP.getUStackPointer() : sP.getStackPointer();
+    case STACK_POINTER:
+      return sP.getStackPointer();
     case STATE_REGISTER:
       return (flags & F_SVISOR) ? flags : int(flags);
     default:
@@ -544,32 +543,28 @@ Cpu::getReg(const int& arg)
   }
 }
 
-
 inline void
 Cpu::setReg(const int& arg, const int& value)
 {
-  int type = arg / OFFSET_REGS;
-  DebugPrintf( ("arg: %d type: %d, spec: %d\n",arg,type,arg % OFFSET_REGS) );
-  switch (type) {
-    case DATA_REGS:
-      regsData[ arg % OFFSET_REGS ] = value;
+  DebugPrintf( ("arg: %d type: %d, spec: %d\n", arg, arg / NUM_REGS,
+                arg % NUM_REGS) );
+  switch (arg) {
+    case REG_DATA_1 ... REG_DATA_8:
+      regsData[ arg % NUM_REGS ] = value;
       break;
-    case ADDR_REGS:
-      regsAddr[ arg % OFFSET_REGS ] = value;
+    case REG_ADDR_1 ... REG_ADDR_8:
+      regsAddr[ arg % NUM_REGS ] = value;
       break;
-    case STCK_PTRS:
-      if (arg == USER_STACK_POINTER) {
-        if (flags & F_SVISOR) {
-          sP.setUStackPointer(value);
-        } else {
-          sP.setStackPointer(value);
-        }
-        break;
-      } else if (arg == STACK_POINTER) {
+    case USER_STACK_POINTER:
+      if (flags & F_SVISOR) {
+        sP.setUStackPointer(value);
+      } else {
         sP.setStackPointer(value);
-        break;
       }
-      throw WrongArgumentException("No such stack pointer");
+      break;
+    case STACK_POINTER:
+      sP.setStackPointer(value);
+      break;
     case STATE_REGISTER:
       if (flags & F_SVISOR) {
         flags = value;
@@ -577,6 +572,7 @@ Cpu::setReg(const int& arg, const int& value)
       } else {
         throw WrongArgumentException("Not Allowed to modify SR");
       }
+      break;
     default:
       throw WrongArgumentException("No such register");
   }

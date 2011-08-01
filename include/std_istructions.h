@@ -8,6 +8,8 @@
 #ifndef _STDISTRUCTIONS_H
 #define	_STDISTRUCTIONS_H
 
+#include "CpuDefinitions.h"
+
 #define N_ARGS_ZERO   0
 #define N_ARGS_ONE    (1 << 30)
 #define N_ARGS_TWO    (2 << 30)
@@ -55,28 +57,41 @@ enum TypeOfArgument {
   ADDR_IN_REG_POST_DECR,  // 1111
 };
 
-//enum Registers {
-//  REG_R01 =   (1 <  0),
-//  REG_R02 =   (1 <  1),
-//  REG_R03 =   (1 <  2),
-//  REG_R04 =   (1 <  3),
-//  REG_R05 =   (1 <  4),
-//  REG_R06 =   (1 <  5),
-//  REG_R07 =   (1 <  6),
-//  REG_R08 =   (1 <  7),
-//  REG_A01 =   (1 <  8),
-//  REG_A02 =   (1 <  9),
-//  REG_A03 =   (1 < 10),
-//  REG_A04 =   (1 < 11),
-//  REG_A05 =   (1 < 12),
-//  REG_A06 =   (1 < 13),
-//  REG_A07 =   (1 < 14),
-//  REG_A08 =   (1 < 15),
-//
-//  REG_SP  =   (1 < 16),
-//  REG_USP =   (1 < 17)
-//};
+#define DATA_REGS     0
+#define ADDR_REGS     1
+#define SPECIAL_REGS  2
 
+enum Registers {
+  REG_DATA_1 =      (NUM_REGS * DATA_REGS),
+  REG_DATA_2,
+  REG_DATA_3,
+  REG_DATA_4,
+  REG_DATA_5,
+  REG_DATA_6,
+  REG_DATA_7,
+  REG_DATA_8,
+
+  REG_ADDR_1 =      (NUM_REGS * ADDR_REGS),
+  REG_ADDR_2,
+  REG_ADDR_3,
+  REG_ADDR_4,
+  REG_ADDR_5,
+  REG_ADDR_6,
+  REG_ADDR_7,
+  REG_ADDR_8,
+
+  STACK_POINTER =   (NUM_REGS * SPECIAL_REGS),
+  USER_STACK_POINTER,
+
+  STATE_REGISTER,
+
+  FIRST_TEMPORARY
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+/// STD Instructions
+////////////////////////////////////////////////////////////////////////////////
 
 enum StdInstructions {
 

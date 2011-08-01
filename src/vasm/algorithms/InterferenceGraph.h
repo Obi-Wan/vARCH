@@ -10,7 +10,7 @@
 
 #include "FlowGraph.h"
 
-#include "../Cpu.h"
+#include "CpuDefinitions.h"
 
 template<typename DataType>
 class NodeInterfGraph : public NodeGraph<DataType> {

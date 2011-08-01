@@ -8,7 +8,7 @@
 #include "AssemFlowGraph.h"
 
 #include "exceptions.h"
-#include "../Cpu.h"
+#include "CpuDefinitions.h"
 
 #include <sstream>
 
@@ -33,11 +33,11 @@ inline uint32_t
 AssemFlowGraph::shiftArgUID(const asm_immediate_arg * arg, const bool & isTemp)
   const
 {
-  return isTemp*(NUM_REGS) + 1 + arg->content.tempUID;
+  return isTemp * FIRST_TEMPORARY + 1 + arg->content.tempUID;
 }
 
 inline string
-AssemFlowGraph::buildLabel(const asm_statement * const stmt,
+AssemFlowGraph::buildStmtLabel(const asm_statement * const stmt,
     const uint32_t & progr) const
 {
   stringstream stream;
@@ -59,7 +59,7 @@ AssemFlowGraph::_addNodesToGraph(asm_function & function)
       stmtIt != stmts.end(); stmtIt++)
   {
     asm_statement * stmt = *stmtIt;
-    this->addNewNode(buildLabel(stmt, progr++), stmt);
+    this->addNewNode(buildStmtLabel(stmt, progr++), stmt);
 
     NodeType * const node = &listOfNodes.back();
     backReference.insert(StmtToNode::value_type(stmt, node));

@@ -8,7 +8,7 @@
 #include "TempsMap.h"
 
 #include "exceptions.h"
-#include "../../Cpu.h"
+#include "CpuDefinitions.h"
 
 #include <iostream>
 #include <sstream>

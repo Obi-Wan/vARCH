@@ -131,7 +131,7 @@ SLEEP|PUSHA|POPA|RET|RETEX|REBOOT|HALT|NOT|INCR|DECR|COMP2|LSH|RSH|STACK|PUSH|PO
           }
 \%{AREG} {
             ArgumentsHandler::getReg(yylval->arg, yylloc, yytext+2, REG,
-                OFFSET_REGS, false);
+                NUM_REGS, false);
             return REGISTER;
           }
 \%{TREG} {
@@ -146,7 +146,7 @@ SLEEP|PUSHA|POPA|RET|RETEX|REBOOT|HALT|NOT|INCR|DECR|COMP2|LSH|RSH|STACK|PUSH|PO
           }
 \+\%{AREG} {
             ArgumentsHandler::getReg(yylval->arg, yylloc, yytext+3,
-                REG_PRE_INCR, OFFSET_REGS, false);
+                REG_PRE_INCR, NUM_REGS, false);
             return REGISTER;
           }
 \+\%{TREG} {
@@ -161,7 +161,7 @@ SLEEP|PUSHA|POPA|RET|RETEX|REBOOT|HALT|NOT|INCR|DECR|COMP2|LSH|RSH|STACK|PUSH|PO
           }
 \-\%{AREG} {
             ArgumentsHandler::getReg(yylval->arg, yylloc, yytext+3,
-                REG_PRE_DECR, OFFSET_REGS, false);
+                REG_PRE_DECR, NUM_REGS, false);
             return REGISTER;
           }
 \-\%{TREG} {
@@ -176,7 +176,7 @@ SLEEP|PUSHA|POPA|RET|RETEX|REBOOT|HALT|NOT|INCR|DECR|COMP2|LSH|RSH|STACK|PUSH|PO
           }
 \%{AREG}\+ {
             ArgumentsHandler::getReg(yylval->arg, yylloc, yytext+2,
-                REG_POST_INCR, OFFSET_REGS, false);
+                REG_POST_INCR, NUM_REGS, false);
             return REGISTER;
           }
 \%{TREG}\+ {
@@ -191,7 +191,7 @@ SLEEP|PUSHA|POPA|RET|RETEX|REBOOT|HALT|NOT|INCR|DECR|COMP2|LSH|RSH|STACK|PUSH|PO
           }
 \%{AREG}\- {
             ArgumentsHandler::getReg(yylval->arg, yylloc, yytext+2,
-                REG_POST_DECR, OFFSET_REGS, false);
+                REG_POST_DECR, NUM_REGS, false);
             return REGISTER;
           }
 \%{TREG}\- {
@@ -222,7 +222,7 @@ r?\({DREG}\) {
           }
 r?\({AREG}\) {
             ArgumentsHandler::getReg(yylval->arg, yylloc,
-                L_SHIFT_TXT_REL_0(yytext), ADDR_IN_REG, OFFSET_REGS,
+                L_SHIFT_TXT_REL_0(yytext), ADDR_IN_REG, NUM_REGS,
                 L_IS_REL_0(yytext));
             return REGISTER;
           }
@@ -240,7 +240,7 @@ r?\({TREG}\) {
 \+r?\({AREG}\) {
             ArgumentsHandler::getReg(yylval->arg, yylloc,
                 L_SHIFT_TXT_REL_1(yytext), ADDR_IN_REG_PRE_INCR,
-                OFFSET_REGS, L_IS_REL_1(yytext));
+                NUM_REGS, L_IS_REL_1(yytext));
             return REGISTER;
           }
 \+r?\({TREG}\) {
@@ -258,7 +258,7 @@ r?\({TREG}\) {
 \-r?\({AREG}\) {
             ArgumentsHandler::getReg(yylval->arg, yylloc,
                 L_SHIFT_TXT_REL_1(yytext), ADDR_IN_REG_PRE_DECR,
-                OFFSET_REGS, L_IS_REL_1(yytext));
+                NUM_REGS, L_IS_REL_1(yytext));
             return REGISTER;
           }
 \-r?\({TREG}\) {
@@ -276,7 +276,7 @@ r?\({DREG}\)\+ {
 r?\({AREG}\)\+ {
             ArgumentsHandler::getReg(yylval->arg, yylloc,
                 L_SHIFT_TXT_REL_0(yytext), ADDR_IN_REG_POST_INCR,
-                OFFSET_REGS, L_IS_REL_0(yytext));
+                NUM_REGS, L_IS_REL_0(yytext));
             return REGISTER;
           }
 r?\({TREG}\)\+ {
@@ -294,7 +294,7 @@ r?\({DREG}\)\- {
 r?\({AREG}\)\- {
             ArgumentsHandler::getReg(yylval->arg, yylloc,
                 L_SHIFT_TXT_REL_0(yytext), ADDR_IN_REG_POST_DECR,
-                OFFSET_REGS, L_IS_REL_0(yytext));
+                NUM_REGS, L_IS_REL_0(yytext));
             return REGISTER;
           }
 r?\({TREG}\)\- {
