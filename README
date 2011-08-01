@@ -1,4 +1,17 @@
-COMPILE / INSTALL
+Index
+1. COMPILE / INSTALL
+2. WHAT IS IT
+3. ASSEMBLY (two examples)
+  3.1 BRIEF DESCRIPTION
+  3.2 SUBROUTINES
+  3.3 CONSTANTS
+  3.4 PREPROCESSOR
+4. NEW DEVELOPMENT
+  4.1 TEMORARIES / Registers Auto-allocation
+  4.2 CALLING CONVENTIONS
+
+--------------------------------------------------------------------------------
+1. COMPILE / INSTALL
 
 Before trying to compile it, remeber to run autoreconf.
 
@@ -8,9 +21,9 @@ make
 
 I'm not providing a predefined install way right now. It's more like a toy, than
 a tool.
---------------------------------------------------------------------------------
 
-WHAT IS IT
+--------------------------------------------------------------------------------
+2. WHAT IS IT
 
 vARCH is a virtual machine / interpreter of bytecode for a virtual architecture
 that I invented for learning purposes.
@@ -28,6 +41,9 @@ documentation.
 What I will report here are samples of the Asm language: they need to be
 assembled and then either moved to the name "bios.bin" or soft link the binary
 to that name.
+
+--------------------------------------------------------------------------------
+3. ASSEMBLY
 
 The first example is a simple program for calculating the first n factorials.
 The "main" function is a special one that is always put at the beginning of the
@@ -225,7 +241,9 @@ If any error happens in the included files, it will be reported in which file
 and at which line the error took place.
 
 ------------------
-THINGS BEING IMPLEMENTED
+4. THINGS BEING IMPLEMENTED (WORK IN PROGRESS)
+
+4.1 - TEMPORARIES
 
 The edge of development is now on register auto-allocation logics.
 There is going to be a new kind of registers: T[0-9]* which serve as temporaries
@@ -237,6 +255,14 @@ allocation to use. This should also give the maximum performance gain.
 
 There is also a pending enhancement of the preprocessor, in order to add extra
 functionalities like macro definitions and other directives.
+
+4.2 - CALLING CONVENTIONS
+
+The arguments of a function are explicitly defined using the ".param" keyword.
+While the returned element is always in register R1.
+
+Caller-save registers are R[1-5] and A[1-5], while callee-save registers are
+R[6-8] and A[6-8].
 
 ------------------
 
