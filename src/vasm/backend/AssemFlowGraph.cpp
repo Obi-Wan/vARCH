@@ -256,8 +256,6 @@ AssemFlowGraph::populateGraph(asm_function & function)
   // import nodes from assembler code
   _addNodesToGraph(function);
 
-  this->printFlowGraph();
-
   DebugPrintf(("  - Adding Arcs\n"));
   // Assigns relations
   _createArcs(function.localSymbols);
