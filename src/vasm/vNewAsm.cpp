@@ -67,7 +67,7 @@ main(int argc, char** argv)
         liveMap.printLiveMap();
         DebugPrintf((" --> Printed Live Map!! <--\n\n"));
 
-        InteferenceGraph interfGraph;
+        InterferenceGraph interfGraph;
         interfGraph.populateGraph<asm_statement *>( flowGraph, liveMap,
                                                     flowGraph.getTempsMap());
         DebugPrintf((" --> Printing Interference Graph!! <--\n"));

@@ -27,17 +27,17 @@ struct SimlifyRecord {
 
 class RegAllocator {
 public:
-  typedef InteferenceGraph::NodeType      NodeType;
-  typedef InteferenceGraph::NodeListType  NodeListType;
-  typedef InteferenceGraph::NodeSetType   NodeSetType;
-  typedef InteferenceGraph::ArcsMap       ArcsMap;
+  typedef InterferenceGraph::NodeType      NodeType;
+  typedef InterferenceGraph::NodeListType  NodeListType;
+  typedef InterferenceGraph::NodeSetType   NodeSetType;
+  typedef InterferenceGraph::ArcsMap       ArcsMap;
 
-  typedef InteferenceGraph::nl_c_iterator nl_c_iterator;
-  typedef InteferenceGraph::nl_iterator   nl_iterator;
-  typedef InteferenceGraph::ns_c_iterator ns_c_iterator;
-  typedef InteferenceGraph::ns_iterator   ns_iterator;
-  typedef InteferenceGraph::am_c_iterator am_c_iterator;
-  typedef InteferenceGraph::am_iterator   am_iterator;
+  typedef InterferenceGraph::nl_c_iterator nl_c_iterator;
+  typedef InterferenceGraph::nl_iterator   nl_iterator;
+  typedef InterferenceGraph::ns_c_iterator ns_c_iterator;
+  typedef InterferenceGraph::ns_iterator   ns_iterator;
+  typedef InterferenceGraph::am_c_iterator am_c_iterator;
+  typedef InterferenceGraph::am_iterator   am_iterator;
 
 protected:
   const TempsMap & tempsMap;
@@ -56,7 +56,7 @@ public:
     : tempsMap(_temps), maxRegs(regs)
   { }
 
-  bool simpleAllocateRegs(const InteferenceGraph & interf);
+  bool simpleAllocateRegs(const InterferenceGraph & interf);
 
   void printStack() const;
   void printAssigned() const;

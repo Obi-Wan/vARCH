@@ -24,9 +24,9 @@ RegAllocator::_findMax(const deque<const NodeType *> & nodes,
 }
 
 bool
-RegAllocator::simpleAllocateRegs(const InteferenceGraph & interf)
+RegAllocator::simpleAllocateRegs(const InterferenceGraph & interf)
 {
-  InteferenceGraph workGraph(interf);
+  InterferenceGraph workGraph(interf);
   for(; workGraph.getListOfNodes().size();)
   {
     DebugPrintf(("Iteration of simplify. Graph Size: %lu\n",

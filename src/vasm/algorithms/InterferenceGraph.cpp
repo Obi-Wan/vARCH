@@ -1,11 +1,11 @@
 /*
- * Graphs.cpp
+ * InterferenceGraph.cpp
  *
- *  Created on: 20/lug/2011
+ *  Created on: 01/ago/2011
  *      Author: ben
  */
 
-#include "Graphs.h"
+#include "InterferenceGraph.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Class InterferenceGraph
@@ -13,7 +13,7 @@
 /// Public Members
 ////////////////////////////////////////////////////////////////////////////////
 
-InteferenceGraph::InteferenceGraph(const InteferenceGraph & other)
+InterferenceGraph::InterferenceGraph(const InterferenceGraph & other)
   : Graph<uint32_t>(other)
 {
   for(am_c_iterator moveIt = other.moves.begin(); moveIt != other.moves.end();
@@ -39,7 +39,7 @@ InteferenceGraph::InteferenceGraph(const InteferenceGraph & other)
 }
 
 void
-InteferenceGraph::printInterferenceGraph() const
+InterferenceGraph::printInterferenceGraph() const
 {
   for(nl_c_iterator nodeIt = this->listOfNodes.begin();
       nodeIt != this->listOfNodes.end(); nodeIt++)
@@ -81,4 +81,3 @@ InteferenceGraph::printInterferenceGraph() const
     DebugPrintf((" label: %s, pointer %p\n", mapIter->first.c_str(), mapIter->second));
   }
 }
-

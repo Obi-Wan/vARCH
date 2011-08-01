@@ -9,7 +9,7 @@
 #define ASSEMFLOWGRAPH_H_
 
 #include "../asm-function.h"
-#include "../algorithms/Graphs.h"
+#include "../algorithms/InterferenceGraph.h"
 #include "../algorithms/TempsMap.h"
 
 class AssemFlowGraph : public FlowGraph<asm_statement *> {

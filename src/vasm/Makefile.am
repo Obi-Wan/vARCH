@@ -14,7 +14,7 @@ vasm_SOURCES = \
 		  IR/IR_LowLevel_Statements.cpp \
 		  algorithms/Labels.cpp	\
 		  algorithms/TempsMap.cpp	\
-		  algorithms/Graphs.cpp	\
+		  algorithms/InterferenceGraph.cpp	\
 		  backend/AssemFlowGraph.cpp \
 		  backend/RegAllocator.cpp \
 		  vNewAsm.cpp
