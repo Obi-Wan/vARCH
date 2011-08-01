@@ -24,19 +24,13 @@ asm_program::checkInstructions(const bool & usingTemps) const
         stmt_it != func->stmts.end(); stmt_it++)
     {
       const asm_statement * stmt = *stmt_it;
-      if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
+      if (stmt->isInstruction()) {
         try {
           ((const asm_instruction_statement *)stmt)->checkArgs();
-        } catch (const WrongArgumentException & e) {
-          fprintf(stderr, "ERROR: in instruction!\n%s\n", e.what());
-          error = true;
-        }
-      } else if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
-        const asm_function_call * f_stmt = (const asm_function_call *) stmt;
-        try {
-          f_stmt->checkArgs();
 
-          if (usingTemps) {
+          if (usingTemps && stmt->getType() == ASM_FUNCTION_CALL) {
+            const asm_function_call * f_stmt = (const asm_function_call *) stmt;
+
             const vector<asm_arg *> & args = f_stmt->args;
             const string & f_name = ((const asm_label_arg *)args[0])->label;
             for(size_t funcNum = 0; funcNum < functions.size(); funcNum++)
@@ -53,6 +47,7 @@ asm_program::checkInstructions(const bool & usingTemps) const
                             << (args.size() -1) << " were provided." << endl;
                   throw WrongArgumentException(stream.str());
                 }
+                break;
               }
             }
           }
