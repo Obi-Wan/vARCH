@@ -37,6 +37,7 @@ public:
   const uint32_t & getUID(const string & label) const;
 
   const LabelToUID & getLabelTable() const throw() { return labelToUID; }
+  const UIDToLabel & getUIDTable() const throw() { return uidToLabel; }
 };
 
 #endif /* TEMPSMAP_H_ */

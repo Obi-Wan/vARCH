@@ -22,6 +22,7 @@ class AssemFlowGraph : public FlowGraph<asm_statement *> {
 
   TempsMap tempsMap;
 
+  void _generateMovesForFunctionCalls(asm_function & function);
   void _addNodesToGraph(asm_function & function);
   void _createArcs(const TableOfSymbols & functionSymbols);
   void _findUsesDefines();

@@ -66,13 +66,13 @@ struct asm_function_param : asm_arg {
     int address;
   } content;
 
-  bool isReg;
-
-  asm_function_param(const YYLTYPE& pos, const int & _addr)
-    : asm_arg(pos, ADDR), isReg(false)
-  { content.address = _addr; }
+//  bool isReg;
+//
+//  asm_function_param(const YYLTYPE& pos, const int & _addr)
+//    : asm_arg(pos, ADDR), isReg(false)
+//  { content.address = _addr; }
   asm_function_param(const YYLTYPE& pos, const asm_arg * reg)
-    : asm_arg(pos, REG), isReg(true)
+    : asm_arg(pos, REG) //, isReg(true)
   { content.regNum = ((const asm_immediate_arg *)reg)->content.regNum; }
 };
 

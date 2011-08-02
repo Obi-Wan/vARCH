@@ -45,6 +45,12 @@ public:
     globals.insert(globals.end(), _globals->begin(), _globals->end());
   }
 
+  void rebuildFunctionsOffsets() {
+    for(size_t i = 0; i < functions.size(); i++) {
+      functions[i]->rebuildOffsets();
+    }
+  }
+
   int getFunciontsTotalSize() {
     int totSize = 0;
     for(size_t i = 0; i < functions.size(); i++) {

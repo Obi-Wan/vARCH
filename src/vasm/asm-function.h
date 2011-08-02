@@ -16,6 +16,8 @@
 
 using namespace std;
 
+typedef list<asm_statement *> ListOfStmts;
+
 struct asm_function {
   const string name;
   int tempLocalOffset;
@@ -23,7 +25,7 @@ struct asm_function {
 
   YYLTYPE position;
 
-  deque<asm_statement *> stmts;
+  ListOfStmts stmts;
   vector<asm_data_statement *> locals;
   vector<asm_function_param *> parameters;
 
@@ -38,7 +40,9 @@ struct asm_function {
   { }
 
   void finalize();
+  void rebuildOffsets();
   bool ensureTempsUsage(const bool & used) const;
+
   void checkLabel(asm_statement * stmt);
 
   void addStmt(asm_statement * stmt) { if (stmt) stmts.push_back(stmt); }
@@ -48,10 +52,13 @@ struct asm_function {
   }
   void addParameter(asm_function_param * p) { if (p) parameters.push_back(p); }
 
-  int getInstrSize() const {
-    int size = 0;
-    for(size_t index = 0; index < stmts.size(); index++) {
-      size += stmts[index]->getSize();
+  size_t getInstrSize() const {
+    size_t size = 0;
+    for(ListOfStmts::const_iterator stmt_it = stmts.begin();
+          stmt_it != stmts.end(); stmt_it++)
+    {
+      const asm_statement * stmt = *stmt_it;
+      size += stmt->getSize();
     }
     return size;
   }

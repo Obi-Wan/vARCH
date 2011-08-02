@@ -49,7 +49,6 @@ main(int argc, char** argv)
         throw BasicException("Error parsing\n");
       }
       program->checkInstructions(usingTemps);
-      program->addFunctionLabelsToGlobals();
 #ifdef DEBUG
       printAbstractTree(program);
 #endif
@@ -60,6 +59,8 @@ main(int argc, char** argv)
         DebugPrintf((" --> Printing Flow Graph!! <--\n"));
         flowGraph.printFlowGraph();
         DebugPrintf((" --> Printed Flow Graph!! <--\n\n"));
+
+        program->rebuildFunctionsOffsets();
 
         LiveMap<asm_statement *> liveMap;
         flowGraph.populateLiveMap(liveMap);
@@ -84,6 +85,7 @@ main(int argc, char** argv)
         program->ensureTempsUsage(usingTemps);
       }
 
+      program->addFunctionLabelsToGlobals();
       program->assignValuesToLabels();
       program->assemble( args.getOutputName() );
 
@@ -117,10 +119,12 @@ printAbstractTree(const asm_program * const program) {
     const asm_function & func = *program->functions[funcNum];
     DebugPrintf(("Line: %03d Function: %s\n", func.position.first_line,
                   func.name.c_str()));
-    for(size_t stmtNum = 0; stmtNum < func.stmts.size(); stmtNum++) {
-      DebugPrintf((" Line: %03d %s\n",
-                    func.stmts[stmtNum]->position.first_line,
-                    func.stmts[stmtNum]->toString().c_str()));
+    for(ListOfStmts::const_iterator stmt_it = func.stmts.begin();
+        stmt_it != func.stmts.end(); stmt_it++)
+    {
+      const asm_statement * stmt = *stmt_it;
+      DebugPrintf((" Line: %03d %s\n", stmt->position.first_line,
+                    stmt->toString().c_str()));
     }
     for(size_t localNum = 0; localNum < func.locals.size(); localNum++) {
       DebugPrintf((" Line: %03d Local: %s\n",

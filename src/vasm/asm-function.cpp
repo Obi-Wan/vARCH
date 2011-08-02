@@ -13,8 +13,10 @@ void
 asm_function::finalize()
 {
   DebugPrintf(("- Adding stmts and locals to function: %s -\n", name.c_str()));
-  for(size_t index = 0; index < stmts.size(); index++) {
-    asm_statement * stmt = stmts[index];
+  for(ListOfStmts::iterator stmt_it = stmts.begin(); stmt_it != stmts.end();
+      stmt_it++)
+  {
+    asm_statement * stmt = *stmt_it;
 
     stmt->offset = tempLocalOffset;
     tempLocalOffset += stmt->getSize();
@@ -43,11 +45,31 @@ asm_function::finalize()
   DebugPrintf(("- Terminated: Adding stmts and locals -\n\n"));
 }
 
+void
+asm_function::rebuildOffsets()
+{
+  tempLocalOffset = 0;
+  for(ListOfStmts::iterator stmt_it = stmts.begin(); stmt_it != stmts.end();
+      stmt_it++)
+  {
+    asm_statement * stmt = *stmt_it;
+
+    stmt->offset = tempLocalOffset;
+    tempLocalOffset += stmt->getSize();
+  }
+  for(size_t i = 0; i < locals.size(); i++) {
+    asm_data_statement * stmt = locals[i];
+
+    stmt->offset = tempLocalOffset;
+    tempLocalOffset += stmt->getSize();
+  }
+}
+
 bool
 asm_function::ensureTempsUsage(const bool & used) const
 {
   bool error = false;
-  for(deque<asm_statement *>::const_iterator stmt_it = this->stmts.begin();
+  for(ListOfStmts::const_iterator stmt_it = stmts.begin();
       stmt_it != stmts.end(); stmt_it++)
   {
     const asm_statement * stmt = *stmt_it;

@@ -10,6 +10,8 @@
 
 #define NUM_REGS 8
 
+#define STD_CALLEE_SAVE 5
+
 // Signals bits
 #define F_CARRY       (1 << 0)
 #define F_OVERFLOW    (1 << 1)

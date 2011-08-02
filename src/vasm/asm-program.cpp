@@ -21,7 +21,7 @@ asm_program::checkInstructions(const bool & usingTemps) const
       iter != functions.end(); iter++)
   {
     asm_function * func = (*iter);
-    for(deque<asm_statement *>::const_iterator stmt_it = func->stmts.begin();
+    for(ListOfStmts::const_iterator stmt_it = func->stmts.begin();
         stmt_it != func->stmts.end(); stmt_it++)
     {
       const asm_statement * stmt = *stmt_it;
@@ -214,8 +214,12 @@ asm_program::assemble(const string & outputName)
   Bloat::iterator pos = bytecode.begin();
   for (size_t funcIndex = 0; funcIndex < functions.size(); funcIndex++) {
     asm_function & func = *functions[funcIndex];
-    for(size_t j = 0; j < func.stmts.size(); j++) {
-      func.stmts[j]->emitCode(pos);
+
+    for(ListOfStmts::iterator stmt_it = func.stmts.begin();
+        stmt_it != func.stmts.end(); stmt_it++)
+    {
+      asm_statement * stmt = *stmt_it;
+      stmt->emitCode(pos);
     }
     for(size_t j = 0; j < func.locals.size(); j++) {
       func.locals[j]->emitCode(pos);
