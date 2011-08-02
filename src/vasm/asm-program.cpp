@@ -80,7 +80,7 @@ asm_program::ensureTempsUsage(const bool & used) const
 }
 
 void
-asm_program::addFunctionLabelsToGlobals()
+asm_program::moveMainToTop()
 {
   /* Let's put the main function in front of all the others */
   for(deque<asm_function *>::iterator iter = functions.begin();
@@ -94,7 +94,11 @@ asm_program::addFunctionLabelsToGlobals()
       break;
     }
   }
+}
 
+void
+asm_program::addFunctionLabelsToGlobals()
+{
   bool error = false;
 
   /* And fix their labels */

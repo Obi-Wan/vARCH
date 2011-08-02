@@ -21,7 +21,7 @@ asm_function::finalize()
     stmt->offset = tempLocalOffset;
     tempLocalOffset += stmt->getSize();
 
-    if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
+    if (stmt->isInstruction()) {
       asm_instruction_statement * istmt = (asm_instruction_statement *) stmt;
       for (size_t argNum = 0; argNum < istmt->args.size(); argNum++) {
         if (istmt->args[argNum]->getType() == ASM_LABEL_ARG) {

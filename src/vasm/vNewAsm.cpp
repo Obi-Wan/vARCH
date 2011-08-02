@@ -48,39 +48,43 @@ main(int argc, char** argv)
         fprintf(stderr, "An error may have occurred, code: %3d\n", res);
         throw BasicException("Error parsing\n");
       }
+      program->moveMainToTop();
       program->checkInstructions(usingTemps);
 #ifdef DEBUG
       printAbstractTree(program);
 #endif
 
       if (usingTemps) {
-        AssemFlowGraph flowGraph;
-        flowGraph.populateGraph(*(program->functions[0]));
-        DebugPrintf((" --> Printing Flow Graph!! <--\n"));
-        flowGraph.printFlowGraph();
-        DebugPrintf((" --> Printed Flow Graph!! <--\n\n"));
+        for(size_t numFunc = 0; numFunc < program->functions.size(); numFunc++)
+        {
+          AssemFlowGraph flowGraph;
+          flowGraph.populateGraph(*(program->functions[numFunc]));
+          DebugPrintf((" --> Printing Flow Graph!! <--\n"));
+          flowGraph.printFlowGraph();
+          DebugPrintf((" --> Printed Flow Graph!! <--\n\n"));
 
-        program->rebuildFunctionsOffsets();
+          program->rebuildFunctionsOffsets();
 
-        LiveMap<asm_statement *> liveMap;
-        flowGraph.populateLiveMap(liveMap);
-        DebugPrintf((" --> Printing Live Map!! <--\n"));
-        liveMap.printLiveMap();
-        DebugPrintf((" --> Printed Live Map!! <--\n\n"));
+          LiveMap<asm_statement *> liveMap;
+          flowGraph.populateLiveMap(liveMap);
+          DebugPrintf((" --> Printing Live Map!! <--\n"));
+          liveMap.printLiveMap();
+          DebugPrintf((" --> Printed Live Map!! <--\n\n"));
 
-        InterferenceGraph interfGraph;
-        interfGraph.populateGraph<asm_statement *>( flowGraph, liveMap,
-                                                    flowGraph.getTempsMap());
-        DebugPrintf((" --> Printing Interference Graph!! <--\n"));
-        interfGraph.printInterferenceGraph();
-        DebugPrintf((" --> Printed Interference Graph!! <--\n\n"));
+          InterferenceGraph interfGraph;
+          interfGraph.populateGraph<asm_statement *>( flowGraph, liveMap,
+                                                      flowGraph.getTempsMap());
+          DebugPrintf((" --> Printing Interference Graph!! <--\n"));
+          interfGraph.printInterferenceGraph();
+          DebugPrintf((" --> Printed Interference Graph!! <--\n\n"));
 
-        RegAllocator regAlloc(flowGraph.getTempsMap());
-        DebugPrintf((" --> Printing Allocator Stack!! <--\n"));
-        regAlloc.simpleAllocateRegs(interfGraph);
-        DebugPrintf((" --> Printed Allocator Stack!! <--\n\n"));
+          RegAllocator regAlloc(flowGraph.getTempsMap());
+          DebugPrintf((" --> Printing Allocator Stack!! <--\n"));
+          regAlloc.simpleAllocateRegs(interfGraph);
+          DebugPrintf((" --> Printed Allocator Stack!! <--\n\n"));
 
-        flowGraph.applySelectedRegisters(regAlloc.getAssignedRegs());
+          flowGraph.applySelectedRegisters(regAlloc.getAssignedRegs());
+        }
       } else {
         program->ensureTempsUsage(usingTemps);
       }

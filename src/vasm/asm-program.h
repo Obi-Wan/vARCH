@@ -62,6 +62,7 @@ public:
   void checkInstructions(const bool & usingTemps) const;
   void ensureTempsUsage(const bool & used) const;
 
+  void moveMainToTop();
   void addFunctionLabelsToGlobals();
   void assignValuesToLabels();
   void assemble(const string & outputName);
