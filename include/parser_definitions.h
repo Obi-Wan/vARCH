@@ -11,6 +11,7 @@
 #include "asm_helpers.h"
 #include "std_istructions.h"
 #include "exceptions.h"
+#include "macros.h"
 
 #include <string>
 #include <map>
@@ -22,8 +23,8 @@ using namespace std;
 typedef map<string, int> NameToValue;
 typedef map<int, string> ValueToName;
 
-static class IstructionSet {
-
+class DoubleCorrelationMap {
+protected:
   NameToValue nameToValue;
   ValueToName valueToName;
 
@@ -40,12 +41,46 @@ static class IstructionSet {
     assignNew(name);
   }
 
-  int currValue;
+  int32_t currValue;
 
 public:
-  IstructionSet() : currValue(0)
-                  , errorMsgName("No istruction called: ")
-                  , errorMsgValue("No such istruction exists")
+  DoubleCorrelationMap(const int32_t & _currValue, const string & _errorMsgName,
+      const string & _errorMsgVal)
+    : currValue(_currValue), errorMsgName(_errorMsgName)
+    , errorMsgValue(_errorMsgVal)
+  { }
+
+  const int& getItem(const char * name) const {
+    NameToValue::const_iterator istr = nameToValue.find(string(name));
+    if (istr == nameToValue.end()) {
+      throw WrongIstructionException(errorMsgName + name);
+    }
+
+    return istr->second;
+  }
+  const int& getItem(const string& name) const {
+    NameToValue::const_iterator istr = nameToValue.find(name);
+    if (istr == nameToValue.end()) {
+      throw WrongIstructionException(errorMsgName + name);
+    }
+
+    return istr->second;
+  }
+  const string& getItem(const int& value) const {
+    ValueToName::const_iterator istr = valueToName.find(value);
+    if (istr == valueToName.end()) {
+      throw WrongIstructionException(errorMsgValue);
+    }
+
+    return istr->second;
+  }
+};
+
+static class IstructionSet : public DoubleCorrelationMap {
+public:
+  IstructionSet()
+    : DoubleCorrelationMap(0, "No instruction called: ",
+        "No such instruction value exists")
   {
     assignNew("SLEEP",N_ARGS_ZERO);
     assignNew("PUSHA");
@@ -122,31 +157,41 @@ public:
 
   }
 
-  const int& getIstr(const char * name) const {
-    NameToValue::const_iterator istr = nameToValue.find(string(name));
-    if (istr == nameToValue.end()) {
-      throw WrongIstructionException(errorMsgName + name);
-    }
-
-    return istr->second;
-  }
-  const int& getIstr(const string& name) const {
-    NameToValue::const_iterator istr = nameToValue.find(name);
-    if (istr == nameToValue.end()) {
-      throw WrongIstructionException(errorMsgName + name);
-    }
-
-    return istr->second;
-  }
-  const string& getIstr(const int& value) const {
-    ValueToName::const_iterator istr = valueToName.find(value);
-    if (istr == valueToName.end()) {
-      throw WrongIstructionException(errorMsgValue);
-    }
-
-    return istr->second;
-  }
+  const int& getIstr(const char * name) const { return getItem(name); }
+  const int& getIstr(const string& name) const { return getItem(name); }
+  const string& getIstr(const int& value) const { return getItem(value); }
 } ISet;
+
+static class ArgsTypeSet : public DoubleCorrelationMap {
+public:
+  ArgsTypeSet()
+    : DoubleCorrelationMap(0, "No such type", "No such enum type arg")
+  {
+    assignNew("COST");
+    assignNew("REG");
+    assignNew("ADDR");
+    assignNew("ADDR_IN_REG");
+
+    /* Here the (1 << 1) bit stays for INCR/DECR, and the (1 << 0) for PRE/POST */
+    assignNew("REG_PRE_INCR");
+    assignNew("REG_PRE_DECR");
+    assignNew("REG_POST_INCR");
+    assignNew("REG_POST_DECR");
+
+    /* Here the (1 << 1) bit stays for INCR/DECR, and the (1 << 0) for PRE/POST */
+    assignNew("ADDR_PRE_INCR");
+    assignNew("ADDR_PRE_DECR");
+    assignNew("ADDR_POST_INCR");
+    assignNew("ADDR_POST_DECR");
+
+    /* Here the (1 << 1) bit stays for INCR/DECR, and the (1 << 0) for PRE/POST */
+    assignNew("ADDR_IN_REG_PRE_INCR");
+    assignNew("ADDR_IN_REG_PRE_DECR");
+    assignNew("ADDR_IN_REG_POST_INCR");
+    assignNew("ADDR_IN_REG_POST_DECR");
+
+  }
+} ATypeSet;
 
 #endif	/* _PARSER_DEFINITIONS_H */
 
