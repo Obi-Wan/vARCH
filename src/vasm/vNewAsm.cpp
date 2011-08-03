@@ -12,6 +12,7 @@
 #include "backend/AssemFlowGraph.h"
 #include "backend/RegAllocator.h"
 #include "backend/StaticLinker.h"
+#include "backend/Optimizer.h"
 
 using namespace std;
 
@@ -99,6 +100,16 @@ main(int argc, char** argv)
           } else {
             throw WrongArgumentException(
                 "Couldn't find a solution for registers allocation");
+          }
+
+          Optimizer optimizer;
+          switch (args.getOptimizationLevel()) {
+            case 3:
+            case 2:
+            case 1: {
+              optimizer.removeUselessMoves(func);
+            }
+            default: break;
           }
         }
       } else {

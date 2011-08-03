@@ -18,6 +18,7 @@ vasm_SOURCES = \
 		  backend/AssemFlowGraph.cpp \
 		  backend/RegAllocator.cpp \
 		  backend/StaticLinker.cpp \
+		  backend/Optimizer.cpp \
 		  disassembler/Disassembler.cpp \
 		  vNewAsm.cpp
 
