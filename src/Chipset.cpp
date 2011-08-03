@@ -70,11 +70,15 @@ Chipset::initMem() {
   uint32_t i = 0;
   try {
     Bloat biosLoad = loadBiosFromFile("bios.bin");
+
+    CHECK_THROW(biosLoad.size() < maxMem,
+        WrongFileException("Bios Too Big! It doesn't fit memory!"));
+
     for (i = 0; i < biosLoad.size(); i++) {
       mainMem[i] = biosLoad[i];
     }
-  } catch (WrongFileException) {
-    WarningPrintf(("Failed to load bios from file\n"));
+  } catch (const WrongFileException & e) {
+    printf("Failed to load bios from file:\n%s\n", e.what());
     for (i = 0; !(bios[i-1] == HALT && (bios[i] == 0 || bios[i+1] == 0)); i++) {
       mainMem[i] = bios[i];
     }

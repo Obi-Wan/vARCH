@@ -10,7 +10,7 @@
 #include "Chipset.h"
 #include "exceptions.h"
 
-#define MAX_MEM 100
+#define MAX_MEM 200
 
 /*
  * 
