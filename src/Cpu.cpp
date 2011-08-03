@@ -28,7 +28,7 @@ Cpu::init() {
   resetFlags(flags);
   flags += F_SVISOR | INT_PUT( INT_MAX_S_PR ); // start in supervisor mode
   resetRegs();
-  sP.setStackPointer(memoryController.getMaxMem());
+  sP.setStackPointer(memoryController.getLimit());
 }
 
 /** Writes to standard output the content of registers, program counter

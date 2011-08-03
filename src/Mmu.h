@@ -17,6 +17,7 @@ public:
   Mmu(const Mmu& orig);
 
   const uint32_t &getMaxMem() const throw() { return maxMem; }
+  const uint32_t &getLimit() const throw() { return limit; }
   
   void storeToMem(const int32_t & data, const uint32_t & addr);
   const int32_t &loadFromMem(const uint32_t & addr) const;
