@@ -1,7 +1,7 @@
 AC_INIT([vARCH], [0.1], [ben.vighy@gmail.com])
 
 AC_CONFIG_AUX_DIR([build-aux])
-AM_INIT_AUTOMAKE([dist-bzip2 -Wall])
+AM_INIT_AUTOMAKE([-Wall dist-bzip2])
 
 AC_PROG_CXX
 AM_PROG_LEX
@@ -14,6 +14,11 @@ AC_CONFIG_FILES([
 	src/Makefile
 	src/vasm/Makefile
 ])
+
+CFLAGS="${CFLAGS=}"
+CXXFLAGS="${CXXFLAGS=}"
+AC_SUBST([CFLAGS],["${CFLAGS} -Wall"])
+AC_SUBST([CXXFLAGS],["${CXXFLAGS} -Wall"])
 
 ###############################################################################
 # Debug builds

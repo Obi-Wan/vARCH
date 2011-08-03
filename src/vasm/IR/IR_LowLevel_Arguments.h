@@ -29,7 +29,7 @@ struct asm_arg {
             : type(_type), relOffset(0), relative(false), position(pos) { }
   asm_arg(const YYLTYPE& pos) : relOffset(0), relative(false), position(pos) { }
   virtual const string toString() const { return ""; }
-  virtual const int getCode() const { }
+  virtual const int getCode() const { return 0; }
   virtual const ObjType getType() const throw() { return ASM_ARG; }
 
   virtual bool isTemporary() const throw() { return false; }

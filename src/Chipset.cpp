@@ -14,7 +14,7 @@
 #include "CharTerminal.h"
 #include "macros.h"
 
-Chipset::Chipset(const int& _maxMem, int * _mainMem)
+Chipset::Chipset(const uint32_t& _maxMem, int32_t * _mainMem)
     : cpu(* (new Cpu(*this,*(new Mmu(_maxMem,_mainMem))))), mainMem(_mainMem)
       , maxMem(_maxMem) {
 
@@ -139,11 +139,11 @@ Chipset::getCpu(const uint32_t & num) const {
 }
 
 void
-Chipset::singlePutToComponent(const int& signal, const int& arg) {
+Chipset::singlePutToComponent(const uint32_t& signal, const uint32_t& arg) {
   DebugPrintf(("Signal  in dec %d in ex %x\n", signal, signal));
-  short int request = EXTRACT_REQUEST(signal);
+  uint16_t request = EXTRACT_REQUEST(signal);
   DebugPrintf(("Request in dec %d in ex %x\n", request, request));
-  short int device  = EXTRACT_DEVICE(signal);
+  uint16_t device  = EXTRACT_DEVICE(signal);
   DebugPrintf(("Device in dec %d in ex %x\n", device, device));
   if (device > components.size()) {
     WarningPrintf(("accessing a non existent component: %d\n", device));
@@ -153,10 +153,11 @@ Chipset::singlePutToComponent(const int& signal, const int& arg) {
 }
 
 int
-Chipset::singleGetFromComponent(const int& numComp) {
-  if (numComp > components.size()) {
+Chipset::singleGetFromComponent(const uint32_t& numComp) {
+  if ( ((uint32_t)numComp) > components.size()) {
     WarningPrintf(("accessing a non existent component: %d\n", numComp));
+    return DATA_READY_ERROR;
   } else {
-    components[numComp]->get();
+    return components[numComp]->get();
   }
 }

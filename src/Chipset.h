@@ -21,7 +21,7 @@ using namespace std;
 
 class Chipset : public InterruptHandler {
 public:
-  Chipset(const int& _maxMem, int * _mainMem);
+  Chipset(const uint32_t& _maxMem, int32_t * _mainMem);
   virtual ~Chipset();
 
   void startClock();
@@ -30,16 +30,16 @@ public:
   //  void addCpu(Cpu &);
   const Cpu& getCpu(const uint32_t & num = 0) const;
 
-  void singlePutToComponent(const int& numComp, const int& signal);
-  int singleGetFromComponent(const int& numComp);
+  void singlePutToComponent(const uint32_t& numComp, const uint32_t& signal);
+  int singleGetFromComponent(const uint32_t& numComp);
 
 private:
   Cpu & cpu;
 
-  int * mainMem;
+  int32_t * mainMem;
   const uint32_t maxMem;
 
-  static const int bios[];
+  static const int32_t bios[];
 
   vector<Component *> components;
 

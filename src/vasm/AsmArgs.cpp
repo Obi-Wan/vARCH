@@ -15,7 +15,7 @@ using namespace std;
 void
 AsmArgs::parse() throw (WrongArgumentException)
 {
-  for(uint32_t argNum = 1; argNum < argc; argNum++) {
+  for(int32_t argNum = 1; argNum < argc; argNum++) {
     const string tempArg(argv[argNum]);
 
     if (!tempArg.compare("-c")) {

@@ -28,6 +28,8 @@ protected:
   NameToValue nameToValue;
   ValueToName valueToName;
 
+  int32_t currValue;
+
   const string errorMsgName;
   const string errorMsgValue;
 
@@ -40,8 +42,6 @@ protected:
     currValue = newCurrVal;
     assignNew(name);
   }
-
-  int32_t currValue;
 
 public:
   DoubleCorrelationMap(const int32_t & _currValue, const string & _errorMsgName,

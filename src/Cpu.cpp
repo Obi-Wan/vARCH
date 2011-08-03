@@ -169,12 +169,12 @@ Cpu::istructsOneArg(const int& istr, int& newFlags)
       break;
     }
     case INCR: {
-      int old = temp;
+      int32_t old = temp;
       if (old > ++temp) flags += F_OVERFLOW;
       break;
     }
     case DECR: {
-      int old = temp;
+      int32_t old = temp;
       if (old < --temp) flags += F_OVERFLOW;
       break;
     }
@@ -411,7 +411,7 @@ Cpu::istructsThreeArg(const int& istr, int& newFlags)
 inline int
 Cpu::loadArg(const int& arg,const int& typeArg)
 {
-  const int relative = (typeArg & 0x10) ? (progCounter -1) : 0;
+  const uint32_t relative = IS_RELATIVE(typeArg) * sP.getStackPointer();
   DebugPrintf(("  Relative: %d\n", relative));
   switch (typeArg & 0xf) {
     case COST:
@@ -463,7 +463,7 @@ Cpu::loadArg(const int& arg,const int& typeArg)
 inline void
 Cpu::storeArg(const int& arg, const int& typeArg, int value)
 {
-  const int relative = (typeArg & 0x10) ? (progCounter -1) : 0;
+  const uint32_t relative = IS_RELATIVE(typeArg) * sP.getStackPointer();
   DebugPrintf(("  Relative: %d\n", relative));
   switch (typeArg & 0xf) {
     case REG:

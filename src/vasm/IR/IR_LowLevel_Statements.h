@@ -102,7 +102,7 @@ struct asm_function_call : asm_instruction_statement {
     const asm_arg * arg = args[0];
 
     *(position++) = instruction
-        + ARG_1( arg->type + (arg->relative ? RELATIVE_ARG : 0) );
+                          + ARG_1( arg->type + (arg->relative * RELATIVE_ARG) );
     *(position++) = arg->getCode();
   }
 

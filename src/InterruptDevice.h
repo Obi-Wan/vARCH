@@ -82,8 +82,8 @@ public:
   virtual void checkInterruptEvents() { }
 protected:
 
-  int interruptPriority;
   int interruptId;
+  int interruptPriority;
 
   InterruptHandler * interruptHandler;
 };

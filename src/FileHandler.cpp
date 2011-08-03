@@ -37,7 +37,7 @@ TextLoader::getTextFileContent() {
 
 void
 BinWriter::saveBinFileContent(const Bloat& bloat) {
-  for(int i = 0; i < bloat.size(); i++) {
+  for(size_t i = 0; i < bloat.size(); i++) {
     file.write((const char *)&bloat[i], sizeof(Bloat::value_type));
 //    DebugPrintf(("int: %d\n",bloat[i]));
   }
