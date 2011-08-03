@@ -312,7 +312,7 @@ FlowGraph<DataType>::populateLiveMap(LiveMap<DataType> & liveMap)
           const NodeType * const pred = *predIt;
           UIDSetType & outPred = liveMap.liveOut[pred];
 
-          if (outPred.find(*live_in) == outPred.end()) {
+          if ( !outPred.count(*live_in) ) {
             DebugPrintf(( "Adding Live-Out: T%05d to node %s\n",
                           *live_in, pred->label.c_str()));
             outPred.insert(*live_in);
@@ -325,8 +325,7 @@ FlowGraph<DataType>::populateLiveMap(LiveMap<DataType> & liveMap)
       for(us_iterator live_out = nodeLiveOut.begin(); live_out != endLivesOut;
           live_out++)
       {
-        if ( (nodeLiveIn.find(*live_out) == nodeLiveIn.end())
-            && (defs[node].find(*live_out) == defs[node].end()))
+        if ( !nodeLiveIn.count(*live_out) && !defs[node].count(*live_out) )
         {
           nodeLiveIn.insert(*live_out);
           modified = true;
