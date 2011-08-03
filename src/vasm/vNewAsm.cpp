@@ -112,9 +112,8 @@ main(int argc, char** argv)
             }
             default: break;
           }
-
-          program->rebuildFunctionsOffsets();
         }
+        program->rebuildFunctionsOffsets();
       } else {
         program->ensureTempsUsage(usingTemps);
       }
