@@ -74,6 +74,7 @@ main(int argc, char** argv)
           flowGraph.printFlowGraph();
           DebugPrintf((" --> Printed Flow Graph!! <--\n\n"));
 
+          // May be not needed
           program->rebuildFunctionsOffsets();
 
           LiveMap<asm_statement *> liveMap;
@@ -111,6 +112,8 @@ main(int argc, char** argv)
             }
             default: break;
           }
+
+          program->rebuildFunctionsOffsets();
         }
       } else {
         program->ensureTempsUsage(usingTemps);
