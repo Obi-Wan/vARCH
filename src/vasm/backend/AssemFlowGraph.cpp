@@ -66,6 +66,11 @@ AssemFlowGraph::_createArcs(const TableOfSymbols & functionSymbols)
       switch(i_stmt->instruction) {
         case IFJ:
         case IFNJ:
+        case TCJ:
+        case TZJ:
+        case TOJ:
+        case TNJ:
+        case TSJ:
         case IFEQJ:
         case IFNEQJ:
         case IFLOJ:
