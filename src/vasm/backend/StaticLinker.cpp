@@ -12,6 +12,12 @@
 inline void
 StaticLinker::scanStmtsAndTemps(ListOfStmts & stmts)
 {
+  // Adding registers to TempsMap
+  for(uint32_t numReg = 0; numReg < NUM_REGS; numReg++)
+  {
+    const uint32_t shiftedTempUID = shiftArgUID( numReg, false);
+    tempsMap.putTemp( shiftedTempUID, true);
+  }
   for(ListOfStmts::iterator stmtIt = stmts.begin(); stmtIt != stmts.end();
       stmtIt++)
   {
