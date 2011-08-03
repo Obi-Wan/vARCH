@@ -70,6 +70,7 @@ extern int yylex \
 %token <string> STRING
 %token <instruction> INSTRUCTION
 %token KEYWORD_INT KEYWORD_LONG KEYWORD_REAL KEYWORD_CHAR KEYWORD_STRING
+%token KEYWORD_CONST KEYWORD_SHARED
 %token KEYWORD_LOCAL KEYWORD_GLOBAL KEYWORD_FUNCTION KEYWORD_END KEYWORD_PARAM
 %token <label> DEF_LABEL
 %token <label> POSITION_LABEL
@@ -87,6 +88,7 @@ extern int yylex \
 %type <stmt> stmt
 %type <instr_stmt> instruction_stmt
 %type <data_stmt> data_stmt
+%type <data_stmt> variable_decl
 %type <keyw_stmt> data_keyword
 %type <listOfDataStatements> data_stmts
 %type <listOfDataStatements> locals
@@ -208,7 +210,16 @@ data_stmts
 
 data_stmt
       : DEF_LABEL     { $$ = new asm_label_statement( yylloc, $1 ); }
-      | data_keyword  { $$ = $1; }
+      | variable_decl { $$ = $1; }
+      ;
+
+variable_decl
+      : data_keyword
+                  { $$ = $1; }
+      | KEYWORD_CONST data_keyword
+                  { $$ = $2; $$->is_constant = true; }
+      | KEYWORD_SHARED data_keyword
+                  { $$ = $2; $$->is_shared = true; }
       ;
 
 data_keyword

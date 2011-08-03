@@ -98,6 +98,10 @@ SLEEP|PUSHA|POPA|RET|RETEX|REBOOT|HALT|NOT|INCR|DECR|COMP2|LSH|RSH|STACK|PUSH|PO
 \.real      return KEYWORD_REAL;
 \.char      return KEYWORD_CHAR;
 \.string    return KEYWORD_STRING;
+
+\.const     return KEYWORD_CONST;
+\.shared    return KEYWORD_SHARED;
+
 \.local     return KEYWORD_LOCAL;
 \.global    return KEYWORD_GLOBAL;
 \.function  return KEYWORD_FUNCTION;

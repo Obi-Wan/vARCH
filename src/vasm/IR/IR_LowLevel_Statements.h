@@ -133,7 +133,17 @@ struct asm_return_statement : asm_instruction_statement {
 ///////////////////////
 
 struct asm_data_statement : asm_statement {
-  asm_data_statement(const YYLTYPE& pos) : asm_statement(pos) { }
+
+  bool is_constant;
+  bool is_shared;
+
+  asm_data_statement(const YYLTYPE& pos)
+    : asm_statement(pos), is_constant(false), is_shared(false) { }
+
+  const bool & isConst() const throw() { return is_constant; }
+  // The idea is to share constants, in order to save moves and allocations
+  bool isShared() const throw() { return is_shared || is_constant; }
+
   const ObjType getType() const throw() { return ASM_DATA_STATEMENT; }
 };
 
