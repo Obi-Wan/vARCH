@@ -66,6 +66,37 @@ asm_program::checkInstructions(const bool & usingTemps) const
 }
 
 void
+asm_program::assignFunctionParameters()
+{
+  for(deque<asm_function *>::const_iterator iter = functions.begin();
+      iter != functions.end(); iter++)
+  {
+    asm_function * func = (*iter);
+    for(ListOfStmts::const_iterator stmt_it = func->stmts.begin();
+        stmt_it != func->stmts.end(); stmt_it++)
+    {
+      const asm_statement * stmt = *stmt_it;
+      if (stmt->getType() == ASM_FUNCTION_CALL) {
+        asm_function_call * f_stmt = (asm_function_call *) stmt;
+
+        const vector<asm_arg *> & args = f_stmt->args;
+        const string & f_name = ((const asm_label_arg *)args[0])->label;
+        for(size_t funcNum = 0; funcNum < functions.size(); funcNum++)
+        {
+          const asm_function & func = *functions[funcNum];
+          if (func.name == f_name) {
+            DebugPrintf(("Found referenced function. Copying params\n"));
+            f_stmt->importParameters(func.parameters);
+            DebugPrintf(("Copied params\n"));
+            break;
+          }
+        }
+      }
+    }
+  }
+}
+
+void
 asm_program::ensureTempsUsage(const bool & used) const
 {
   bool error = false;

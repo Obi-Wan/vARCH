@@ -27,7 +27,7 @@ struct asm_function {
 
   ListOfStmts stmts;
   vector<asm_data_statement *> locals;
-  vector<asm_function_param *> parameters;
+  ListOfParams parameters;
 
   TableOfSymbols localSymbols;
   list<ArgLabelRecord *> refs;

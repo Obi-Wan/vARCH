@@ -9,32 +9,11 @@
 
 #include "exceptions.h"
 #include "CpuDefinitions.h"
+#include "StaticLinker.h"
 
 #include <sstream>
 
 using namespace std;
-
-inline bool
-AssemFlowGraph::_argIsTemp(const asm_arg * const arg) const
-{
-  return (arg->getType() == ASM_IMMEDIATE_ARG
-          && ((const asm_immediate_arg * const)arg)->isTemp);
-}
-
-inline bool
-AssemFlowGraph::_argIsReg(const asm_arg * const arg) const
-{
-  return (arg->getType() == ASM_IMMEDIATE_ARG
-          && ((const asm_immediate_arg * const)arg)->type != COST
-          && ((const asm_immediate_arg * const)arg)->type != ADDR);
-}
-
-inline uint32_t
-AssemFlowGraph::shiftArgUID(const asm_immediate_arg * arg, const bool & isTemp)
-  const
-{
-  return isTemp * FIRST_TEMPORARY + 1 + arg->content.tempUID;
-}
 
 inline string
 AssemFlowGraph::buildStmtLabel(const asm_statement * const stmt,
@@ -48,152 +27,6 @@ AssemFlowGraph::buildStmtLabel(const asm_statement * const stmt,
   stream.fill(' ');
   stream << " " << stmt->toString();
   return stream.str();
-}
-
-inline void
-AssemFlowGraph::_generateMovesForFunctionCalls(asm_function & function)
-{
-  ListOfStmts & stmts = function.stmts;
-
-  // Find return statements
-  vector<ListOfStmts::iterator> returns;
-
-  // Push temps map and fin max temp
-  uint32_t minNewTemp = FIRST_TEMPORARY;
-
-  for(ListOfStmts::iterator stmtIt = stmts.begin(); stmtIt != stmts.end();
-      stmtIt++)
-  {
-    asm_statement * stmt = *stmtIt;
-    if (stmt->isInstruction()) {
-      asm_instruction_statement * i_stmt = (asm_instruction_statement *) stmt;
-      vector<asm_arg *> args = i_stmt->args;
-      for(size_t numArg = 0; numArg < args.size(); numArg++)
-      {
-        const bool isTemp = _argIsTemp(args[numArg]);
-        if (isTemp || _argIsReg(args[numArg])) {
-          asm_immediate_arg * arg = (asm_immediate_arg *) args[numArg];
-          const uint32_t shiftedTempUID = shiftArgUID(arg, isTemp);
-          // to temps map
-          tempsMap.putTemp( shiftedTempUID, true);
-          // find min avail temp
-          if ( (shiftedTempUID+1) > minNewTemp) {
-            minNewTemp = shiftedTempUID+1;
-            DebugPrintf(("New minNewTemp %u\n", minNewTemp));
-          }
-        }
-      }
-
-      if (stmt->getType() == ASM_RETURN_STATEMENT) {
-        DebugPrintf(("Found Return at: %d\n", stmt->position.first_line));
-        returns.push_back(stmtIt);
-      }
-    }
-  }
-
-  // Take care of callee-save registers
-  // (if it doesn't return, we don't even bother doing callee-save)
-  if (returns.size()) {
-    for(uint32_t regNum = STD_CALLEE_SAVE; regNum < NUM_REGS; regNum++)
-    {
-      const uint32_t tempProgr = minNewTemp++;
-      tempsMap.putTemp( tempProgr, true);
-      {
-        const asm_statement * firstStmt = *function.stmts.begin();
-        // Build the move temp[5-8] <- R[5-8]
-        asm_instruction_statement * stmt =
-            new asm_instruction_statement(firstStmt->position, MOV);
-
-        asm_immediate_arg * regArg = new asm_immediate_arg(firstStmt->position);
-        regArg->relative = false;
-        regArg->type = REG;
-        regArg->content.val = regNum;
-
-        stmt->addArg(regArg);
-
-        asm_immediate_arg * tempArg = new asm_immediate_arg(firstStmt->position);
-        tempArg->relative = false;
-        tempArg->type = REG;
-        tempArg->content.val = tempProgr - FIRST_TEMPORARY - 1;
-        tempArg->isTemp = true;
-
-        stmt->addArg(tempArg);
-
-        function.stmts.push_front(stmt);
-      }
-      for(vector<ListOfStmts::iterator>::iterator retIt = returns.begin();
-          retIt != returns.end(); retIt++)
-      {
-        asm_return_statement * ret = (asm_return_statement *) **retIt;
-        // Build the move R[5-8] <- temp[5-8]
-        asm_instruction_statement * stmt =
-            new asm_instruction_statement(ret->position, MOV);
-
-        asm_immediate_arg * tempArg = new asm_immediate_arg(ret->position);
-        tempArg->relative = false;
-        tempArg->type = REG;
-        tempArg->content.val = minNewTemp;
-        tempArg->isTemp = true;
-
-        stmt->addArg(tempArg);
-
-        asm_immediate_arg * regArg = new asm_immediate_arg(ret->position);
-        regArg->relative = false;
-        regArg->type = REG;
-        regArg->content.val = regNum;
-
-        stmt->addArg(regArg);
-
-        function.stmts.insert(*retIt, stmt);
-      }
-    }
-  }
-
-  // Push returns if needed
-  for(vector<ListOfStmts::iterator>::iterator retIt = returns.begin();
-      retIt != returns.end(); retIt++)
-  {
-    asm_return_statement * ret = (asm_return_statement *) **retIt;
-    if (ret->args.size() == 1)
-    {
-      asm_arg * arg = ret->args[0];
-      if (_argIsTemp(arg) || _argIsReg(arg))
-      {
-        asm_immediate_arg * i_arg = (asm_immediate_arg *) arg;
-
-        // Build the move R1 <- tempRet
-        asm_instruction_statement * stmt =
-            new asm_instruction_statement(ret->position, MOV);
-
-        asm_immediate_arg * tempArg = new asm_immediate_arg(ret->position);
-        tempArg->relative = i_arg->relative;
-        tempArg->type = i_arg->type;
-        tempArg->content.val = i_arg->content.val;
-        tempArg->isTemp = i_arg->isTemp;
-
-        stmt->addArg(tempArg);
-
-        asm_immediate_arg * regArg = new asm_immediate_arg(ret->position);
-        regArg->relative = false;
-        regArg->type = REG;
-        regArg->content.val = 0;
-
-        stmt->addArg(regArg);
-
-        function.stmts.insert(*retIt, stmt);
-      } else {
-        throw WrongArgumentException(
-            "Returned element should be a temporary or a register");
-      }
-    }
-  }
-
-  // Push moves of parameters in Function calls
-//  for(ListOfStmts::iterator stmtIt = stmts.begin();
-//      stmtIt != stmts.end(); stmtIt++)
-//  {
-//    asm_statement * stmt = *stmtIt;
-//  }
 }
 
 inline void
@@ -284,14 +117,14 @@ inline bool
 AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
     UIDMultiSetType & nodeUses, UIDMultiSetType & nodeDefs)
 {
-  const bool arg0_temp = _argIsTemp(args[0]);
-  const bool arg1_temp = _argIsTemp(args[1]);
+  const bool arg0_temp = args[0]->isTemporary();
+  const bool arg1_temp = args[1]->isTemporary();
 
   bool isMove = arg0_temp && arg1_temp;
 
-  if (arg0_temp || _argIsReg(args[0])) {
+  if (arg0_temp || args[0]->isReg()) {
     asm_immediate_arg * arg = (asm_immediate_arg *) args[0];
-    const uint32_t shiftedTempUID = shiftArgUID(arg, arg0_temp);
+    const uint32_t shiftedTempUID = StaticLinker::shiftArgUID(arg, arg0_temp);
     // Add to temps map
     tempsMap.putTemp( shiftedTempUID, true);
     // Add to uses
@@ -311,9 +144,9 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
       default: break;
     }
   }
-  if (arg1_temp || _argIsReg(args[1])) {
+  if (arg1_temp || args[1]->isReg()) {
     asm_immediate_arg * arg = (asm_immediate_arg *) args[1];
-    const uint32_t shiftedTempUID = shiftArgUID(arg, arg1_temp);
+    const uint32_t shiftedTempUID = StaticLinker::shiftArgUID(arg, arg1_temp);
     // Add to defs
     nodeDefs.insert( shiftedTempUID );
   }
@@ -373,32 +206,62 @@ AssemFlowGraph::_findUsesDefines()
   {
     NodeType * const node = &*nodeIt;
     asm_statement * stmt = node->data;
-    if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
+    if (stmt->isInstruction()) {
       asm_instruction_statement * i_stmt = (asm_instruction_statement *) stmt;
 
       UIDMultiSetType & nodeUses = uses[node];
       UIDMultiSetType & nodeDefs = defs[node];
 
-      // Special treatment of "move" instruction
-      if (i_stmt->instruction == MOV) {
-        node->isMove = _moveInstr(i_stmt->args, nodeUses, nodeDefs);
-      } else {
-        // Other instructions
-        for(size_t argNum = 0; argNum < i_stmt->args.size(); argNum++)
-        {
-          const bool isTemp = _argIsTemp(i_stmt->args[argNum]);
-          if ( isTemp || _argIsReg(i_stmt->args[argNum]) ) {
-            asm_immediate_arg * arg = (asm_immediate_arg *)i_stmt->args[argNum];
-            const uint32_t shiftedTempUID = shiftArgUID(arg, isTemp);
-            // uses
-            nodeUses.insert( shiftedTempUID );
+      if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
+        // Special treatment of "move" instruction
+        if (i_stmt->instruction == MOV) {
+          node->isMove = _moveInstr(i_stmt->args, nodeUses, nodeDefs);
+        } else {
+          // Other instructions
+          for(size_t argNum = 0; argNum < i_stmt->args.size(); argNum++)
+          {
+            const bool isTemp = i_stmt->args[argNum]->isTemporary();
+            if ( isTemp || i_stmt->args[argNum]->isReg() ) {
+              asm_immediate_arg * arg =
+                                      (asm_immediate_arg *)i_stmt->args[argNum];
+              const uint32_t shiftedTempUID =
+                                        StaticLinker::shiftArgUID(arg, isTemp);
+              // uses
+              nodeUses.insert( shiftedTempUID );
 
-            // defines
-            if (_argIsDefined(i_stmt->instruction, argNum, arg->type)) {
-              nodeDefs.insert( shiftedTempUID );
+              // defines
+              if (_argIsDefined(i_stmt->instruction, argNum, arg->type)) {
+                nodeDefs.insert( shiftedTempUID );
+              }
             }
-          }
-        } // End loop arguments
+          } // End loop arguments
+        }
+      } else if (stmt->getType() == ASM_FUNCTION_CALL) {
+        const asm_function_call * f_stmt = (const asm_function_call *) stmt;
+        // Surely it defines the caller-save registers
+        for(uint32_t numReg = 0; numReg < STD_CALLEE_SAVE; numReg++)
+        {
+          const uint32_t shiftedTempUID =
+                                      StaticLinker::shiftArgUID(numReg, false);
+          nodeDefs.insert( shiftedTempUID );
+        }
+        // It uses the arguments
+        for(ConstListOfParams::const_iterator parIt = f_stmt->parameters.begin();
+            parIt != f_stmt->parameters.end(); parIt++)
+        {
+          const asm_function_param * par = *parIt;
+          const uint32_t shiftedTempUID =
+                          StaticLinker::shiftArgUID(par->content.regNum, false);
+          nodeUses.insert( shiftedTempUID );
+        }
+      } else if (stmt->getType() == ASM_RETURN_STATEMENT) {
+        // Probably it uses the callee-save registers, and returned element
+        for(uint32_t regNum = STD_CALLEE_SAVE; regNum < NUM_REGS; regNum++)
+        {
+          const uint32_t shiftedTempUID =
+                                      StaticLinker::shiftArgUID(regNum, false);
+          nodeUses.insert( shiftedTempUID );
+        }
       }
     }
   }
@@ -416,8 +279,6 @@ void
 AssemFlowGraph::populateGraph(asm_function & function)
 {
   DebugPrintf(("  - Populating AssemGraph\n"));
-  _generateMovesForFunctionCalls(function);
-
   // import nodes from assembler code
   _addNodesToGraph(function);
 
@@ -443,9 +304,9 @@ AssemFlowGraph::applySelectedRegisters(const AssignedRegs & regs)
       for(vector<asm_arg *>::iterator argIt = stmt->args.begin();
           argIt != stmt->args.end(); argIt++)
       {
-        if (_argIsTemp(*argIt)) {
+        if ((*argIt)->isTemporary()) {
           asm_immediate_arg * arg = (asm_immediate_arg *) *argIt;
-          const uint32_t temp_uid = shiftArgUID(arg, true);
+          const uint32_t temp_uid = StaticLinker::shiftArgUID(arg, true);
 
           AssignedRegs::const_iterator reg = regs.find(temp_uid);
           if (reg == regs.end()) {
@@ -455,6 +316,7 @@ AssemFlowGraph::applySelectedRegisters(const AssignedRegs & regs)
           }
           if (reg->second) {
             arg->content.tempUID = reg->second -1;
+            arg->isTemp = false;
           } else {
             throw WrongArgumentException(
                 "Pending Spills! not using a solution!");

@@ -87,11 +87,16 @@ struct asm_instruction_statement : asm_statement {
  */
 struct asm_function_call : asm_instruction_statement {
 
+  /** Parameters of the called function: don't deallocate them!!! */
+  ConstListOfParams parameters;
+
   asm_function_call(const YYLTYPE& pos, const int _instr)
     : asm_instruction_statement(pos, _instr)
   { }
 
   virtual void checkArgs() const;
+
+  void importParameters(const ListOfParams & params);
 
   void emitCode(Bloat::iterator & position) {
     const asm_arg * arg = args[0];

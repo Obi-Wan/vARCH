@@ -11,6 +11,7 @@
 #include "AsmArgs.h"
 #include "backend/AssemFlowGraph.h"
 #include "backend/RegAllocator.h"
+#include "backend/StaticLinker.h"
 
 using namespace std;
 
@@ -55,10 +56,19 @@ main(int argc, char** argv)
 #endif
 
       if (usingTemps) {
+        program->assignFunctionParameters();
+
         for(size_t numFunc = 0; numFunc < program->functions.size(); numFunc++)
         {
-          AssemFlowGraph flowGraph;
-          flowGraph.populateGraph(*(program->functions[numFunc]));
+          asm_function & func = *(program->functions[numFunc]);
+          TempsMap tempsMap;
+
+          StaticLinker linker(tempsMap);
+          linker.generateMovesForFunctionCalls(func);
+
+          AssemFlowGraph flowGraph(tempsMap);
+          flowGraph.populateGraph(func);
+
           DebugPrintf((" --> Printing Flow Graph!! <--\n"));
           flowGraph.printFlowGraph();
           DebugPrintf((" --> Printed Flow Graph!! <--\n\n"));
@@ -67,23 +77,29 @@ main(int argc, char** argv)
 
           LiveMap<asm_statement *> liveMap;
           flowGraph.populateLiveMap(liveMap);
+
           DebugPrintf((" --> Printing Live Map!! <--\n"));
           liveMap.printLiveMap();
           DebugPrintf((" --> Printed Live Map!! <--\n\n"));
 
           InterferenceGraph interfGraph;
-          interfGraph.populateGraph<asm_statement *>( flowGraph, liveMap,
-                                                      flowGraph.getTempsMap());
+          interfGraph.populateGraph( flowGraph, liveMap, tempsMap);
+
           DebugPrintf((" --> Printing Interference Graph!! <--\n"));
           interfGraph.printInterferenceGraph();
           DebugPrintf((" --> Printed Interference Graph!! <--\n\n"));
 
-          RegAllocator regAlloc(flowGraph.getTempsMap());
+          RegAllocator regAlloc(tempsMap);
           DebugPrintf((" --> Printing Allocator Stack!! <--\n"));
-          regAlloc.simpleAllocateRegs(interfGraph);
+          bool success = regAlloc.simpleAllocateRegs(interfGraph);
           DebugPrintf((" --> Printed Allocator Stack!! <--\n\n"));
 
-          flowGraph.applySelectedRegisters(regAlloc.getAssignedRegs());
+          if (success) {
+            flowGraph.applySelectedRegisters(regAlloc.getAssignedRegs());
+          } else {
+            throw WrongArgumentException(
+                "Couldn't find a solution for registers allocation");
+          }
         }
       } else {
         program->ensureTempsUsage(usingTemps);

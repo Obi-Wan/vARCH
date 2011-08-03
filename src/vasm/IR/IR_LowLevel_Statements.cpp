@@ -100,6 +100,17 @@ asm_instruction_statement::ensureTempsUsage(const bool & used) const
 }
 
 void
+asm_function_call::importParameters(const ListOfParams & params)
+{
+  parameters.clear();
+  for(ListOfParams::const_iterator par = params.begin(); par != params.end(); par++)
+  {
+    parameters.push_back(*par);
+  }
+//  copy(params.begin(), params.end(), parameters.begin());
+}
+
+void
 asm_function_call::checkArgs() const
 {
   if (args.size() < 1) {

@@ -60,6 +60,7 @@ public:
   }
 
   void checkInstructions(const bool & usingTemps) const;
+  void assignFunctionParameters();
   void ensureTempsUsage(const bool & used) const;
 
   void moveMainToTop();

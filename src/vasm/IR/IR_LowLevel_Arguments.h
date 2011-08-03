@@ -14,6 +14,7 @@
 #include "asm_helpers.h"
 
 #include <string>
+#include <vector>
 
 using namespace std;
 
@@ -30,6 +31,9 @@ struct asm_arg {
   virtual const string toString() const { return ""; }
   virtual const int getCode() const { }
   virtual const ObjType getType() const throw() { return ASM_ARG; }
+
+  virtual bool isTemporary() const throw() { return false; }
+  virtual bool isReg() const throw() { return false; }
 };
 
 struct asm_immediate_arg : asm_arg {
@@ -58,6 +62,9 @@ struct asm_immediate_arg : asm_arg {
   const int getCode() const { return content.val; }
   const ObjType getType() const throw() { return ASM_IMMEDIATE_ARG; }
   const string toString() const { return "(immediate arg)"; }
+
+  virtual bool isTemporary() const throw() { return isTemp; }
+  virtual bool isReg() const throw() { return (type != COST && type != ADDR); }
 };
 
 struct asm_function_param : asm_arg {
@@ -75,6 +82,9 @@ struct asm_function_param : asm_arg {
     : asm_arg(pos, REG) //, isReg(true)
   { content.regNum = ((const asm_immediate_arg *)reg)->content.regNum; }
 };
+
+typedef vector<asm_function_param *>        ListOfParams;
+typedef vector<const asm_function_param *>  ConstListOfParams;
 
 struct asm_label_arg : asm_arg {
   string label;
