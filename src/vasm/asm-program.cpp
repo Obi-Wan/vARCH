@@ -269,8 +269,8 @@ asm_program::assemble(const string & outputName)
               (uint32_t)bytecode.size()*4, (uint32_t)bytecode.size() ));
 #ifdef DEBUG
   DebugPrintf(("-- Dumping generated binary code --\n"));
-  for (uint64_t i = 0; i < bytecode.size(); i++) {
-    DebugPrintf(("Mem %03lu: %12d\n", i, bytecode[i]));
+  for (size_t i = 0; i < bytecode.size(); i++) {
+    DebugPrintf(("Mem %03lu: %12d\n", (uint64_t)i, bytecode[i]));
   }
 
   DebugPrintf(("-- Dumping Partially Disassembled code --\n"));

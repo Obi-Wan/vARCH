@@ -51,11 +51,12 @@ Cpu::dumpRegistersAndMemory() const
 
   printf("\nProgram Counter: %d\n",progCounter);
 
-  printf("Stack pointers, user: %d \tsupervisor: %d\n", sP.getUStackPointer(),
-         sP.getStackPointer());
+  printf( "Stack pointers, user: %04u \tsupervisor: %04u\n",
+          sP.getUStackPointer(), sP.getStackPointer());
 
-  for( int i = 0; i < memoryController.getMaxMem(); i++) {
-    printf("Mem: %d\tData: %d\n", i, memoryController.loadFromMem(i));
+  for(size_t i = 0; i < memoryController.getMaxMem(); i++) {
+    printf( "Mem: %04lu Data: %12d\n", (uint64_t) i,
+            memoryController.loadFromMem(i));
   }
 
 //  restoreFlags(old);
