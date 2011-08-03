@@ -8,6 +8,7 @@
 #include "AsmArgs.h"
 
 #include <iostream>
+#include <cstdlib>
 
 using namespace std;
 
@@ -37,6 +38,18 @@ AsmArgs::parse() throw (WrongArgumentException)
       /* Tells to append an include dir */
       includeDirs.push_back(tempArg.substr(2, tempArg.size()-2));
 
+    } else if (!tempArg.substr(0, 2).compare("-O")) {
+      /* Tells to append an include dir */
+      CHECK_THROW( tempArg.size() == 3,
+          WrongArgumentException(
+              "Optimization Level should be between 0 and 3") );
+
+      optimLevel = atoi(tempArg.substr(2, tempArg.size()-2).c_str());
+
+      CHECK_THROW( optimLevel >= 0 && optimLevel <= 3,
+          WrongArgumentException(
+              "Optimization Level should be between 0 and 3") );
+
     } else if (!tempArg.compare("-reg-auto-alloc")) {
       regAutoAlloc = true;
 
@@ -56,17 +69,18 @@ AsmArgs::parse() throw (WrongArgumentException)
     }
   }
 
-  DebugPrintf(("Input  filename: %s\n", inputName.c_str()));
-  DebugPrintf(("Output filename: %s\n", outputName.c_str()));
-#ifdef DEBUG
+  InfoPrintf(("Input  filename: %s\n", inputName.c_str()));
+  InfoPrintf(("Output filename: %s\n", outputName.c_str()));
+#ifdef INFO
   string includes;
   for(uint32_t inclNum = 0; inclNum < includeDirs.size(); inclNum++) {
     includes += " " + includeDirs[inclNum];
   }
 #endif
-  DebugPrintf(("Include dirs: %s\n", includes.c_str()));
-  DebugPrintf(("DebugSymbols filename: %s\n", debugSymbolsName.c_str()));
-  DebugPrintf(("Register auto allocation: %s\n\n",
+  InfoPrintf(("DebugSymbols filename: %s\n", debugSymbolsName.c_str()));
+  InfoPrintf(("Include dirs: %s\n", includes.c_str()));
+  InfoPrintf(("Optimization Level: %u\n", optimLevel));
+  InfoPrintf(("Register auto allocation: %s\n\n",
                 regAutoAlloc ? "Enabled" : "Disabled"));
 
   CHECK_THROW( !inputName.empty(),
@@ -86,4 +100,7 @@ AsmArgs::printHelp() const throw()
             "generated)" << endl;
   cout << "To let the assembler auto allocate registers:" << endl
         << "  add flag -reg-auto-alloc" << endl;
+  cout << "To enable some sort of optimizations:" << endl
+        << "  -O<optimization_level> with <optimization_level> as a number "
+        << "between 0 and 3" << endl;
 }

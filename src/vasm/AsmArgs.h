@@ -23,6 +23,8 @@ class AsmArgs {
   string debugSymbolsName;
   vector<string> includeDirs;
 
+  uint32_t optimLevel;
+
   bool regAutoAlloc;
 public:
   AsmArgs(int _argc, char** _argv)
@@ -36,6 +38,7 @@ public:
   const string &getOutputName() const throw() { return outputName; }
   const string &getDebugSymbolsName() const throw() { return debugSymbolsName; }
   const vector<string> &getIncludeDirs() const throw() { return includeDirs; }
+  const uint32_t &getOptimizationLevel() const throw() { return optimLevel; }
   const bool &getRegAutoAlloc() const throw() { return regAutoAlloc; }
 };
 
