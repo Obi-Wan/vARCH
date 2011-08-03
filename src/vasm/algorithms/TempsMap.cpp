@@ -69,7 +69,9 @@ TempsMap::getLabel(const uint32_t & uid) const
 {
   UIDToLabel::const_iterator label = uidToLabel.find(uid);
   if (label == uidToLabel.end()) {
-    throw WrongArgumentException("UID not in Temporary List");
+    stringstream stream;
+    stream << "UID: " << uid << " not in Temporary List";
+    throw WrongArgumentException(stream.str());
   }
   return label->second;
 }
