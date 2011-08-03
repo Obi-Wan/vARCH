@@ -61,7 +61,9 @@ AssemFlowGraph::_createArcs(const TableOfSymbols & functionSymbols)
         DebugPrintf(("Adding arc to next node\n"));
         addDirectedArc(node, &*nextNodeIt);
       }
-    } else if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
+    } else if (stmt->getType() == ASM_INSTRUCTION_STATEMENT
+                || stmt->getType() == ASM_FUNCTION_CALL)
+    {
       asm_instruction_statement * i_stmt = (asm_instruction_statement *) stmt;
       switch(i_stmt->instruction) {
         case IFJ:
