@@ -109,6 +109,7 @@ main(int argc, char** argv)
             case 2:
             case 1: {
               optimizer.removeUselessMoves(func);
+              optimizer.removeUselessArithemtics(func);
             }
             default: break;
           }
@@ -132,8 +133,8 @@ main(int argc, char** argv)
           program->emitDebugSymbols(args.getDebugSymbolsName());
         }
       }
-
       cleanParser();
+
     } catch (BasicException e) {
       fprintf(stderr, "Error: %s\n", e.what());
       return (EXIT_FAILURE);
