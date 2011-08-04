@@ -42,9 +42,38 @@ Disassembler::printArg(const int & typeArg, const int & arg)
 }
 
 void
+Disassembler::disassembleProgram(asm_program & prog)
+{
+  Bloat bytecode;
+  bytecode.reserve(5);
+  for(size_t f_index = 0; f_index < prog.functions.size(); f_index++)
+  {
+    asm_function & func = *prog.functions[f_index];
+    cout << "Function: \"" << func.name << "\"" << endl;
+    for(ListOfStmts::iterator stmtIt = func.stmts.begin();
+        stmtIt != func.stmts.end(); stmtIt++)
+    {
+      asm_statement * stmt = *stmtIt;
+      if (stmt->getType() == ASM_LABEL_STATEMENT) {
+        asm_label_statement * l_stmt = (asm_label_statement *) stmt;
+        cout << "." << l_stmt->label << ": (position: internal "
+              << l_stmt->offset << ", total "
+              << l_stmt->offset + func.functionOffset << ")"  << endl;
+      } else {
+        bytecode.resize(stmt->getSize());
+        Bloat::iterator it = bytecode.begin();
+        stmt->emitCode(it);
+        disassembleAndPrint(bytecode);
+      }
+    }
+    cout << "End Function \"" << func.name << "\"" << endl << endl;
+  }
+}
+
+void
 Disassembler::disassembleAndPrint(const Bloat & bytecode)
 {
-  for(Bloat::const_iterator codeIt = bytecode.begin(); codeIt != bytecode.end();)
+  for(Bloat::const_iterator codeIt = bytecode.begin();codeIt != bytecode.end();)
   {
     const int32_t & instr = *(codeIt++);
     try {

@@ -9,7 +9,7 @@
 
 #include "IncludesTree.h"
 #include "../FileHandler.h"
-#include "disassembler/Disassembler.h"
+//#include "disassembler/Disassembler.h"
 
 #include <sstream>
 using namespace std;
@@ -284,8 +284,8 @@ asm_program::assemble(const string & outputName)
     DebugPrintf(("Mem %03lu: %12d\n", (uint64_t)i, bytecode[i]));
   }
 
-  DebugPrintf(("-- Dumping Partially Disassembled code --\n"));
-  Disassembler().disassembleAndPrint(bytecode);
+//  DebugPrintf(("-- Dumping Partially Disassembled code --\n"));
+//  Disassembler().disassembleAndPrint(bytecode);
 #endif
 
   BinWriter writer(outputName.c_str());

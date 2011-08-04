@@ -13,6 +13,7 @@
 #include "backend/RegAllocator.h"
 #include "backend/Frame.h"
 #include "backend/Optimizer.h"
+#include "disassembler/Disassembler.h"
 
 using namespace std;
 
@@ -122,6 +123,8 @@ main(int argc, char** argv)
       program->exposeGlobalLabels();
       program->assignValuesToLabels();
       program->assemble( args.getOutputName() );
+
+      Disassembler().disassembleProgram(*program);
 
       if (!args.getDebugSymbolsName().empty()) {
         const string & symName = args.getDebugSymbolsName();
