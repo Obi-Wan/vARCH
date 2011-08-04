@@ -12,7 +12,12 @@
 #include "asm_helpers.h"
 #include "macros.h"
 
+#ifdef DEBUG
+# include "parser_definitions.h"
+#endif
+
 #include <cstdio>
+#include <sstream>
 
 #define SET_ARITM_FLAGS( x ) ( x < 0) ? F_NEGATIVE : ( (! x ) ? F_ZERO : 0 )
 
@@ -124,6 +129,7 @@ Cpu::coreStep()
 inline int
 Cpu::istructsZeroArg(const int& istr, int& newFlags)
 {
+  DebugPrintf(("  Instruction %s\n", ISet.getIstr(istr).c_str()));
   switch (istr) {
     case SLEEP:
       return istr;
@@ -163,6 +169,7 @@ Cpu::istructsOneArg(const int& istr, int& newFlags)
 
   const int polishedIstr = istr - ARG_1(typeArg);
 
+  DebugPrintf(("  Instruction %s\n", ISet.getIstr(polishedIstr).c_str()));
   switch (polishedIstr) {
     case NOT: {
       temp = ~temp;
@@ -258,6 +265,7 @@ Cpu::istructsTwoArg(const int& istr, int& newFlags)
 
   const int polishedIstr = istr - ARG_1(typeArg1) - ARG_2(typeArg2);
 
+  DebugPrintf(("  Instruction %s\n", ISet.getIstr(polishedIstr).c_str()));
   switch (polishedIstr) {
     case MOV:
       temp2 = temp1;
@@ -363,6 +371,7 @@ Cpu::istructsThreeArg(const int& istr, int& newFlags)
   const int polishedIstr = istr - ARG_1(typeArg1) - ARG_2(typeArg2)
                                 - ARG_3(typeArg3);
 
+  DebugPrintf(("  Instruction %s\n", ISet.getIstr(polishedIstr).c_str()));
   switch (polishedIstr) {
     case BPUT:
       break;
@@ -539,8 +548,11 @@ Cpu::getReg(const int& arg)
       return sP.getStackPointer();
     case STATE_REGISTER:
       return (flags & F_SVISOR) ? flags : int(flags);
-    default:
-      throw WrongArgumentException("No such register");
+    default: {
+      stringstream stream;
+      stream << "No such register: " << arg << ". Couldn't load it.";
+      throw WrongArgumentException(stream.str());
+    }
   }
 }
 
@@ -574,7 +586,10 @@ Cpu::setReg(const int& arg, const int& value)
         throw WrongArgumentException("Not Allowed to modify SR");
       }
       break;
-    default:
-      throw WrongArgumentException("No such register");
+    default: {
+      stringstream stream;
+      stream << "No such register: " << arg << ". Couldn't set it.";
+      throw WrongArgumentException(stream.str());
+    }
   }
 }
