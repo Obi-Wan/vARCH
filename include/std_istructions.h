@@ -58,6 +58,9 @@ enum TypeOfArgument {
   ADDR_IN_REG_POST_DECR,  // 1111
 };
 
+#define MASK_PRE_POST       (0xC)   // 1100
+#define IS_PRE_POST_MOD(x)  (((x) & MASK_PRE_POST) && true)
+
 #define DATA_REGS     0
 #define ADDR_REGS     1
 #define SPECIAL_REGS  2

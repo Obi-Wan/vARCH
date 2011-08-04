@@ -9,6 +9,7 @@ Index
 4. NEW DEVELOPMENT
   4.1 TEMORARIES / Registers Auto-allocation
   4.2 CALLING CONVENTIONS
+  4.3 SAMPLE FILES
 
 --------------------------------------------------------------------------------
 1. COMPILE / INSTALL
@@ -190,13 +191,16 @@ There are then other useful methods for reducing code size and speeding up
 execution with a compact code:
 
 - prefixing (or postfixing) registers with + or - which in turn pre(post)
-increments or decrements the accessed data (note: if accessing a register with %
-it will modify the content of the register, if accessing with (Reg#) it will
-modify data pointed by the content of the register )
+increments or decrements the accessed data:
+  + if prefixing with %Reg# it will modify the content of the register
+  + if prefixing with (Reg#) it will still modify the register content (and not
+     of the pointed data)
+  + if doing this on (address), data pointed by the address will be modified
 
 - putting a lowercase  r  before registers access, and if present, after pre
 increment/decrement signs (eg. right: r%R2 , r(A5), +r(R4) .. , wrong: r+(A2),
-%rR1, .. )
+%rR1, .. ), which refers the addresses or numbers as relative to the stack
+pointer position. 
 
 ------------------
 Some words about SUBROUTINES:
@@ -217,19 +221,24 @@ To call a subroutine just issue a
 Since JSR stands for "Jump to SubRoutine".
 
 ------------------
-Some words about CONSTANTS:
+Some words about VARIABLES and CONSTANTS:
 
 The  .global  marker opens the area where global/public constants should be
 located. This area is terminated with an  .end  marker.
+Variables or constants, are there visible from everywhere.
 
 It's possible to specify local/private constants for function calls only after
 the marker  .local  which is terminated by the  .end  marker, just like
 functions and globals.
+To specify access to these memory locations, it is also possible to use the
+.shared  specifier, which behaves exactly like in C.
+To optimize things,  .const  declared memory locations, are allocated like
+shared variables, to prevent stack allocation at every function call.
 
-Constants, enclosed in  .global  and  .local  sections, have type specifiers,
-used by the assembler to pack the data.
+Local variables on the stack are supported just with the register
+auto-allocation logic, because it requires some code transformation.
 
-Labels instead make data visible and easily callable from outside.
+Labels make data visible and easily callable from outside.
 
 ------------------
 Some words about PREPROCESSOR:
@@ -251,7 +260,13 @@ for successive elaboration by the allocation logics.
 
 Avoiding explicit register use, for temporaries, frees the programmer from one
 of the most bothering tasks, letting the assembler decide which register
-allocation to use. This should also give the maximum performance gain.
+allocation to use.
+
+For maximum performance, the programmer can still use direct register assignment
+when needed, while letting the assembler manage all the rest.
+
+To let the assembler manage arguments to functions and returned elements, syntax
+was enhanced, to introduce such directives.
 
 There is also a pending enhancement of the preprocessor, in order to add extra
 functionalities like macro definitions and other directives.
@@ -259,10 +274,19 @@ functionalities like macro definitions and other directives.
 4.2 - CALLING CONVENTIONS
 
 The arguments of a function are explicitly defined using the ".param" keyword.
-While the returned element is always in register R1.
+While the returned (if returned) element is always in register R1.
 
 Caller-save registers are R[1-5] and A[1-5], while callee-save registers are
 R[6-8] and A[6-8].
+
+4.3 - SAMPLE FILES
+
+Some sample .s files are in the main folder:
+ testNewAssembler.s
+ std_io.s
+ std_conversion.s
+
+The user can have a look to these examples.
 
 ------------------
 

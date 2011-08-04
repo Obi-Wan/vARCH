@@ -19,7 +19,7 @@
 #include <cstdio>
 #include <sstream>
 
-#define SET_ARITM_FLAGS( x ) ( x < 0) ? F_NEGATIVE : ( (! x ) ? F_ZERO : 0 )
+#define SET_ARITM_FLAGS( x ) (( x < 0) ? F_NEGATIVE : ( (! x ) ? F_ZERO : 0 ))
 
 Cpu::Cpu(Chipset& _chipset, Mmu& mC)
     : chipset(_chipset), memoryController(mC), sP(*this)
@@ -242,7 +242,8 @@ Cpu::istructsOneArg(const int& istr, int& newFlags)
       break;
   }
 
-  if (polishedIstr < STACK || polishedIstr == POP || typeArg & 0xC) {
+  if (polishedIstr < STACK || polishedIstr == POP || IS_PRE_POST_MOD(typeArg))
+  {
     newFlags += SET_ARITM_FLAGS(temp);
     storeArg(arg, typeArg, temp);
   }
@@ -340,13 +341,13 @@ Cpu::istructsTwoArg(const int& istr, int& newFlags)
       break;
   }
 
-  if (polishedIstr <= XOR || polishedIstr == GET || typeArg2 & 0xC) {
-
+  if (polishedIstr <= XOR || polishedIstr == GET || IS_PRE_POST_MOD(typeArg2))
+  {
     newFlags += SET_ARITM_FLAGS(temp2);
     storeArg(arg2, typeArg2, temp2); /* Operations that do modify args */
   }
 
-  if (typeArg1 & 0xC) { /* in case the first arg was modified */
+  if (IS_PRE_POST_MOD(typeArg1)) { /* in case the first arg was modified */
     storeArg(arg1, typeArg1, temp1);
   }
 
@@ -401,15 +402,15 @@ Cpu::istructsThreeArg(const int& istr, int& newFlags)
       break;
   }
 
-  if (typeArg1 & 0xC) { /* in case the first arg was modified */
+  if (IS_PRE_POST_MOD(typeArg1)) { /* in case the first arg was modified */
     storeArg(arg1, typeArg1, temp1);
   }
 
-  if (typeArg2 & 0xC) { /* in case the second arg was modified */
+  if (IS_PRE_POST_MOD(typeArg2)) { /* in case the second arg was modified */
     storeArg(arg2, typeArg2, temp2);
   }
 
-  if (typeArg1 & 0xC) { /* in case the third arg was modified */
+  if (IS_PRE_POST_MOD(typeArg1)) { /* in case the third arg was modified */
     storeArg(arg3, typeArg3, temp3);
   }
 
@@ -439,6 +440,7 @@ Cpu::loadArg(const int& arg,const int& typeArg)
       DebugPrintf(("  REG / REG_POST_*: %d\n", arg));
       return getReg(arg);
 
+    /// ADDR_P* modify the referenced content!
     case ADDR_PRE_INCR:
       DebugPrintf(("  ADDR_PRE_INCR: %d\n", arg));
       return (memoryController.loadFromMem(arg + relative) +1);
@@ -451,12 +453,13 @@ Cpu::loadArg(const int& arg,const int& typeArg)
       DebugPrintf(("  ADDR / ADDR_POST_*: %d\n", arg));
       return memoryController.loadFromMem(arg + relative);
 
+    /// ADDR_IN_REG_P* modify the register content!
     case ADDR_IN_REG_PRE_INCR:
       DebugPrintf(("  ADDR_IN_REG_PRE_INCR: %d\n", arg));
-      return (memoryController.loadFromMem(getReg(arg) + relative) +1);
+      return (memoryController.loadFromMem(getReg(arg) +1 + relative));
     case ADDR_IN_REG_PRE_DECR:
       DebugPrintf(("  ADDR_IN_REG_PRE_DECR: %d\n", arg));
-      return (memoryController.loadFromMem(getReg(arg) + relative) -1);
+      return (memoryController.loadFromMem(getReg(arg) -1 + relative));
     case ADDR_IN_REG:
     case ADDR_IN_REG_POST_INCR:
     case ADDR_IN_REG_POST_DECR:
@@ -490,6 +493,7 @@ Cpu::storeArg(const int& arg, const int& typeArg, int value)
       setReg(arg, --value);
       break;
 
+    /// ADDR_P* modify the referenced content!
     case ADDR:
     case ADDR_PRE_INCR:
     case ADDR_PRE_DECR:
@@ -508,21 +512,24 @@ Cpu::storeArg(const int& arg, const int& typeArg, int value)
       timeDelay += Mmu::accessTime;
       break;
 
+    /// ADDR_IN_REG_P* modify the register content!
     case ADDR_IN_REG:
-    case ADDR_IN_REG_PRE_INCR:
-    case ADDR_IN_REG_PRE_DECR:
-      DebugPrintf(("  ADDR_IN_REG / ADDR_IN_REG_PRE_*: %d\n", arg));
+      DebugPrintf(("  ADDR_IN_REG: %d\n", arg));
       memoryController.storeToMem(value, getReg(arg) + relative);
       timeDelay += Mmu::accessTime;
       break;
+    case ADDR_IN_REG_PRE_INCR:
     case ADDR_IN_REG_POST_INCR:
-      DebugPrintf(("  ADDR_IN_REG_POST_INCR: %d\n", arg));
-      memoryController.storeToMem(++value, getReg(arg) + relative);
+      DebugPrintf(("  ADDR_IN_REG_P*_INCR: %d\n", arg));
+      memoryController.storeToMem(value, getReg(arg) + relative);
+      setReg(arg, getReg(arg) +1);
       timeDelay += Mmu::accessTime;
       break;
+    case ADDR_IN_REG_PRE_DECR:
     case ADDR_IN_REG_POST_DECR:
-      DebugPrintf(("  ADDR_IN_REG_POST_DECR: %d\n", arg));
-      memoryController.storeToMem(--value, getReg(arg) + relative);
+      DebugPrintf(("  ADDR_IN_REG_P*_DECR: %d\n", arg));
+      memoryController.storeToMem(value, getReg(arg) + relative);
+      setReg(arg, getReg(arg) -1);
       timeDelay += Mmu::accessTime;
       break;
     default:
