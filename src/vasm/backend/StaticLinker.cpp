@@ -8,12 +8,19 @@
 #include "StaticLinker.h"
 
 #include "exceptions.h"
+#include "../IncludesTree.h"
 
-inline void
-StaticLinker::scanStmtsAndTemps(ListOfStmts & stmts)
+#include <sstream>
+
+using namespace std;
+
+void
+StaticLinker::init(asm_function & function)
 {
+  ListOfStmts & stmts = function.stmts;
+
   // Adding registers to TempsMap
-  for(uint32_t numReg = 0; numReg < NUM_REGS; numReg++)
+  for(uint32_t numReg = 0; numReg < NUM_REGS * 2; numReg++)
   {
     const uint32_t shiftedTempUID = shiftArgUID( numReg, false);
     tempsMap.putTemp( shiftedTempUID, true);
@@ -50,6 +57,7 @@ StaticLinker::scanStmtsAndTemps(ListOfStmts & stmts)
       }
     }
   }
+  DebugPrintf(("Looking for notable Statements, done.\n"));
 }
 
 inline void
@@ -199,9 +207,6 @@ StaticLinker::generateMovesForFunctionCalls(asm_function & function)
 {
   ListOfStmts & stmts = function.stmts;
 
-  // Initial scan
-  scanStmtsAndTemps(stmts);
-
   // Take care of callee-save registers
   // (if it doesn't return, we don't even bother doing callee-save)
   if (returns.size()) {
@@ -213,4 +218,103 @@ StaticLinker::generateMovesForFunctionCalls(asm_function & function)
 
   // Add moves of parameters for Function calls
   mindParamsFCalls(stmts);
+
+  DebugPrintf(("Generating Moves for Function calls, done.\n"));
+}
+
+inline asm_immediate_arg *
+StaticLinker::makeInitArg(const asm_data_keyword_statement * data,
+    const YYLTYPE &pos)
+{
+  asm_immediate_arg * tempArg = new asm_immediate_arg(pos);
+  tempArg->relative = false;
+  tempArg->type = COST;
+  switch (data->getType()) {
+    case ASM_INT_KEYWORD_STATEMENT: {
+      asm_int_keyword_statement * i_data = (asm_int_keyword_statement *) data;
+      tempArg->content.val = i_data->integer;
+      break;
+    }
+    case ASM_LONG_KEYWORD_STATEMENT: {
+      asm_long_keyword_statement * i_data = (asm_long_keyword_statement *) data;
+      tempArg->content.lval = i_data->longInteger;
+      break;
+    }
+    case ASM_REAL_KEYWORD_STATEMENT: {
+      asm_real_keyword_statement * i_data = (asm_real_keyword_statement *) data;
+      tempArg->content.fval = i_data->real;
+      break;
+    }
+    case ASM_STRING_KEYWORD_STATEMENT: {
+      delete tempArg;
+      stringstream stream;
+      stream << "Local string variables not yet supported, at:" << endl;
+      stream << pos.fileNode->printString()
+              << " Line: " << pos.first_line << endl;
+      throw WrongArgumentException(stream.str());
+    }
+    default:
+      break;
+  }
+  return tempArg;
+}
+
+void
+StaticLinker::allocateLocalVariables(asm_function & function)
+{
+  ListOfStmts & stmts = function.stmts;
+  const ListOfDataStmts & localVars = function.stackLocals;
+
+  /// PUSH  $init_var_n
+  for(ListOfDataStmts::const_iterator initIt = localVars.begin();
+      initIt != localVars.end(); initIt++)
+  {
+    const asm_data_statement * data = *initIt;
+    if (data->getType() != ASM_LABEL_STATEMENT)
+    {
+      asm_immediate_arg * tempArg = makeInitArg(
+                  (const asm_data_keyword_statement *) data, function.position);
+
+      asm_instruction_statement * stmt =
+                        new asm_instruction_statement(function.position, PUSH);
+
+      stmt->addArg(tempArg);
+      stmts.push_front(stmt);
+    }
+  }
+}
+
+void
+StaticLinker::deallocateLocalVariables(asm_function & function)
+{
+  ListOfStmts & stmts = function.stmts;
+
+  const size_t & stackPointerBias = function.getStackedDataSize();
+
+  /// ADD  $tot_vars_size  %SP
+  {
+    asm_immediate_arg * tempArg = new asm_immediate_arg(function.position);
+    tempArg->relative = false;
+    tempArg->type = COST;
+    tempArg->content.val = stackPointerBias;
+
+    asm_immediate_arg * regArg = new asm_immediate_arg(function.position);
+    regArg->relative = false;
+    regArg->type = REG;
+    regArg->content.regNum = STACK_POINTER;
+    regArg->isTemp = false;
+
+    asm_instruction_statement * stmt =
+                          new asm_instruction_statement(function.position, ADD);
+
+    stmt->addArg(tempArg);
+    stmt->addArg(regArg);
+
+    /// For all the returns, "unwinds" the stack
+    for(vector<ListOfStmts::iterator>::iterator retIt = returns.begin();
+        retIt != returns.end(); retIt++)
+    {
+      stmts.insert(*retIt, stmt);
+    }
+  }
 }

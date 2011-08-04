@@ -65,7 +65,10 @@ main(int argc, char** argv)
           TempsMap tempsMap;
 
           StaticLinker linker(tempsMap);
+          linker.init(func);
           linker.generateMovesForFunctionCalls(func);
+          linker.allocateLocalVariables(func);
+          linker.deallocateLocalVariables(func);
 
           AssemFlowGraph flowGraph(tempsMap);
           flowGraph.populateGraph(func);
@@ -73,9 +76,6 @@ main(int argc, char** argv)
           DebugPrintf((" --> Printing Flow Graph!! <--\n"));
           flowGraph.printFlowGraph();
           DebugPrintf((" --> Printed Flow Graph!! <--\n\n"));
-
-          // May be not needed
-          program->rebuildFunctionsOffsets();
 
           LiveMap<asm_statement *> liveMap;
           flowGraph.populateLiveMap(liveMap);
@@ -160,10 +160,15 @@ printAbstractTree(const asm_program * const program) {
       DebugPrintf((" Line: %03d %s\n", stmt->position.first_line,
                     stmt->toString().c_str()));
     }
-    for(size_t localNum = 0; localNum < func.locals.size(); localNum++) {
+    for(size_t localNum = 0; localNum < func.uniqueLocals.size(); localNum++) {
       DebugPrintf((" Line: %03d Local: %s\n",
-                    func.locals[localNum]->position.first_line,
-                    func.locals[localNum]->toString().c_str()));
+                    func.uniqueLocals[localNum]->position.first_line,
+                    func.uniqueLocals[localNum]->toString().c_str()));
+    }
+    for(size_t localNum = 0; localNum < func.stackLocals.size(); localNum++) {
+      DebugPrintf((" Line: %03d Local: %s\n",
+                    func.stackLocals[localNum]->position.first_line,
+                    func.stackLocals[localNum]->toString().c_str()));
     }
   }
   for(size_t num = 0; num < program->globals.size(); num++) {

@@ -37,13 +37,25 @@ asm_function::finalize()
       checkAndAddLabel(stmt);
     }
   }
-  for(size_t i = 0; i < locals.size(); i++) {
-    asm_data_statement * stmt = locals[i];
+  for(size_t index = 0; index < uniqueLocals.size(); index++) {
+    asm_data_statement * stmt = uniqueLocals[index];
 
     stmt->offset = tempLocalOffset;
     tempLocalOffset += stmt->getSize();
     checkAndAddLabel(stmt);
   }
+
+  // Distance from stack pointer
+  size_t offsetFromStackPtr = 0;
+  const size_t allocatedSize = getStackedDataSize();
+  for(size_t index = 0; index < stackLocals.size(); index++) {
+    asm_data_statement * stmt = stackLocals[index];
+
+    stmt->offset = allocatedSize - offsetFromStackPtr;
+    offsetFromStackPtr += stmt->getSize();
+    checkAndAddLabel(stmt);
+  }
+
   DebugPrintf(("- Terminated: Adding stmts and locals -\n\n"));
 }
 
@@ -59,11 +71,21 @@ asm_function::rebuildOffsets()
     stmt->offset = tempLocalOffset;
     tempLocalOffset += stmt->getSize();
   }
-  for(size_t i = 0; i < locals.size(); i++) {
-    asm_data_statement * stmt = locals[i];
+  for(size_t i = 0; i < uniqueLocals.size(); i++) {
+    asm_data_statement * stmt = uniqueLocals[i];
 
     stmt->offset = tempLocalOffset;
     tempLocalOffset += stmt->getSize();
+  }
+
+  // Distance from stack pointer
+  size_t offsetFromStackPtr = 0;
+  const size_t allocatedSize = getStackedDataSize();
+  for(size_t i = 0; i < stackLocals.size(); i++) {
+    asm_data_statement * stmt = stackLocals[i];
+
+    stmt->offset = allocatedSize - offsetFromStackPtr;
+    offsetFromStackPtr += stmt->getSize();
   }
 }
 

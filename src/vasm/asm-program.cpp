@@ -192,23 +192,39 @@ asm_program::assignValuesToLabels()
   DebugPrintf(("-- Assign labels - Phase --\n"));
   for(size_t index = 0; index < functions.size(); index++)
   {
+    asm_function & func = *functions[index];
     DebugPrintf((" - Processing references of function: %s\n",
-                  functions[index]->name.c_str()));
-    for(list<ArgLabelRecord *>::iterator ref  = functions[index]->refs.begin();
-            ref != functions[index]->refs.end(); ref++)
+                  func.name.c_str()));
+    for(list<ArgLabelRecord *>::iterator ref  = func.refs.begin();
+        ref != func.refs.end(); ref++)
     {
       asm_label_arg & argument = *((*ref)->arg);
       const string & labelName = argument.label;
 
       DebugPrintf(("  - Processing label: %s\n", labelName.c_str()));
-      int pos = functions[index]->localSymbols.getPositionOfLabel(labelName);
+      asm_label_statement * localLabel = func.localSymbols.getStmt(labelName);
+      if (localLabel) {
+        DebugPrintf(("    It is local, with position (in the program): %3u\n"
+                      "      is const: %5s, is shared: %5s\n",
+                      (uint32_t)localLabel->offset,
+                      localLabel->is_constant ? "true" : "false",
+                      localLabel->is_shared ? "true" : "false"));
+        argument.relative = ! localLabel->isShared();
+        argument.pointedPosition =
+            (int32_t)(localLabel->offset
+                      + localLabel->isShared() * func.functionOffset);
 
-      if (pos < 0) {
-        DebugPrintf(("    It's not local since it returned: %3d\n", pos));
-        pos = globalSymbols.getPositionOfLabel(labelName);
-        if (pos < 0) {
-          DebugPrintf(("    It's not even global (returned %3d)! ERROR!!\n",
-                        pos));
+      } else {
+        DebugPrintf(("    It is not local, trying globally\n"));
+        asm_label_statement * globalLabel = globalSymbols.getStmt(labelName);
+
+        if (globalLabel) {
+          DebugPrintf(("    It is global, with position: %3u\n",
+                      (uint32_t)globalLabel->offset));
+          argument.pointedPosition = (int32_t)globalLabel->offset;
+          argument.relative = false;
+        } else {
+          DebugPrintf(("      ERROR!! It is not even global!\n"));
           fprintf(stderr, "ERROR:%s at Line %4d\n%s\n"
                   "--> Reference to not existing Label: '%s'\n",
                   argument.position.fileNode->printString().c_str(),
@@ -216,25 +232,7 @@ asm_program::assignValuesToLabels()
                   argument.position.fileNode->printStringStackIncludes().c_str(),
                   labelName.c_str());
           error = true;
-        } else {
-          DebugPrintf(("    It's global and at: %3d\n", pos));
-
-          argument.pointedPosition = pos;
-          argument.relative = false;
         }
-      } else {
-        DebugPrintf(("    It's local since it returned: %3d\n", pos));
-        DebugPrintf(("    Calculating sizes:\n"));
-        DebugPrintf(("      position of stmt: %03u\n",
-                      (uint32_t)(*ref)->parent->offset));
-        DebugPrintf(("      size of statement and args: %03u\n",
-                      (uint32_t)(*ref)->parent->getSize()));
-        DebugPrintf(("      position of the arg relative to the stmt: %03d\n",
-                      argument.relOffset));
-
-        argument.pointedPosition =
-            pos - argument.relOffset - (*ref)->parent->offset;
-        argument.relative = true;
       }
     }
   }
@@ -259,8 +257,8 @@ asm_program::assemble(const string & outputName)
       asm_statement * stmt = *stmt_it;
       stmt->emitCode(pos);
     }
-    for(size_t j = 0; j < func.locals.size(); j++) {
-      func.locals[j]->emitCode(pos);
+    for(size_t j = 0; j < func.uniqueLocals.size(); j++) {
+      func.uniqueLocals[j]->emitCode(pos);
     }
   }
   for (size_t index = 0; index < globals.size(); index++) {

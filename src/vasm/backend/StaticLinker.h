@@ -24,10 +24,12 @@ class StaticLinker {
 
   vector<ListOfStmts::iterator> f_calls;
 
-  void scanStmtsAndTemps(ListOfStmts & stmts);
   void mindCalleeSaveRegs(ListOfStmts & stmts);
   void mindReturnStmts(ListOfStmts & stmts);
   void mindParamsFCalls(ListOfStmts & stmts);
+
+  asm_immediate_arg * makeInitArg(const asm_data_keyword_statement * data,
+      const YYLTYPE &pos);
 
 public:
   StaticLinker(TempsMap & _tm) : tempsMap(_tm), minNewTemp(FIRST_TEMPORARY) { }
@@ -38,7 +40,32 @@ public:
 
   static bool shiftedIsSpecialReg(const uint32_t & uid);
 
+  void init(asm_function & function);
+
   void generateMovesForFunctionCalls(asm_function & function);
+
+  /**
+   * Generates the instructions to initialize the local variables on the stack
+   * @param function
+   *
+   * it generates more or less this kind of code:
+   *
+   * PUSH  $init_var1
+   * PUSH  $init_var2
+   * PUSH  $init_var3
+   * ... [ for all the vars ]
+   */
+  void allocateLocalVariables(asm_function & function);
+
+  /**
+   * Generates the instruction to de-allocate the local variables on the stack
+   * @param function
+   *
+   * it generates more or less this kind of code:
+   *
+   * ADD  $tot_vars_size  %SP
+   */
+  void deallocateLocalVariables(asm_function & function);
 };
 
 inline uint32_t

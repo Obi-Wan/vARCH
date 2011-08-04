@@ -26,7 +26,8 @@ struct asm_function {
   YYLTYPE position;
 
   ListOfStmts stmts;
-  vector<asm_data_statement *> locals;
+  ListOfDataStmts uniqueLocals;
+  ListOfDataStmts stackLocals;
   ListOfParams parameters;
 
   TableOfSymbols localSymbols;
@@ -46,14 +47,13 @@ struct asm_function {
   void checkAndAddLabel(asm_statement * stmt);
 
   void addStmt(asm_statement * stmt) { if (stmt) stmts.push_back(stmt); }
-  void addLocals(list<asm_data_statement *> * locs)
-  {
-    locals.insert(locals.begin(), locs->begin(), locs->end());
-  }
+  void addLocals(list<asm_data_statement *> * locs);
   void addParameter(asm_function_param * p) { if (p) parameters.push_back(p); }
 
   size_t getInstrSize() const;
   size_t getSharedDataSize() const;
+
+  size_t getStackedDataSize() const;
 
   size_t getSize() const { return getInstrSize() + getSharedDataSize(); }
 };
@@ -109,6 +109,18 @@ asm_function::getSharedDataSize() const
   size_t size = 0;
   for(ListOfDataStmts::const_iterator stmt_it = uniqueLocals.begin();
       stmt_it != uniqueLocals.end(); stmt_it++)
+  {
+    size += (*stmt_it)->getSize();
+  }
+  return size;
+}
+
+inline size_t
+asm_function::getStackedDataSize() const
+{
+  size_t size = 0;
+  for(ListOfDataStmts::const_iterator stmt_it = stackLocals.begin();
+      stmt_it != stackLocals.end(); stmt_it++)
   {
     size += (*stmt_it)->getSize();
   }

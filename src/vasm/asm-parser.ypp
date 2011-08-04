@@ -189,7 +189,11 @@ arg
 
 stmt
       : instruction_stmt blank_lines  { $$ = $1; }
-      | data_stmt blank_lines         { $$ = $1; }
+      | DEF_LABEL blank_lines
+                  { asm_label_statement * label =
+                                          new asm_label_statement( yylloc, $1 );
+                    label->is_constant = true;
+                    $$ = label; }
       ;
 
 instruction_stmt
@@ -217,9 +221,9 @@ variable_decl
       : data_keyword
                   { $$ = $1; }
       | KEYWORD_CONST data_keyword
-                  { $$ = $2; $$->is_constant = true; }
+                  { $2->is_constant = true; $$ = $2; }
       | KEYWORD_SHARED data_keyword
-                  { $$ = $2; $$->is_shared = true; }
+                  { $2->is_shared = true; $$ = $2; }
       ;
 
 data_keyword
