@@ -22,6 +22,7 @@
 
 // ARGS SECTION
 #define RELATIVE_ARG  (1 << 4)
+#define IS_RELATIVE( x ) ((x & RELATIVE_ARG) == RELATIVE_ARG)
 
 /* These bits occupy variably the positions from (1 << 25) to
  *    (1 << 23)
