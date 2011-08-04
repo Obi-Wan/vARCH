@@ -228,7 +228,7 @@ Frame::makeInitArg(const asm_data_keyword_statement * data,
 {
   asm_immediate_arg * tempArg = new asm_immediate_arg(pos);
   tempArg->relative = false;
-  tempArg->type = COST;
+  tempArg->type = CONST;
   switch (data->getType()) {
     case ASM_INT_KEYWORD_STATEMENT: {
       asm_int_keyword_statement * i_data = (asm_int_keyword_statement *) data;
@@ -295,7 +295,7 @@ Frame::deallocateLocalVariables(asm_function & function)
   {
     asm_immediate_arg * tempArg = new asm_immediate_arg(function.position);
     tempArg->relative = false;
-    tempArg->type = COST;
+    tempArg->type = CONST;
     tempArg->content.val = stackPointerBias;
 
     asm_immediate_arg * regArg = new asm_immediate_arg(function.position);

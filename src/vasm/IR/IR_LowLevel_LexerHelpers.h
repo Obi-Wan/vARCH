@@ -130,7 +130,7 @@ ArgumentsHandler::getConstInt(asm_arg *& arg, YYLTYPE *& loc,
     const int _val)
 {
   asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
-  tempArg->type = COST;
+  tempArg->type = CONST;
   tempArg->content.val = _val;
   tempArg->relative = false;
   arg = tempArg;
@@ -141,7 +141,7 @@ ArgumentsHandler::getConstReal(asm_arg *& arg, YYLTYPE *& loc,
     const float _val)
 {
   asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
-  tempArg->type = COST;
+  tempArg->type = CONST;
   tempArg->content.fval = _val;
   tempArg->relative = false;
   arg = tempArg;

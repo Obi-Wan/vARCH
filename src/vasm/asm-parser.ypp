@@ -178,10 +178,10 @@ locals
 
 
 arg
-      : INTEGER         { $$ = new asm_immediate_arg( yylloc, $1 , COST ); }
+      : INTEGER         { $$ = new asm_immediate_arg( yylloc, $1 , CONST ); }
       | CONTENT_CONST   { $$ = new asm_immediate_arg( yylloc, $1 , ADDR ); }
       | REAL            { $$ = new asm_immediate_arg( yylloc, $1 ); }
-      | POSITION_LABEL  { $$ = new asm_label_arg( yylloc, $1 , COST ); }
+      | POSITION_LABEL  { $$ = new asm_label_arg( yylloc, $1 , CONST ); }
       | CONTENT_LABEL   { $$ = new asm_label_arg( yylloc, $1 , ADDR ); }
       | REGISTER        { $$ = $1; }
       | TEMPORARY       { $$ = $1; }

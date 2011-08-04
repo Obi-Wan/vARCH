@@ -72,7 +72,7 @@ Optimizer::removeUselessArithemtics(asm_function & func)
           if (args[0]->getType() == ASM_IMMEDIATE_ARG) {
             asm_immediate_arg * arg0 = (asm_immediate_arg *) args[0];
 
-            if (arg0->type == COST && arg0->content.val == 0) {
+            if (arg0->type == CONST && arg0->content.val == 0) {
               DebugPrintf(("Found useless ADD or SUB to remove\n"));
               useless.push_back(stmtIt);
             }
@@ -84,7 +84,7 @@ Optimizer::removeUselessArithemtics(asm_function & func)
           if (args[0]->getType() == ASM_IMMEDIATE_ARG) {
             asm_immediate_arg * arg0 = (asm_immediate_arg *) args[0];
 
-            if (arg0->type == COST && arg0->content.val == 1) {
+            if (arg0->type == CONST && arg0->content.val == 1) {
               DebugPrintf(("Found useless MULT or DIV to remove\n"));
               useless.push_back(stmtIt);
             }

@@ -53,7 +53,7 @@ public:
   const int& getItem(const char * name) const {
     NameToValue::const_iterator istr = nameToValue.find(string(name));
     if (istr == nameToValue.end()) {
-      throw WrongIstructionException(errorMsgName + name);
+      throw WrongInstructionException(errorMsgName + name);
     }
 
     return istr->second;
@@ -61,7 +61,7 @@ public:
   const int& getItem(const string& name) const {
     NameToValue::const_iterator istr = nameToValue.find(name);
     if (istr == nameToValue.end()) {
-      throw WrongIstructionException(errorMsgName + name);
+      throw WrongInstructionException(errorMsgName + name);
     }
 
     return istr->second;
@@ -69,7 +69,7 @@ public:
   const string& getItem(const int& value) const {
     ValueToName::const_iterator istr = valueToName.find(value);
     if (istr == valueToName.end()) {
-      throw WrongIstructionException(errorMsgValue);
+      throw WrongInstructionException(errorMsgValue);
     }
 
     return istr->second;
@@ -157,9 +157,9 @@ public:
 
   }
 
-  const int& getIstr(const char * name) const { return getItem(name); }
-  const int& getIstr(const string& name) const { return getItem(name); }
-  const string& getIstr(const int& value) const { return getItem(value); }
+  const int& getInstr(const char * name) const { return getItem(name); }
+  const int& getInstr(const string& name) const { return getItem(name); }
+  const string& getInstr(const int& value) const { return getItem(value); }
 } ISet;
 
 static class ArgsTypeSet : public DoubleCorrelationMap {

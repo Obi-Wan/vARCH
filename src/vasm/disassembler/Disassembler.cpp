@@ -51,12 +51,12 @@ Disassembler::disassembleAndPrint(const Bloat & bytecode)
     if (instr) {
       switch ((instr >> 30 ) & 3) {
         case 0:
-          cout << "  " << ISet.getIstr(instr) << endl;
+          cout << "  " << ISet.getInstr(instr) << endl;
           break;
         case 1: {
           const int typeArg1 = GET_ARG_1(instr);
           const int polishedInstr = instr - ARG_1(typeArg1);
-          cout << "  " << ISet.getIstr(polishedInstr) << endl;
+          cout << "  " << ISet.getInstr(polishedInstr) << endl;
           printArg(typeArg1, *codeIt++);
           break;
         }
@@ -64,7 +64,7 @@ Disassembler::disassembleAndPrint(const Bloat & bytecode)
           const int typeArg1 = GET_ARG_1(instr);
           const int typeArg2 = GET_ARG_2(instr);
           const int polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2);
-          cout << "  " << ISet.getIstr(polishedInstr) << endl;
+          cout << "  " << ISet.getInstr(polishedInstr) << endl;
           printArg(typeArg1, *codeIt++);
           printArg(typeArg2, *codeIt++);
           break;
@@ -75,7 +75,7 @@ Disassembler::disassembleAndPrint(const Bloat & bytecode)
           const int typeArg3 = GET_ARG_3(instr);
           const int polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2)
                                           - ARG_3(typeArg3);
-          cout << "  " << ISet.getIstr(polishedInstr) << endl;
+          cout << "  " << ISet.getInstr(polishedInstr) << endl;
           printArg(typeArg1, *codeIt++);
           printArg(typeArg2, *codeIt++);
           printArg(typeArg3, *codeIt++);
@@ -85,7 +85,7 @@ Disassembler::disassembleAndPrint(const Bloat & bytecode)
           break;
       }
     }
-    } catch (const WrongIstructionException & e) {
+    } catch (const WrongInstructionException & e) {
       cout << "Skip instr" << endl;
     }
   }

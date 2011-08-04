@@ -38,18 +38,18 @@ public:
   MmuException(const string& _mess) : BasicException(_mess) { }
 };
 
-class WrongIstructionException : public BasicException {
+class WrongInstructionException : public BasicException {
 public:
-  WrongIstructionException() { }
-  WrongIstructionException(const char * _mess) : BasicException(_mess) { }
-  WrongIstructionException(const string& _mess) : BasicException(_mess) { }
+  WrongInstructionException() { }
+  WrongInstructionException(const char * _mess) : BasicException(_mess) { }
+  WrongInstructionException(const string& _mess) : BasicException(_mess) { }
 };
 
-class WrongArgumentException : public WrongIstructionException {
+class WrongArgumentException : public WrongInstructionException {
 public:
   WrongArgumentException() { }
-  WrongArgumentException(const char * _mess) : WrongIstructionException(_mess) { }
-  WrongArgumentException(const string& _mess) : WrongIstructionException(_mess) { }
+  WrongArgumentException(const char * _mess) : WrongInstructionException(_mess) { }
+  WrongArgumentException(const string& _mess) : WrongInstructionException(_mess) { }
 };
 
 class WrongFileException : public BasicException {

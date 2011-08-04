@@ -95,31 +95,31 @@ Cpu::coreStep()
   timeDelay = 0;
   int newFlags = flags;
   resetFlags(newFlags);
-  int currentIstr = memoryController.loadFromMem(progCounter++);
+  int currentInstr = memoryController.loadFromMem(progCounter++);
 
   DebugPrintf(("Istruzione nell'area di mem: %d num args: %d\n", progCounter-1,
-         (currentIstr >> 30 ) & 3));
+         (currentInstr >> 30 ) & 3));
 
   int res = 0;
 
   try {
-    switch ((currentIstr >> 30 ) & 3) {
+    switch ((currentInstr >> 30 ) & 3) {
       case 0:
-        res = istructsZeroArg(currentIstr, newFlags);
+        res = instructsZeroArg(currentInstr, newFlags);
         break;
       case 1:
-        res = istructsOneArg(currentIstr, newFlags);
+        res = instructsOneArg(currentInstr, newFlags);
         break;
       case 2:
-        res = istructsTwoArg(currentIstr, newFlags);
+        res = instructsTwoArg(currentInstr, newFlags);
         break;
       case 3:
-        res = istructsThreeArg(currentIstr, newFlags);
+        res = instructsThreeArg(currentInstr, newFlags);
         break;
     }
   } catch (const WrongArgumentException & e) {
     printf("Wrong argument of the istruction. %s\n", e.what());
-  } catch (const WrongIstructionException & e) {
+  } catch (const WrongInstructionException & e) {
     printf("Wrong istruction. %s\n", e.what());
   }
   flags = newFlags;
@@ -127,15 +127,15 @@ Cpu::coreStep()
 }
 
 inline int
-Cpu::istructsZeroArg(const int& istr, int& newFlags)
+Cpu::instructsZeroArg(const int& instr, int& newFlags)
 {
-  DebugPrintf(("  Instruction %s\n", ISet.getIstr(istr).c_str()));
-  switch (istr) {
+  DebugPrintf(("  Instruction %s\n", ISet.getInstr(instr).c_str()));
+  switch (instr) {
     case SLEEP:
-      return istr;
+      return instr;
     case REBOOT:
     case HALT:
-      return (flags & F_SVISOR) ? istr : SLEEP;
+      return (flags & F_SVISOR) ? instr : SLEEP;
       
     case PUSHA:
       sP.pushAllRegs();
@@ -153,24 +153,24 @@ Cpu::istructsZeroArg(const int& istr, int& newFlags)
       break;
 
     default:
-      throw WrongIstructionException();
+      throw WrongInstructionException();
       break;
   }
   return 0;
 }
 
 inline int
-Cpu::istructsOneArg(const int& istr, int& newFlags)
+Cpu::instructsOneArg(const int& instr, int& newFlags)
 {
-  const int typeArg = GET_ARG_1(istr);
+  const int typeArg = GET_ARG_1(instr);
   const int arg = memoryController.loadFromMem(progCounter++);
   DebugPrintf(("Type arg 1: 0x%X arg: 0x%X\n", typeArg, arg));
   int temp = loadArg(arg, typeArg);
 
-  const int polishedIstr = istr - ARG_1(typeArg);
+  const int polishedInstr = instr - ARG_1(typeArg);
 
-  DebugPrintf(("  Instruction %s\n", ISet.getIstr(polishedIstr).c_str()));
-  switch (polishedIstr) {
+  DebugPrintf(("  Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
+  switch (polishedInstr) {
     case NOT: {
       temp = ~temp;
       break;
@@ -238,11 +238,11 @@ Cpu::istructsOneArg(const int& istr, int& newFlags)
       break;
       
     default:
-      throw WrongIstructionException();
+      throw WrongInstructionException();
       break;
   }
 
-  if (polishedIstr < STACK || polishedIstr == POP || IS_PRE_POST_MOD(typeArg))
+  if (polishedInstr < STACK || polishedInstr == POP || IS_PRE_POST_MOD(typeArg))
   {
     newFlags += SET_ARITM_FLAGS(temp);
     storeArg(arg, typeArg, temp);
@@ -252,22 +252,22 @@ Cpu::istructsOneArg(const int& istr, int& newFlags)
 }
 
 inline int
-Cpu::istructsTwoArg(const int& istr, int& newFlags)
+Cpu::instructsTwoArg(const int& instr, int& newFlags)
 {
-  const int typeArg1 = GET_ARG_1(istr);
+  const int typeArg1 = GET_ARG_1(instr);
   const int arg1 = memoryController.loadFromMem(progCounter++);
   DebugPrintf(("Type arg 1: 0x%X arg: 0x%X\n", typeArg1, arg1));
   int temp1 = loadArg(arg1, typeArg1);
 
-  const int typeArg2 = GET_ARG_2(istr);
+  const int typeArg2 = GET_ARG_2(instr);
   const int arg2 = memoryController.loadFromMem(progCounter++);
   DebugPrintf(("Type arg 2: 0x%X arg: 0x%X\n", typeArg2, arg2));
   int temp2 = loadArg(arg2, typeArg2);
 
-  const int polishedIstr = istr - ARG_1(typeArg1) - ARG_2(typeArg2);
+  const int polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2);
 
-  DebugPrintf(("  Instruction %s\n", ISet.getIstr(polishedIstr).c_str()));
-  switch (polishedIstr) {
+  DebugPrintf(("  Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
+  switch (polishedInstr) {
     case MOV:
       temp2 = temp1;
       break;
@@ -337,11 +337,11 @@ Cpu::istructsTwoArg(const int& istr, int& newFlags)
       break;
       
     default:
-      throw WrongIstructionException();
+      throw WrongInstructionException();
       break;
   }
 
-  if (polishedIstr <= XOR || polishedIstr == GET || IS_PRE_POST_MOD(typeArg2))
+  if (polishedInstr <= XOR || polishedInstr == GET || IS_PRE_POST_MOD(typeArg2))
   {
     newFlags += SET_ARITM_FLAGS(temp2);
     storeArg(arg2, typeArg2, temp2); /* Operations that do modify args */
@@ -355,25 +355,25 @@ Cpu::istructsTwoArg(const int& istr, int& newFlags)
 }
 
 inline int
-Cpu::istructsThreeArg(const int& istr, int& newFlags)
+Cpu::instructsThreeArg(const int& instr, int& newFlags)
 {
-  const int typeArg1 = GET_ARG_1(istr);
+  const int typeArg1 = GET_ARG_1(instr);
   const int arg1 = memoryController.loadFromMem(progCounter++);
   int temp1 = loadArg(arg1, typeArg1);
 
-  const int typeArg2 = GET_ARG_2(istr);
+  const int typeArg2 = GET_ARG_2(instr);
   const int arg2 = memoryController.loadFromMem(progCounter++);
   int temp2 = loadArg(arg2, typeArg2);
 
-  const int typeArg3 = GET_ARG_3(istr);
+  const int typeArg3 = GET_ARG_3(instr);
   const int arg3 = memoryController.loadFromMem(progCounter++);
   int temp3 = loadArg(arg3, typeArg3);
 
-  const int polishedIstr = istr - ARG_1(typeArg1) - ARG_2(typeArg2)
-                                - ARG_3(typeArg3);
+  const int polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2)
+                                  - ARG_3(typeArg3);
 
-  DebugPrintf(("  Instruction %s\n", ISet.getIstr(polishedIstr).c_str()));
-  switch (polishedIstr) {
+  DebugPrintf(("  Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
+  switch (polishedInstr) {
     case BPUT:
       break;
     case BGET:
@@ -398,7 +398,7 @@ Cpu::istructsThreeArg(const int& istr, int& newFlags)
       break;
 
     default:
-      throw WrongIstructionException();
+      throw WrongInstructionException();
       break;
   }
 
@@ -424,8 +424,8 @@ Cpu::loadArg(const int& arg,const int& typeArg)
   const uint32_t relative = IS_RELATIVE(typeArg) * sP.getStackPointer();
   DebugPrintf(("  Relative: %d\n", relative));
   switch (typeArg & 0xf) {
-    case COST:
-      DebugPrintf(("  COST: %d\n", arg));
+    case CONST:
+      DebugPrintf(("  CONST: %d\n", arg));
       return (arg + relative);
 
     case REG_PRE_INCR:

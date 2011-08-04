@@ -34,7 +34,7 @@
 enum TypeOfArgument {
   
   /* Here the (1 << 1) bit stays for ADDR, and the (1 << 0) for REG */
-  COST = 0,               // 0000
+  CONST = 0,              // 0000
   REG,                    // 0001
   ADDR,                   // 0010
   ADDR_IN_REG,            // 0011

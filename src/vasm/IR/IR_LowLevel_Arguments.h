@@ -55,7 +55,7 @@ struct asm_immediate_arg : asm_arg {
     content.val = _val;
   }
   asm_immediate_arg(const YYLTYPE& pos, const float _fval)
-    : asm_arg(pos, COST), isTemp(false)
+    : asm_arg(pos, CONST), isTemp(false)
   {
     content.fval = _fval;
   }
@@ -65,7 +65,7 @@ struct asm_immediate_arg : asm_arg {
   const string toString() const { return "(immediate arg)"; }
 
   virtual bool isTemporary() const throw() { return isTemp; }
-  virtual bool isReg() const throw() { return (type != COST && type != ADDR); }
+  virtual bool isReg() const throw() { return (type != CONST && type != ADDR); }
 };
 
 struct asm_function_param : asm_arg {

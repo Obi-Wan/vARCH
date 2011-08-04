@@ -35,27 +35,27 @@ Chipset::~Chipset() { }
 
 //const int
 //Chipset::bios[] = {
-//  MOV + ARG_1(COST) + ARG_2(REG), 10, REG_DATA_1,
-//  MOV + ARG_1(COST) + ARG_2(REG), 20, REG_DATA_2,
+//  MOV + ARG_1(CONST) + ARG_2(REG), 10, REG_DATA_1,
+//  MOV + ARG_1(CONST) + ARG_2(REG), 20, REG_DATA_2,
 //  ADD + ARG_1(REG) + ARG_2(REG), REG_DATA_1, REG_DATA_2,
 //  MOV + ARG_1(REG) + ARG_2(ADDR), REG_DATA_2, 16,
 //  HALT, 0, 0 };
 
 const int32_t
 Chipset::bios[] = {
-  MOV   + ARG_1(COST) + ARG_2(REG), 10          , REG_DATA_1,
-  MOV   + ARG_1(COST) + ARG_2(REG), 20          , REG_DATA_2,
+  MOV   + ARG_1(CONST) + ARG_2(REG), 10          , REG_DATA_1,
+  MOV   + ARG_1(CONST) + ARG_2(REG), 20          , REG_DATA_2,
   ADD   + ARG_1(REG)  + ARG_2(REG), REG_DATA_1  , REG_DATA_2,
   PUSH  + ARG_1(REG)              , REG_DATA_2  ,
   HALT, 0, 0 };
 
 //const int32_t
 //Chipset::bios[] = {
-//  MOV + ARG_1(COST) + ARG_2(REG),                   7,          REG_DATA_1,
-//  MOV + ARG_1(COST) + ARG_2(REG),                   1,          REG_DATA_2,
-//  IFEQJ + ARG_1(COST) + ARG_2(REG) + ARG_3(COST),   17,         REG_DATA_1, 0,
+//  MOV + ARG_1(CONST) + ARG_2(REG),                   7,          REG_DATA_1,
+//  MOV + ARG_1(CONST) + ARG_2(REG),                   1,          REG_DATA_2,
+//  IFEQJ + ARG_1(CONST) + ARG_2(REG) + ARG_3(CONST),   17,         REG_DATA_1, 0,
 //  MULT + ARG_1(REG_POST_DECR) + ARG_2(REG),         REG_DATA_1, REG_DATA_2,
-//  IFNEQJ + ARG_1(COST) + ARG_2(REG) + ARG_3(COST),  10,         REG_DATA_1, 0,
+//  IFNEQJ + ARG_1(CONST) + ARG_2(REG) + ARG_3(CONST),  10,         REG_DATA_1, 0,
 //  MOV + ARG_1(REG) + ARG_2(ADDR),                   REG_DATA_2, 23,
 //  HALT, 0, 0 };
 

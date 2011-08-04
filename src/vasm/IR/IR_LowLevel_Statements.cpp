@@ -20,7 +20,7 @@ asm_instruction_statement::checkArgs() const
   if (instrNumOfArgs != args.size()) {
     stringstream stream;
     stream  << "Wrong number of arguments for instruction '"
-              << ISet.getIstr(instruction)
+              << ISet.getInstr(instruction)
               << "' (" << instruction << ") at position:" << endl
             << position.fileNode->printString()
               << " Line: " << position.first_line << endl
@@ -37,10 +37,10 @@ asm_instruction_statement::checkArgs() const
     case COMP2:
     case LSH:
     case RSH: {
-      if (args[0]->type == COST) {
+      if (args[0]->type == CONST) {
         stringstream stream;
         stream  << "Expected non constant argument for unary instruction '"
-                  << ISet.getIstr(instruction)
+                  << ISet.getInstr(instruction)
                   << "' (" << instruction << ") at position:" << endl
                 << position.fileNode->printString()
                   << " Line: " << position.first_line << endl;
@@ -57,10 +57,10 @@ asm_instruction_statement::checkArgs() const
     case OR:
     case XOR:
     case GET: {
-      if (args[1]->type == COST) {
+      if (args[1]->type == CONST) {
         stringstream stream;
         stream  << "Expected non constant destination argument for binary "
-                  << "instruction '" << ISet.getIstr(instruction)
+                  << "instruction '" << ISet.getInstr(instruction)
                   << "' (" << instruction << ") at position:" << endl
                 << position.fileNode->printString()
                   << " Line: " << position.first_line << endl;
@@ -81,7 +81,7 @@ asm_instruction_statement::ensureTempsUsage(const bool & used) const
     if (args[numArg]->getType() == ASM_IMMEDIATE_ARG)
     {
       const asm_immediate_arg * arg = (const asm_immediate_arg *) args[numArg];
-      if (!(arg->type == COST || arg->type == ADDR) && (used ^ arg->isTemp))
+      if (!(arg->type == CONST || arg->type == ADDR) && (used ^ arg->isTemp))
       {
         stringstream stream;
         if (used) {
@@ -89,7 +89,7 @@ asm_instruction_statement::ensureTempsUsage(const bool & used) const
         } else {
           stream << "Found a temporary when not compiling for temporaries,";
         }
-        stream  << " as argument of instruction '" << ISet.getIstr(instruction)
+        stream  << " as argument of instruction '" << ISet.getInstr(instruction)
                   << "' (" << instruction << ") at position:" << endl
                 << position.fileNode->printString()
                   << " Line: " << position.first_line << endl;

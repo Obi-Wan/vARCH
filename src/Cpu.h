@@ -95,10 +95,10 @@ private:
   //|//////////////////////|//
   //|  Functions           |//
   //|//////////////////////|//
-  int istructsOneArg(const int& istr, int& newFlags);
-  int istructsZeroArg(const int& istr, int& newFlags);
-  int istructsTwoArg(const int& istr, int& newFlags);
-  int istructsThreeArg(const int& istr, int& newFlags);
+  int instructsOneArg(const int& instr, int& newFlags);
+  int instructsZeroArg(const int& instr, int& newFlags);
+  int instructsTwoArg(const int& instr, int& newFlags);
+  int instructsThreeArg(const int& instr, int& newFlags);
 
   /* Arguments functions */
   int loadArg(const int& arg,const int& typeArg);
@@ -109,7 +109,7 @@ private:
   void setReg(const int& arg, const int& value);
 
   void resetRegs() throw() {
-    for( int i = 0; i < NUM_REGS; i++) regsData[i] = regsAddr[i] = 0;
+    for(size_t i = 0; i < NUM_REGS; i++) regsData[i] = regsAddr[i] = 0;
   }
 
   /* Flags functions */

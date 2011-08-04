@@ -192,7 +192,7 @@ InterferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
                                          flowGraph.getUses().find(node)->second;
         // Safety check - Could be skipped
         if (!(nodeDefs.size() == 1 && nodeUses.size() == 1)) {
-          throw WrongIstructionException(
+          throw WrongInstructionException(
               "A move instruction should have both one define and one use");
         }
 
