@@ -34,7 +34,8 @@ Optimizer::removeUselessMoves(asm_function & func)
               arg0->content.val, arg1->content.val));
 
           if (arg0->content.val == arg1->content.val
-              && arg0->isTemp == arg1->isTemp)
+              && arg0->isTemp == arg1->isTemp
+              && arg0->type == arg1->type)
           {
             DebugPrintf(("Found useless MOV to remove\n"));
             idMoves.push_back(stmtIt);
