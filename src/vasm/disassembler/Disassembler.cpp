@@ -22,7 +22,23 @@ Disassembler::printArg(const int & typeArg, const int & arg)
   cout.width(5);
   cout << ((typeArg & RELATIVE_ARG) == RELATIVE_ARG);
   cout.width();
-  cout << ", Arg: " << arg << endl;
+  switch (typeArg) {
+    case REG:
+    case ADDR_IN_REG:
+    case REG_PRE_INCR:
+    case REG_PRE_DECR:
+    case REG_POST_INCR:
+    case REG_POST_DECR:
+    case ADDR_IN_REG_PRE_INCR:
+    case ADDR_IN_REG_PRE_DECR:
+    case ADDR_IN_REG_POST_INCR:
+    case ADDR_IN_REG_POST_DECR:
+      cout << ", Arg: " << RTypeSet.getItem(arg) << endl;
+      break;
+    default:
+      cout << ", Arg: " << arg << endl;
+      break;
+  }
 }
 
 void
