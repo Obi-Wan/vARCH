@@ -43,11 +43,7 @@ public:
     globals.insert(globals.end(), _globals->begin(), _globals->end());
   }
 
-  void rebuildFunctionsOffsets() {
-    for(size_t i = 0; i < functions.size(); i++) {
-      functions[i]->rebuildOffsets();
-    }
-  }
+  void rebuildOffsets();
 
   size_t getFunciontsTotalSize() const {
     size_t totSize = 0;
@@ -69,7 +65,7 @@ public:
   void ensureTempsUsage(const bool & used) const;
 
   void moveMainToTop();
-  void addFunctionLabelsToGlobals();
+  void exposeGlobalLabels();
   void assignValuesToLabels();
   void assemble(const string & outputName);
 

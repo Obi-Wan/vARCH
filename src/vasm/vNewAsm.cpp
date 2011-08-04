@@ -114,12 +114,12 @@ main(int argc, char** argv)
             default: break;
           }
         }
-        program->rebuildFunctionsOffsets();
       } else {
         program->ensureTempsUsage(usingTemps);
       }
 
-      program->addFunctionLabelsToGlobals();
+      program->rebuildOffsets();
+      program->exposeGlobalLabels();
       program->assignValuesToLabels();
       program->assemble( args.getOutputName() );
 
