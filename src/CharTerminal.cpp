@@ -18,15 +18,17 @@ CharTerminal::CharTerminal() { }
 
 
 void
-CharTerminal::put(const short int& request, const int& arg) {
-  DebugPrintf(("CharTerminal: ricevuto un segnale %d\n", request));
+CharTerminal::put(const int16_t& request, const int32_t& arg)
+{
+  DebugPrintf(("CharTerminal: ricevuto un segnale %d (arg: %d, %d)\n", request,
+                arg, (arg & CHAR_MASK)));
   switch (request) {
     case COMP_TYPE:
       simpleUnsafeResponse = COMP_CONSOLE;
       dataReady = DATA_READY_TRUE;
       break;
     case COMP_SET_FEATURES:
-      printf("%c",arg & CHAR_MASK);
+      printf("%c", (char)(arg & CHAR_MASK));
       simpleUnsafeResponse = true;
       dataReady = DATA_READY_TRUE;
       break;
