@@ -9,7 +9,7 @@
 
 #include "exceptions.h"
 #include "CpuDefinitions.h"
-#include "StaticLinker.h"
+#include "Frame.h"
 
 #include <sstream>
 
@@ -123,7 +123,7 @@ AssemFlowGraph::_createArcs(const TableOfSymbols & functionSymbols)
 inline void
 AssemFlowGraph::_addToSet(UIDMultiSetType & nodeSet, const uint32_t &shiftedUID)
 {
-  if (!StaticLinker::shiftedIsSpecialReg(shiftedUID))
+  if (!Frame::shiftedIsSpecialReg(shiftedUID))
   {
     nodeSet.insert(shiftedUID);
   }
@@ -140,7 +140,7 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
 
   if (arg0_temp || args[0]->isReg()) {
     asm_immediate_arg * arg = (asm_immediate_arg *) args[0];
-    const uint32_t shiftedTempUID = StaticLinker::shiftArgUID(arg, arg0_temp);
+    const uint32_t shiftedTempUID = Frame::shiftArgUID(arg, arg0_temp);
 //      // Add to temps map
 //      tempsMap.putTemp( shiftedTempUID, true);
     // Add to uses
@@ -163,7 +163,7 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
   }
   if (arg1_temp || args[1]->isReg()) {
     asm_immediate_arg * arg = (asm_immediate_arg *) args[1];
-    const uint32_t shiftedTempUID = StaticLinker::shiftArgUID(arg, arg1_temp);
+    const uint32_t shiftedTempUID = Frame::shiftArgUID(arg, arg1_temp);
     switch (arg->type) {
       case ADDR_IN_REG_PRE_INCR:
       case ADDR_IN_REG_PRE_DECR:
@@ -262,7 +262,7 @@ AssemFlowGraph::_findUsesDefines()
               asm_immediate_arg * arg =
                                       (asm_immediate_arg *)i_stmt->args[argNum];
               const uint32_t shiftedTempUID =
-                                        StaticLinker::shiftArgUID(arg, isTemp);
+                                        Frame::shiftArgUID(arg, isTemp);
 
               // uses
               _addToSet( nodeUses, shiftedTempUID );
@@ -280,7 +280,7 @@ AssemFlowGraph::_findUsesDefines()
         for(uint32_t numReg = 0; numReg < STD_CALLEE_SAVE; numReg++)
         {
           const uint32_t shiftedTempUID =
-                                      StaticLinker::shiftArgUID(numReg, false);
+                                      Frame::shiftArgUID(numReg, false);
           _addToSet( nodeDefs, shiftedTempUID );
         }
         // It uses the arguments
@@ -289,7 +289,7 @@ AssemFlowGraph::_findUsesDefines()
         {
           const asm_function_param * par = *parIt;
           const uint32_t shiftedTempUID =
-                          StaticLinker::shiftArgUID(par->content.regNum, false);
+                          Frame::shiftArgUID(par->content.regNum, false);
           _addToSet( nodeUses, shiftedTempUID );
         }
       } else if (stmt->getType() == ASM_RETURN_STATEMENT) {
@@ -297,7 +297,7 @@ AssemFlowGraph::_findUsesDefines()
         for(uint32_t regNum = STD_CALLEE_SAVE; regNum < NUM_REGS; regNum++)
         {
           const uint32_t shiftedTempUID =
-                                      StaticLinker::shiftArgUID(regNum, false);
+                                      Frame::shiftArgUID(regNum, false);
           _addToSet( nodeUses, shiftedTempUID );
         }
       }
@@ -344,7 +344,7 @@ AssemFlowGraph::applySelectedRegisters(const AssignedRegs & regs)
       {
         if ((*argIt)->isTemporary()) {
           asm_immediate_arg * arg = (asm_immediate_arg *) *argIt;
-          const uint32_t temp_uid = StaticLinker::shiftArgUID(arg, true);
+          const uint32_t temp_uid = Frame::shiftArgUID(arg, true);
 
           AssignedRegs::const_iterator reg = regs.find(temp_uid);
           if (reg == regs.end()) {

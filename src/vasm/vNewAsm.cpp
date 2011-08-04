@@ -11,7 +11,7 @@
 #include "AsmArgs.h"
 #include "backend/AssemFlowGraph.h"
 #include "backend/RegAllocator.h"
-#include "backend/StaticLinker.h"
+#include "backend/Frame.h"
 #include "backend/Optimizer.h"
 
 using namespace std;
@@ -64,11 +64,11 @@ main(int argc, char** argv)
           asm_function & func = *(program->functions[numFunc]);
           TempsMap tempsMap;
 
-          StaticLinker linker(tempsMap);
-          linker.init(func);
-          linker.generateMovesForFunctionCalls(func);
-          linker.allocateLocalVariables(func);
-          linker.deallocateLocalVariables(func);
+          Frame frame(tempsMap);
+          frame.init(func);
+          frame.generateMovesForFunctionCalls(func);
+          frame.allocateLocalVariables(func);
+          frame.deallocateLocalVariables(func);
 
           AssemFlowGraph flowGraph(tempsMap);
           flowGraph.populateGraph(func);

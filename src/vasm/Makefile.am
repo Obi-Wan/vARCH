@@ -17,7 +17,7 @@ vasm_SOURCES = \
 		  algorithms/InterferenceGraph.cpp	\
 		  backend/AssemFlowGraph.cpp \
 		  backend/RegAllocator.cpp \
-		  backend/StaticLinker.cpp \
+		  backend/Frame.cpp \
 		  backend/Optimizer.cpp \
 		  disassembler/Disassembler.cpp \
 		  vNewAsm.cpp

@@ -1,5 +1,5 @@
 /*
- * StaticLinker.h
+ * Frame.h
  *
  *  Created on: 02/ago/2011
  *      Author: ben
@@ -13,7 +13,7 @@
 #include "../asm-function.h"
 #include "std_istructions.h"
 
-class StaticLinker {
+class Frame {
 
   TempsMap & tempsMap;
 
@@ -32,7 +32,7 @@ class StaticLinker {
       const YYLTYPE &pos);
 
 public:
-  StaticLinker(TempsMap & _tm) : tempsMap(_tm), minNewTemp(FIRST_TEMPORARY) { }
+  Frame(TempsMap & _tm) : tempsMap(_tm), minNewTemp(FIRST_TEMPORARY) { }
 
   static uint32_t shiftArgUID(const asm_immediate_arg * arg,
       const bool &isTemp);
@@ -69,19 +69,19 @@ public:
 };
 
 inline uint32_t
-StaticLinker::shiftArgUID(const asm_immediate_arg * arg, const bool & isTemp)
+Frame::shiftArgUID(const asm_immediate_arg * arg, const bool & isTemp)
 {
   return isTemp * FIRST_TEMPORARY + 1 + arg->content.tempUID;
 }
 
 inline uint32_t
-StaticLinker::shiftArgUID(const uint32_t & uid, const bool & isTemp)
+Frame::shiftArgUID(const uint32_t & uid, const bool & isTemp)
 {
   return isTemp * FIRST_TEMPORARY + 1 + uid;
 }
 
 inline bool
-StaticLinker::shiftedIsSpecialReg(const uint32_t & uid)
+Frame::shiftedIsSpecialReg(const uint32_t & uid)
 {
   return (uid >= (STACK_POINTER+1) && uid <= (STATE_REGISTER+1));
 }

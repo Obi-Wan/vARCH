@@ -1,11 +1,11 @@
 /*
- * StaticLinker.cpp
+ * Frame.cpp
  *
  *  Created on: 02/ago/2011
  *      Author: ben
  */
 
-#include "StaticLinker.h"
+#include "Frame.h"
 
 #include "exceptions.h"
 #include "../IncludesTree.h"
@@ -15,7 +15,7 @@
 using namespace std;
 
 void
-StaticLinker::init(asm_function & function)
+Frame::init(asm_function & function)
 {
   ListOfStmts & stmts = function.stmts;
 
@@ -61,7 +61,7 @@ StaticLinker::init(asm_function & function)
 }
 
 inline void
-StaticLinker::mindCalleeSaveRegs(ListOfStmts & stmts)
+Frame::mindCalleeSaveRegs(ListOfStmts & stmts)
 {
   for(uint32_t regNum = STD_CALLEE_SAVE; regNum < NUM_REGS; regNum++)
   {
@@ -119,7 +119,7 @@ StaticLinker::mindCalleeSaveRegs(ListOfStmts & stmts)
 }
 
 inline void
-StaticLinker::mindReturnStmts(ListOfStmts & stmts)
+Frame::mindReturnStmts(ListOfStmts & stmts)
 {
   for(vector<ListOfStmts::iterator>::iterator retIt = returns.begin();
       retIt != returns.end(); retIt++)
@@ -161,7 +161,7 @@ StaticLinker::mindReturnStmts(ListOfStmts & stmts)
 }
 
 void
-StaticLinker::mindParamsFCalls(ListOfStmts & stmts)
+Frame::mindParamsFCalls(ListOfStmts & stmts)
 {
   for(vector<ListOfStmts::iterator>::iterator callIt = f_calls.begin();
       callIt != f_calls.end(); callIt++)
@@ -203,7 +203,7 @@ StaticLinker::mindParamsFCalls(ListOfStmts & stmts)
 }
 
 void
-StaticLinker::generateMovesForFunctionCalls(asm_function & function)
+Frame::generateMovesForFunctionCalls(asm_function & function)
 {
   ListOfStmts & stmts = function.stmts;
 
@@ -223,7 +223,7 @@ StaticLinker::generateMovesForFunctionCalls(asm_function & function)
 }
 
 inline asm_immediate_arg *
-StaticLinker::makeInitArg(const asm_data_keyword_statement * data,
+Frame::makeInitArg(const asm_data_keyword_statement * data,
     const YYLTYPE &pos)
 {
   asm_immediate_arg * tempArg = new asm_immediate_arg(pos);
@@ -260,7 +260,7 @@ StaticLinker::makeInitArg(const asm_data_keyword_statement * data,
 }
 
 void
-StaticLinker::allocateLocalVariables(asm_function & function)
+Frame::allocateLocalVariables(asm_function & function)
 {
   ListOfStmts & stmts = function.stmts;
   const ListOfDataStmts & localVars = function.stackLocals;
@@ -285,7 +285,7 @@ StaticLinker::allocateLocalVariables(asm_function & function)
 }
 
 void
-StaticLinker::deallocateLocalVariables(asm_function & function)
+Frame::deallocateLocalVariables(asm_function & function)
 {
   ListOfStmts & stmts = function.stmts;
 
