@@ -20,7 +20,7 @@ using namespace std;
 
 struct asm_arg {
   enum TypeOfArgument type;
-  int relOffset;
+  size_t relOffset;
   bool relative;
 
   YYLTYPE position;
@@ -40,7 +40,8 @@ struct asm_immediate_arg : asm_arg {
   union {
     enum Registers regNum;
     uint32_t tempUID;
-    int val;
+    int32_t val;
+    int64_t lval;
     float fval;
   } content;
 
@@ -70,7 +71,7 @@ struct asm_immediate_arg : asm_arg {
 struct asm_function_param : asm_arg {
   union {
     enum Registers regNum;
-    int address;
+    int32_t address;
   } content;
 
 //  bool isReg;
@@ -88,7 +89,7 @@ typedef vector<const asm_function_param *>  ConstListOfParams;
 
 struct asm_label_arg : asm_arg {
   string label;
-  int pointedPosition;
+  int32_t pointedPosition;
 
   asm_label_arg(const YYLTYPE& pos, const string& _lab, const TypeOfArgument& _type)
     : asm_arg(pos, _type), label(_lab) { }

@@ -14,8 +14,6 @@
 #include <deque>
 
 struct asm_program {
-  size_t tempOffset;
-
   deque<asm_function *> functions;
   vector<asm_data_statement *> globals;
 
@@ -23,13 +21,13 @@ struct asm_program {
 
 public:
   asm_program(list<asm_function *> * _funcs,
-              list<asm_data_statement *> * _globals) : tempOffset(0)
+              list<asm_data_statement *> * _globals)
   {
     /* Now let's copy them, and the data */
     functions.insert(functions.begin(), _funcs->begin(), _funcs->end());
     globals.insert(globals.begin(), _globals->begin(), _globals->end());
   }
-  asm_program() : tempOffset(0) { }
+  asm_program() { }
 
   void addFunction(asm_function * _func) {
     functions.insert(functions.end(), _func);
@@ -51,10 +49,17 @@ public:
     }
   }
 
-  int getFunciontsTotalSize() {
-    int totSize = 0;
+  size_t getFunciontsTotalSize() const {
+    size_t totSize = 0;
     for(size_t i = 0; i < functions.size(); i++) {
       totSize += functions[i]->getSize();
+    }
+    return totSize;
+  }
+  size_t getGlobalsTotalSize() const {
+    size_t totSize = 0;
+    for(size_t i = 0; i < globals.size(); i++) {
+      totSize += globals[i]->getSize();
     }
     return totSize;
   }

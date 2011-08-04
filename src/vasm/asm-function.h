@@ -16,12 +16,12 @@
 
 using namespace std;
 
-typedef list<asm_statement *> ListOfStmts;
+typedef list<asm_statement *>         ListOfStmts;
+typedef vector<asm_data_statement *>  ListOfDataStmts;
 
 struct asm_function {
   const string name;
-  int tempLocalOffset;
-  int funcOffset;
+  size_t functionOffset;
 
   YYLTYPE position;
 
@@ -33,17 +33,17 @@ struct asm_function {
   list<ArgLabelRecord *> refs;
 
   asm_function(const YYLTYPE& pos, const string& _name)
-    : name(_name), tempLocalOffset(0), funcOffset(0), position(pos)
+    : name(_name), functionOffset(0), position(pos)
   { }
   asm_function(const YYLTYPE& pos, const char * _name)
-    : name(_name), tempLocalOffset(0), funcOffset(0), position(pos)
+    : name(_name), functionOffset(0), position(pos)
   { }
 
   void finalize();
   void rebuildOffsets();
   bool ensureTempsUsage(const bool & used) const;
 
-  void checkLabel(asm_statement * stmt);
+  void checkAndAddLabel(asm_statement * stmt);
 
   void addStmt(asm_statement * stmt) { if (stmt) stmts.push_back(stmt); }
   void addLocals(list<asm_data_statement *> * locs)
@@ -52,25 +52,68 @@ struct asm_function {
   }
   void addParameter(asm_function_param * p) { if (p) parameters.push_back(p); }
 
-  size_t getInstrSize() const {
-    size_t size = 0;
-    for(ListOfStmts::const_iterator stmt_it = stmts.begin();
-          stmt_it != stmts.end(); stmt_it++)
-    {
-      const asm_statement * stmt = *stmt_it;
-      size += stmt->getSize();
-    }
-    return size;
-  }
-  int getDataSize() const {
-    int size = 0;
-    for(size_t index = 0; index < locals.size(); index++) {
-      size += locals[index]->getSize();
-    }
-    return size;
-  }
-  int getSize() const { return getInstrSize() + getDataSize(); }
+  size_t getInstrSize() const;
+  size_t getSharedDataSize() const;
+
+  size_t getSize() const { return getInstrSize() + getSharedDataSize(); }
 };
+
+inline void
+asm_function::addLocals(list<asm_data_statement *> * locs)
+{
+  for(list<asm_data_statement *>::iterator inStmtIt = locs->begin();
+      inStmtIt != locs->end(); inStmtIt++)
+  {
+    asm_data_statement * stmt = *inStmtIt;
+    if (stmt->getType() == ASM_LABEL_STATEMENT) {
+      list<asm_data_statement *>::iterator nextIt = inStmtIt;
+      nextIt++;
+      if (nextIt != locs->end()
+          && (*nextIt)->getType() != ASM_LABEL_STATEMENT
+          && (*nextIt)->isShared())
+      {
+        stmt->is_constant = (*nextIt)->is_constant;
+        stmt->is_shared = (*nextIt)->is_shared;
+        uniqueLocals.push_back( stmt );
+      } else {
+        stackLocals.push_back( stmt );
+      }
+    } else {
+      if (stmt->isShared()) {
+        uniqueLocals.push_back( stmt );
+      } else {
+        stackLocals.push_back( stmt );
+      }
+    }
+  }
+//    uniqueLocals.insert(uniqueLocals.begin(), locs->begin(), locs->end());
+}
+
+
+inline size_t
+asm_function::getInstrSize() const
+{
+  size_t size = 0;
+  for(ListOfStmts::const_iterator stmt_it = stmts.begin();
+        stmt_it != stmts.end(); stmt_it++)
+  {
+    const asm_statement * stmt = *stmt_it;
+    size += stmt->getSize();
+  }
+  return size;
+}
+
+inline size_t
+asm_function::getSharedDataSize() const
+{
+  size_t size = 0;
+  for(ListOfDataStmts::const_iterator stmt_it = uniqueLocals.begin();
+      stmt_it != uniqueLocals.end(); stmt_it++)
+  {
+    size += (*stmt_it)->getSize();
+  }
+  return size;
+}
 
 #endif	/* ASM_FUNCTION_H */
 

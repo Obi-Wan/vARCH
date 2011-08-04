@@ -13,6 +13,8 @@ void
 asm_function::finalize()
 {
   DebugPrintf(("- Adding stmts and locals to function: %s -\n", name.c_str()));
+  size_t tempLocalOffset = 0;
+
   for(ListOfStmts::iterator stmt_it = stmts.begin(); stmt_it != stmts.end();
       stmt_it++)
   {
@@ -32,7 +34,7 @@ asm_function::finalize()
         }
       }
     } else {
-      checkLabel(stmt);
+      checkAndAddLabel(stmt);
     }
   }
   for(size_t i = 0; i < locals.size(); i++) {
@@ -40,7 +42,7 @@ asm_function::finalize()
 
     stmt->offset = tempLocalOffset;
     tempLocalOffset += stmt->getSize();
-    checkLabel(stmt);
+    checkAndAddLabel(stmt);
   }
   DebugPrintf(("- Terminated: Adding stmts and locals -\n\n"));
 }
@@ -48,7 +50,7 @@ asm_function::finalize()
 void
 asm_function::rebuildOffsets()
 {
-  tempLocalOffset = 0;
+  size_t tempLocalOffset = 0;
   for(ListOfStmts::iterator stmt_it = stmts.begin(); stmt_it != stmts.end();
       stmt_it++)
   {
@@ -86,7 +88,7 @@ asm_function::ensureTempsUsage(const bool & used) const
 }
 
 inline void
-asm_function::checkLabel(asm_statement * stmt)
+asm_function::checkAndAddLabel(asm_statement * stmt)
 {
   if (stmt->getType() == ASM_LABEL_STATEMENT) {
     DebugPrintf(("Found local label: %s in function %s!\n",

@@ -131,12 +131,14 @@ asm_program::moveMainToTop()
 void
 asm_program::addFunctionLabelsToGlobals()
 {
+  size_t tempOffset = 0;
   bool error = false;
 
   /* And fix their labels */
   DebugPrintf(("-- Adding Functions to Global Labels - Phase --\n"));
   for(size_t index = 0; index < functions.size(); index++) {
     asm_function * func = functions[index];
+    func->functionOffset = tempOffset;
 
     asm_label_statement * tempLabel =
         new asm_label_statement(func->position, func->name);
@@ -246,7 +248,7 @@ void
 asm_program::assemble(const string & outputName)
 {
   Bloat bytecode;
-  bytecode.resize(tempOffset,0);
+  bytecode.resize(getFunciontsTotalSize() + getGlobalsTotalSize(), 0);
   Bloat::iterator pos = bytecode.begin();
   for (size_t funcIndex = 0; funcIndex < functions.size(); funcIndex++) {
     asm_function & func = *functions[funcIndex];
