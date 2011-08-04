@@ -164,8 +164,24 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
   if (arg1_temp || args[1]->isReg()) {
     asm_immediate_arg * arg = (asm_immediate_arg *) args[1];
     const uint32_t shiftedTempUID = StaticLinker::shiftArgUID(arg, arg1_temp);
-    // Add to defs
-    _addToSet(nodeDefs, shiftedTempUID );
+    switch (arg->type) {
+      case ADDR_IN_REG_PRE_INCR:
+      case ADDR_IN_REG_PRE_DECR:
+      case ADDR_IN_REG_POST_INCR:
+      case ADDR_IN_REG_POST_DECR:
+        // Add to defs
+        _addToSet(nodeDefs, shiftedTempUID );
+      case ADDR_IN_REG: {
+        // Add to uses
+        _addToSet(nodeUses, shiftedTempUID );
+        isMove = false;
+        break;
+      }
+      default:
+        // Add to defs
+        _addToSet(nodeDefs, shiftedTempUID );
+        break;
+    }
   }
   return isMove;
 }
@@ -175,43 +191,47 @@ AssemFlowGraph::_argIsDefined(const int & instruction, const size_t & argNum,
     const TypeOfArgument & argType)
   const
 {
-  switch (instruction) {
-    case NOT:
-    case INCR:
-    case DECR:
-    case COMP2:
-    case LSH:
-    case RSH: {
-      return true;
-    }
-    case ADD:
-    case MULT:
-    case SUB:
-    case DIV:
-    case QUOT:
-    case AND:
-    case OR:
-    case XOR:
-    case GET: {
-      if (argNum == 1) return true;
-    }
-    default: {
-      switch(argType) {
-        case REG_PRE_INCR:
-        case REG_PRE_DECR:
-        case REG_POST_INCR:
-        case REG_POST_DECR:
-        case ADDR_IN_REG_PRE_INCR:
-        case ADDR_IN_REG_PRE_DECR:
-        case ADDR_IN_REG_POST_INCR:
-        case ADDR_IN_REG_POST_DECR: {
+  switch(argType) {
+    case REG: {
+      switch (instruction) {
+        case NOT:
+        case INCR:
+        case DECR:
+        case COMP2:
+        case LSH:
+        case RSH: {
           return true;
         }
-        default:
-          break;
+        case ADD:
+        case MULT:
+        case SUB:
+        case DIV:
+        case QUOT:
+        case AND:
+        case OR:
+        case XOR:
+        case GET: {
+          if (argNum == 1) return true;
+        }
+        default: {
+          return false;
+        }
       }
-      return false;
     }
+    case REG_PRE_INCR:
+    case REG_PRE_DECR:
+    case REG_POST_INCR:
+    case REG_POST_DECR:
+    case ADDR_IN_REG_PRE_INCR:
+    case ADDR_IN_REG_PRE_DECR:
+    case ADDR_IN_REG_POST_INCR:
+    case ADDR_IN_REG_POST_DECR: {
+      return true;
+    }
+    case ADDR:
+    case ADDR_IN_REG:
+    default:
+      return false;
   }
 }
 
