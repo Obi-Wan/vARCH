@@ -11,6 +11,7 @@
 #include "FlowGraph.h"
 
 #include "CpuDefinitions.h"
+#include "std_istructions.h"
 
 template<typename DataType>
 class NodeInterfGraph : public NodeGraph<DataType> {
@@ -108,7 +109,7 @@ InterferenceGraph::addNewNode(const string & _label, uint32_t _data)
   Graph<uint32_t, NodeInterfGraph>::addNewNode(_label, _data);
   NodeType * node = &listOfNodes.back();
 
-  node->isPrecolored = (_data <= NUM_REGS);
+  node->isPrecolored = (_data < (FIRST_TEMPORARY+1));
 
   moves.insert(ArcsMap::value_type(node, NodeSetType()));
 }

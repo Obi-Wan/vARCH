@@ -36,6 +36,8 @@ public:
       const bool &isTemp);
   static uint32_t shiftArgUID(const uint32_t & uid, const bool & isTemp);
 
+  static bool shiftedIsSpecialReg(const uint32_t & uid);
+
   void generateMovesForFunctionCalls(asm_function & function);
 };
 
@@ -49,6 +51,12 @@ inline uint32_t
 StaticLinker::shiftArgUID(const uint32_t & uid, const bool & isTemp)
 {
   return isTemp * FIRST_TEMPORARY + 1 + uid;
+}
+
+inline bool
+StaticLinker::shiftedIsSpecialReg(const uint32_t & uid)
+{
+  return (uid >= (STACK_POINTER+1) && uid <= (STATE_REGISTER+1));
 }
 
 #endif /* STATICLINKER_H_ */

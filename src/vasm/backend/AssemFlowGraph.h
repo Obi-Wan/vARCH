@@ -26,6 +26,8 @@ class AssemFlowGraph : public FlowGraph<asm_statement *> {
   void _createArcs(const TableOfSymbols & functionSymbols);
   void _findUsesDefines();
 
+  void _addToSet(UIDMultiSetType & nodeSet, const uint32_t &shiftedUID);
+
   bool _moveInstr(const vector<asm_arg *> & args, UIDMultiSetType & nodeUses,
       UIDMultiSetType & nodeDefs);
   bool _argIsDefined(const int & instruction, const size_t & argNum,

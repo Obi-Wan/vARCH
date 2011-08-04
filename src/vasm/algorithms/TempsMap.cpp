@@ -9,6 +9,7 @@
 
 #include "exceptions.h"
 #include "CpuDefinitions.h"
+#include "std_istructions.h"
 
 #include <iostream>
 #include <sstream>
@@ -44,16 +45,39 @@ void
 TempsMap::putTemp(const uint32_t & uid, const bool & ignoreDups)
 {
   stringstream stream;
-  if (uid <= NUM_REGS) {
-    stream << "R";
-    stream.width(2);
-  } else {
-    stream << "T";
-    stream.width(10);
-  }
   stream.fill('0');
-  stream << uid;
-
+  switch (uid) {
+    case 1 ... 8: {
+      stream << "R";
+      stream.width(2);
+      stream << uid;
+      break;
+    }
+    case 9 ... 16: {
+      stream << "A";
+      stream.width(2);
+      stream << uid;
+      break;
+    }
+    case STACK_POINTER+1: {
+      stream << "SP";
+      break;
+    }
+    case USER_STACK_POINTER+1: {
+      stream << "USP";
+      break;
+    }
+    case STATE_REGISTER+1: {
+      stream << "SR";
+      break;
+    }
+    default: {
+      stream << "T";
+      stream.width(10);
+      stream << uid;
+      break;
+    }
+  }
   putTemp(stream.str(), uid, ignoreDups);
 }
 

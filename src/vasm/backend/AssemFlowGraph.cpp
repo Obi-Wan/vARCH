@@ -120,6 +120,15 @@ AssemFlowGraph::_createArcs(const TableOfSymbols & functionSymbols)
   }
 }
 
+inline void
+AssemFlowGraph::_addToSet(UIDMultiSetType & nodeSet, const uint32_t &shiftedUID)
+{
+  if (!StaticLinker::shiftedIsSpecialReg(shiftedUID))
+  {
+    nodeSet.insert(shiftedUID);
+  }
+}
+
 inline bool
 AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
     UIDMultiSetType & nodeUses, UIDMultiSetType & nodeDefs)
@@ -132,10 +141,10 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
   if (arg0_temp || args[0]->isReg()) {
     asm_immediate_arg * arg = (asm_immediate_arg *) args[0];
     const uint32_t shiftedTempUID = StaticLinker::shiftArgUID(arg, arg0_temp);
-    // Add to temps map
-    tempsMap.putTemp( shiftedTempUID, true);
+//      // Add to temps map
+//      tempsMap.putTemp( shiftedTempUID, true);
     // Add to uses
-    nodeUses.insert( shiftedTempUID );
+    _addToSet(nodeUses, shiftedTempUID );
     // Test if it should be in Defines, too
     switch(arg->type) {
       case REG_PRE_INCR:
@@ -145,9 +154,10 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
       case ADDR_IN_REG_PRE_INCR:
       case ADDR_IN_REG_PRE_DECR:
       case ADDR_IN_REG_POST_INCR:
-      case ADDR_IN_REG_POST_DECR:
-        nodeDefs.insert( shiftedTempUID );
+      case ADDR_IN_REG_POST_DECR: {
+        _addToSet(nodeDefs, shiftedTempUID );
         isMove = false;
+      }
       default: break;
     }
   }
@@ -155,7 +165,7 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
     asm_immediate_arg * arg = (asm_immediate_arg *) args[1];
     const uint32_t shiftedTempUID = StaticLinker::shiftArgUID(arg, arg1_temp);
     // Add to defs
-    nodeDefs.insert( shiftedTempUID );
+    _addToSet(nodeDefs, shiftedTempUID );
   }
   return isMove;
 }
@@ -233,12 +243,13 @@ AssemFlowGraph::_findUsesDefines()
                                       (asm_immediate_arg *)i_stmt->args[argNum];
               const uint32_t shiftedTempUID =
                                         StaticLinker::shiftArgUID(arg, isTemp);
+
               // uses
-              nodeUses.insert( shiftedTempUID );
+              _addToSet( nodeUses, shiftedTempUID );
 
               // defines
               if (_argIsDefined(i_stmt->instruction, argNum, arg->type)) {
-                nodeDefs.insert( shiftedTempUID );
+                _addToSet( nodeDefs, shiftedTempUID );
               }
             }
           } // End loop arguments
@@ -250,7 +261,7 @@ AssemFlowGraph::_findUsesDefines()
         {
           const uint32_t shiftedTempUID =
                                       StaticLinker::shiftArgUID(numReg, false);
-          nodeDefs.insert( shiftedTempUID );
+          _addToSet( nodeDefs, shiftedTempUID );
         }
         // It uses the arguments
         for(ConstListOfParams::const_iterator parIt = f_stmt->parameters.begin();
@@ -259,7 +270,7 @@ AssemFlowGraph::_findUsesDefines()
           const asm_function_param * par = *parIt;
           const uint32_t shiftedTempUID =
                           StaticLinker::shiftArgUID(par->content.regNum, false);
-          nodeUses.insert( shiftedTempUID );
+          _addToSet( nodeUses, shiftedTempUID );
         }
       } else if (stmt->getType() == ASM_RETURN_STATEMENT) {
         // Probably it uses the callee-save registers, and returned element
@@ -267,7 +278,7 @@ AssemFlowGraph::_findUsesDefines()
         {
           const uint32_t shiftedTempUID =
                                       StaticLinker::shiftArgUID(regNum, false);
-          nodeUses.insert( shiftedTempUID );
+          _addToSet( nodeUses, shiftedTempUID );
         }
       }
     }
