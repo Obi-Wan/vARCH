@@ -10,6 +10,10 @@
 #include "IncludesTree.h"
 #include "../FileHandler.h"
 //#include "disassembler/Disassembler.h"
+#include "backend/AssemFlowGraph.h"
+#include "backend/RegAllocator.h"
+#include "backend/Frame.h"
+#include "backend/Optimizer.h"
 
 #include <sstream>
 using namespace std;
@@ -129,7 +133,87 @@ asm_program::moveMainToTop()
 }
 
 void
-asm_program::rebuildOffsets() {
+asm_program::doRegisterAllocation(const AsmArgs & args)
+{
+  bool error = false;
+
+  for(size_t numFunc = 0; numFunc < functions.size(); numFunc++)
+  {
+    try {
+      asm_function & func = *(functions[numFunc]);
+      DebugPrintf(("Processing function: \"%s\"\n\n", func.name.c_str()));
+
+      TempsMap tempsMap;
+
+      Frame frame(tempsMap);
+      frame.init(func);
+      frame.generateMovesForFunctionCalls(func);
+      frame.allocateLocalVariables(func);
+      frame.deallocateLocalVariables(func);
+
+      AssemFlowGraph flowGraph(tempsMap);
+      flowGraph.populateGraph(func);
+
+#ifdef DEBUG
+      DebugPrintf((" --> Printing Flow Graph!! <--\n"));
+      flowGraph.printFlowGraph();
+      DebugPrintf((" --> Printed Flow Graph!! <--\n\n"));
+#endif
+
+      LiveMap<asm_statement *> liveMap;
+      flowGraph.populateLiveMap(liveMap);
+
+#ifdef DEBUG
+      DebugPrintf((" --> Printing Live Map!! <--\n"));
+      liveMap.printLiveMap();
+      DebugPrintf((" --> Printed Live Map!! <--\n\n"));
+#endif
+
+      InterferenceGraph interfGraph;
+      interfGraph.populateGraph( flowGraph, liveMap, tempsMap);
+
+#ifdef DEBUG
+      DebugPrintf((" --> Printing Interference Graph!! <--\n"));
+      interfGraph.printInterferenceGraph();
+      DebugPrintf((" --> Printed Interference Graph!! <--\n\n"));
+#endif
+
+      RegAllocator regAlloc(tempsMap);
+      DebugPrintf((" --> Printing Allocator Stack!! <--\n"));
+      bool success = regAlloc.simpleAllocateRegs(interfGraph);
+      DebugPrintf((" --> Printed Allocator Stack!! <--\n\n"));
+
+      if (success) {
+        flowGraph.applySelectedRegisters(regAlloc.getAssignedRegs());
+      } else {
+        throw WrongArgumentException(
+            "Couldn't find a registers allocation solution for function "
+            + func.name);
+      }
+
+      Optimizer optimizer;
+      switch (args.getOptimizationLevel()) {
+        case 3:
+        case 2:
+        case 1: {
+          optimizer.removeUselessMoves(func);
+          optimizer.removeUselessArithemtics(func);
+        }
+        default: break;
+      }
+    } catch (const BasicException & e) {
+      fprintf(stderr, "Error: %s", e.what());
+      error = true;
+    }
+  }
+  if (error) {
+    throw BasicException("Errors in register allocation!");
+  }
+}
+
+void
+asm_program::rebuildOffsets()
+{
   size_t tempOffset = 0;
   for(size_t index = 0; index < functions.size(); index++) {
     asm_function * func = functions[index];

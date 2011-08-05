@@ -9,10 +9,6 @@
 #include "asm-program.h"
 #include "asm-parser.h"
 #include "AsmArgs.h"
-#include "backend/AssemFlowGraph.h"
-#include "backend/RegAllocator.h"
-#include "backend/Frame.h"
-#include "backend/Optimizer.h"
 #include "disassembler/Disassembler.h"
 
 using namespace std;
@@ -41,110 +37,56 @@ main(int argc, char** argv)
   }
   setIncludeDirs(&args.getIncludeDirs());
 
-  if (openFirstFile(args.getInputName().c_str()))
+  if (!openFirstFile(args.getInputName().c_str()))
   {
-    const bool & usingTemps = args.getRegAutoAlloc();
-    try {
-      asm_program * program = new asm_program();
-      int res = yyparse(program);
-      if (res) {
-        fprintf(stderr, "An error may have occurred, code: %3d\n", res);
-        throw BasicException("Error parsing\n");
-      }
-      program->moveMainToTop();
-      program->checkInstructions(usingTemps);
-#ifdef DEBUG
-      printAbstractTree(program);
-#endif
-
-      if (usingTemps) {
-        program->assignFunctionParameters();
-
-        for(size_t numFunc = 0; numFunc < program->functions.size(); numFunc++)
-        {
-          asm_function & func = *(program->functions[numFunc]);
-          TempsMap tempsMap;
-
-          Frame frame(tempsMap);
-          frame.init(func);
-          frame.generateMovesForFunctionCalls(func);
-          frame.allocateLocalVariables(func);
-          frame.deallocateLocalVariables(func);
-
-          AssemFlowGraph flowGraph(tempsMap);
-          flowGraph.populateGraph(func);
-
-          DebugPrintf((" --> Printing Flow Graph!! <--\n"));
-          flowGraph.printFlowGraph();
-          DebugPrintf((" --> Printed Flow Graph!! <--\n\n"));
-
-          LiveMap<asm_statement *> liveMap;
-          flowGraph.populateLiveMap(liveMap);
-
-          DebugPrintf((" --> Printing Live Map!! <--\n"));
-          liveMap.printLiveMap();
-          DebugPrintf((" --> Printed Live Map!! <--\n\n"));
-
-          InterferenceGraph interfGraph;
-          interfGraph.populateGraph( flowGraph, liveMap, tempsMap);
-
-          DebugPrintf((" --> Printing Interference Graph!! <--\n"));
-          interfGraph.printInterferenceGraph();
-          DebugPrintf((" --> Printed Interference Graph!! <--\n\n"));
-
-          RegAllocator regAlloc(tempsMap);
-          DebugPrintf((" --> Printing Allocator Stack!! <--\n"));
-          bool success = regAlloc.simpleAllocateRegs(interfGraph);
-          DebugPrintf((" --> Printed Allocator Stack!! <--\n\n"));
-
-          if (success) {
-            flowGraph.applySelectedRegisters(regAlloc.getAssignedRegs());
-          } else {
-            throw WrongArgumentException(
-                "Couldn't find a solution for registers allocation");
-          }
-
-          Optimizer optimizer;
-          switch (args.getOptimizationLevel()) {
-            case 3:
-            case 2:
-            case 1: {
-              optimizer.removeUselessMoves(func);
-              optimizer.removeUselessArithemtics(func);
-            }
-            default: break;
-          }
-        }
-      } else {
-        program->ensureTempsUsage(usingTemps);
-      }
-
-      program->rebuildOffsets();
-      program->exposeGlobalLabels();
-      program->assignValuesToLabels();
-      program->assemble( args.getOutputName() );
-
-      Disassembler().disassembleProgram(*program);
-
-      if (!args.getDebugSymbolsName().empty()) {
-        const string & symName = args.getDebugSymbolsName();
-        const size_t & symNameSize = symName.size();
-        if (symNameSize > 4 && !symName.substr(symNameSize-4,4).compare(".xml"))
-        {
-          program->emitXMLDebugSymbols(args.getDebugSymbolsName());
-        } else {
-          program->emitDebugSymbols(args.getDebugSymbolsName());
-        }
-      }
-      cleanParser();
-
-    } catch (BasicException e) {
-      fprintf(stderr, "Error: %s\n", e.what());
-      return (EXIT_FAILURE);
-    }
-  } else {
     fprintf(stderr, "I couldn't open the ASM file to process: %s\n",
             args.getInputName().c_str());
+    return (EXIT_FAILURE);
+  }
+  const bool & usingTemps = args.getRegAutoAlloc();
+  try {
+    asm_program * program = new asm_program();
+    int res = yyparse(program);
+    if (res) {
+      fprintf(stderr, "An error may have occurred, code: %3d\n", res);
+      throw BasicException("Error parsing\n");
+    }
+    program->moveMainToTop();
+    program->checkInstructions(usingTemps);
+#ifdef DEBUG
+    printAbstractTree(program);
+#endif
+
+    if (usingTemps) {
+      program->assignFunctionParameters();
+      program->doRegisterAllocation(args);
+    } else {
+      program->ensureTempsUsage(usingTemps);
+    }
+
+    program->rebuildOffsets();
+    program->exposeGlobalLabels();
+    program->assignValuesToLabels();
+    program->assemble( args.getOutputName() );
+
+#ifdef DEBUG
+    Disassembler().disassembleProgram(*program);
+#endif
+
+    if (!args.getDebugSymbolsName().empty()) {
+      const string & symName = args.getDebugSymbolsName();
+      const size_t & symNameSize = symName.size();
+      if (symNameSize > 4 && !symName.substr(symNameSize-4,4).compare(".xml"))
+      {
+        program->emitXMLDebugSymbols(args.getDebugSymbolsName());
+      } else {
+        program->emitDebugSymbols(args.getDebugSymbolsName());
+      }
+    }
+    cleanParser();
+
+  } catch (BasicException e) {
+    fprintf(stderr, "Error: %s\n", e.what());
     return (EXIT_FAILURE);
   }
 }

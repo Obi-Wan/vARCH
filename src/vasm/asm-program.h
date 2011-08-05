@@ -10,6 +10,7 @@
 
 #include "asm-function.h"
 #include "exceptions.h"
+#include "AsmArgs.h"
 
 #include <deque>
 
@@ -65,6 +66,7 @@ public:
   void ensureTempsUsage(const bool & used) const;
 
   void moveMainToTop();
+  void doRegisterAllocation(const AsmArgs & args);
   void exposeGlobalLabels();
   void assignValuesToLabels();
   void assemble(const string & outputName);
