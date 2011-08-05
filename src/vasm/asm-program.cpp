@@ -169,6 +169,8 @@ asm_program::doRegisterAllocation(const AsmArgs & args)
       DebugPrintf((" --> Printed Live Map!! <--\n\n"));
 #endif
 
+      flowGraph.checkTempsUsedUndefined(func, liveMap);
+
       InterferenceGraph interfGraph;
       interfGraph.populateGraph( flowGraph, liveMap, tempsMap);
 

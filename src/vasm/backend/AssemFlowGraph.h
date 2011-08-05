@@ -37,6 +37,8 @@ public:
   AssemFlowGraph(TempsMap & _tm) : tempsMap(_tm) { }
 
   void populateGraph(asm_function & function);
+  void checkTempsUsedUndefined(const asm_function & func,
+      const LiveMap<asm_statement *> & lm) const;
   void applySelectedRegisters(const AssignedRegs & regs);
 
   virtual void clear();

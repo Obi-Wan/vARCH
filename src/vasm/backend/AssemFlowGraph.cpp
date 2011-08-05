@@ -11,9 +11,66 @@
 #include "CpuDefinitions.h"
 #include "Frame.h"
 
+#include "../IncludesTree.h"
+
 #include <sstream>
+#include <algorithm>
 
 using namespace std;
+
+/**
+ * Algorithmic class, which finds and stores uninitialized temporaries
+ */
+class VerifyUninitialized {
+  vector<uint32_t> & uninit;
+public:
+  VerifyUninitialized(vector<uint32_t> & ui) : uninit(ui) { }
+
+  void operator() (const uint32_t & temp) {
+    if (temp >= (FIRST_TEMPORARY+1)) {
+      uninit.push_back(temp);
+    }
+  }
+};
+
+/**
+ * Algorithmic class, that finds where uninitialized temporaries were used, and
+ * prints it a given stream
+ */
+class ReportUninitialized {
+  stringstream & stream;
+  const TempsMap & tm;
+  const AssemFlowGraph & fg;
+public:
+  ReportUninitialized(stringstream & _ss, const TempsMap & _tm,
+      const AssemFlowGraph & _fg)
+    : stream(_ss), tm(_tm), fg(_fg)
+  { }
+
+  void operator() (const uint32_t & temp) {
+    stream << "  Temporary: " << tm.getLabel(temp)
+              << " was used uninitialized at:" << endl;
+    for(AssemFlowGraph::nl_c_iterator nodeIt = fg.getListOfNodes().begin();
+        nodeIt != fg.getListOfNodes().end(); nodeIt++)
+    {
+      const AssemFlowGraph::NodeType * const node = &*nodeIt;
+      const AssemFlowGraph::UIDMultiSetType & nodeUses =
+                                                fg.getUses().find(node)->second;
+      const AssemFlowGraph::us_c_iterator useIt = nodeUses.find(temp);
+      if (useIt != nodeUses.end()) {
+        stream << "  - " << node->data->position.fileNode->printString()
+              << " Line: " << node->data->position.first_line << ".\n"
+              << node->data->position.fileNode->printStringStackIncludes()
+              << endl;
+      }
+      // If then it is defined, let's stop searching
+      const AssemFlowGraph::UIDMultiSetType & nodeDefs =
+                                                fg.getDefs().find(node)->second;
+      const AssemFlowGraph::us_c_iterator defIt = nodeDefs.find(temp);
+      if (defIt != nodeDefs.end()) break;
+    }
+  }
+};
 
 inline string
 AssemFlowGraph::buildStmtLabel(const asm_statement * const stmt,
@@ -328,6 +385,40 @@ AssemFlowGraph::populateGraph(asm_function & function)
   // Finds uses and defines
   _findUsesDefines();
   DebugPrintf(("  - Done\n"));
+}
+
+void
+AssemFlowGraph::checkTempsUsedUndefined(const asm_function & func,
+    const LiveMap<asm_statement *> & lm)
+  const
+{
+  CHECK_THROW( (listOfNodes.begin() != listOfNodes.end()),
+      WrongArgumentException("Not possible to check for temporaries used, while"
+                        " undefined, because an empty function was passed.") );
+  const NodeType * const node = &*listOfNodes.begin();
+
+  const LiveMap<asm_statement*>::um_c_iterator liveIns = lm.liveIn.find(node);
+  CHECK_THROW( liveIns != lm.liveIn.end(),
+      WrongArgumentException("Live map doesn't correspond to the function") );
+
+  const LiveMap<asm_statement *>::UIDSetType & usedUndef = liveIns->second;
+  /// The unwanted
+
+  vector<uint32_t> uninit;
+  VerifyUninitialized  verifier(uninit);
+  for_each(usedUndef.begin(), usedUndef.end(), verifier );
+
+  if (!uninit.empty()) {
+    stringstream stream;
+
+    ReportUninitialized reporter(stream, tempsMap, *this);
+
+    stream << "Found temporaries used without being initialized, in "
+            << "function: " << func.name << endl;
+    for_each(uninit.begin(), uninit.end(), reporter);
+
+    throw WrongArgumentException(stream.str());
+  }
 }
 
 void
