@@ -23,7 +23,7 @@ class Frame {
   vector<ListOfStmts::iterator> returns;
 
   vector<ListOfStmts::iterator> f_calls;
-
+  void mindFunctionParameters(asm_function & function);
   void mindCalleeSaveRegs(ListOfStmts & stmts);
   void mindReturnStmts(ListOfStmts & stmts);
   void mindParamsFCalls(ListOfStmts & stmts);

@@ -163,8 +163,8 @@ function_init
       ;
 
 function_parameter
-      : KEYWORD_PARAM REGISTER blank_lines
-                  { $$ = new asm_function_param( yylloc, $2 ); delete $2; }
+      : KEYWORD_PARAM REGISTER TEMPORARY blank_lines
+                  { $$ = ParametersHandler::getParam( yylloc, $2, $3 ); }
       ;
 
 

@@ -41,7 +41,7 @@
 .end
 
 .function   "recursive"
-  .param  %R1
+  .param  %R1         %T001
 
   .local
     .decrement:
@@ -54,7 +54,6 @@
       .int            $0
   .end
 
-  MOV     %R1         %T001
   SUB     .decrement  %T001
   INCR    .numberOfCalls
   LO      %T001       .lowerBound

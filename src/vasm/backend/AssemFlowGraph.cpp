@@ -345,8 +345,10 @@ AssemFlowGraph::_findUsesDefines()
             parIt != f_stmt->parameters.end(); parIt++)
         {
           const asm_function_param * par = *parIt;
+          const asm_immediate_arg * source =
+                                        (const asm_immediate_arg *)par->source;
           const uint32_t shiftedTempUID =
-                          Frame::shiftArgUID(par->content.regNum, false);
+                              Frame::shiftArgUID(source->content.regNum, false);
           _addToSet( nodeUses, shiftedTempUID );
         }
       } else if (stmt->getType() == ASM_RETURN_STATEMENT) {

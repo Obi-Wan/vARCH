@@ -69,19 +69,16 @@ struct asm_immediate_arg : asm_arg {
 };
 
 struct asm_function_param : asm_arg {
-  union {
-    enum Registers regNum;
-    int32_t address;
-  } content;
+  asm_arg * source, * destination;
 
 //  bool isReg;
 //
 //  asm_function_param(const YYLTYPE& pos, const int & _addr)
 //    : asm_arg(pos, ADDR), isReg(false)
-//  { content.address = _addr; }
-  asm_function_param(const YYLTYPE& pos, const asm_arg * reg)
-    : asm_arg(pos, REG) //, isReg(true)
-  { content.regNum = ((const asm_immediate_arg *)reg)->content.regNum; }
+//  { source.address = _addr; }
+  asm_function_param(const YYLTYPE& pos, asm_arg * _source, asm_arg * _dest)
+    : asm_arg(pos, REG), source(_source), destination(_dest)
+  { }
 };
 
 typedef vector<asm_function_param *>        ListOfParams;

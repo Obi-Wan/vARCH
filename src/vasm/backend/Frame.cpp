@@ -18,6 +18,7 @@ void
 Frame::init(asm_function & function)
 {
   ListOfStmts & stmts = function.stmts;
+  ListOfParams & params = function.parameters;
 
   // Adding registers to TempsMap
   for(uint32_t numReg = 0; numReg < NUM_REGS * 2; numReg++)
@@ -25,6 +26,33 @@ Frame::init(asm_function & function)
     const uint32_t shiftedTempUID = shiftArgUID( numReg, false);
     tempsMap.putTemp( shiftedTempUID, true);
   }
+
+  for(ListOfParams::iterator parIt = params.begin(); parIt != params.end();
+      parIt++)
+  {
+    asm_function_param * par = *parIt;
+    try {
+      asm_immediate_arg * temp = (asm_immediate_arg *) par->destination;
+      const uint32_t shiftedTempUID = shiftArgUID(temp->content.tempUID, true);
+      // to temps map
+      tempsMap.putTemp( shiftedTempUID, false);
+      // find min avail temp
+      if ( (shiftedTempUID+1) > minNewTemp) {
+        minNewTemp = shiftedTempUID+1;
+        DebugPrintf(("New minNewTemp %u\n", minNewTemp));
+      }
+    } catch (const BasicException & e) {
+      stringstream stream;
+      stream << "Double definition of temporary in function parameters "
+              << "initialization, at:" << endl;
+      stream << "  - " << par->position.fileNode->printString()
+                << " Line: " << par->position.first_line << ".\n"
+                << par->position.fileNode->printStringStackIncludes()
+                << endl;
+      throw WrongArgumentException(stream.str());
+    }
+  }
+
   for(ListOfStmts::iterator stmtIt = stmts.begin(); stmtIt != stmts.end();
       stmtIt++)
   {
@@ -58,6 +86,28 @@ Frame::init(asm_function & function)
     }
   }
   DebugPrintf(("Looking for notable Statements, done.\n"));
+}
+
+inline void
+Frame::mindFunctionParameters(asm_function & function)
+{
+  ListOfStmts & stmts = function.stmts;
+  ListOfParams & params = function.parameters;
+
+  for(ListOfParams::reverse_iterator parIt = params.rbegin();
+      parIt != params.rend(); ++parIt)
+  {
+    asm_function_param * par = *parIt;
+
+    // Build the move temp_n <- R_m
+    asm_instruction_statement * stmt =
+        new asm_instruction_statement(par->position, MOV);
+
+    stmt->addArg(par->source);
+    stmt->addArg(par->destination);
+
+    stmts.push_front(stmt);
+  }
 }
 
 inline void
@@ -185,13 +235,7 @@ Frame::mindParamsFCalls(ListOfStmts & stmts)
         tempArg->isTemp = i_arg->isTemp;
 
         stmt->addArg(tempArg);
-
-        asm_immediate_arg * regArg = new asm_immediate_arg(call->position);
-        regArg->relative = false;
-        regArg->type = REG;
-        regArg->content.regNum = call->parameters[numPar-1]->content.regNum;
-
-        stmt->addArg(regArg);
+        stmt->addArg(call->parameters[numPar-1]->source);
 
         stmts.insert(*callIt, stmt);
       } else {
@@ -206,6 +250,9 @@ void
 Frame::generateMovesForFunctionCalls(asm_function & function)
 {
   ListOfStmts & stmts = function.stmts;
+
+  // Move arguments from precolored registers to temporaries
+  mindFunctionParameters(function);
 
   // Take care of callee-save registers
   // (if it doesn't return, we don't even bother doing callee-save)

@@ -16,6 +16,12 @@ public:
       const int _instr);
 };
 
+class ParametersHandler {
+public:
+  static asm_function_param * getParam(const YYLTYPE& pos, asm_arg * reg,
+      asm_arg * temp);
+};
+
 inline asm_instruction_statement *
 InstructionsHandler::getStmt(const YYLTYPE& pos, const int _instr)
 {
@@ -27,6 +33,12 @@ InstructionsHandler::getStmt(const YYLTYPE& pos, const int _instr)
     default:
       return new asm_instruction_statement(pos, _instr);
   }
+}
+
+inline asm_function_param *
+ParametersHandler::getParam(const YYLTYPE& pos, asm_arg * reg, asm_arg * temp)
+{
+  return new asm_function_param( pos, reg, temp );
 }
 
 #endif /* IR_LOWLEVEL_PARSERHELPERS_H_ */

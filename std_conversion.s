@@ -7,18 +7,15 @@
 .end
 
 .function  "integerToString"
-  .param  %R1 ; number
-  .param  %R2 ; string address
-  .param  %R3 ; string length
+  .param  %R1         %T001 ; number
+  .param  %R2         %T002 ; string address
+  .param  %R3         %T003 ; string length
 
   .local
     .baseAscii0:
       .const .int     $48
   .end
 
-  MOV     %R1         %T001
-  MOV     %R2         %T002
-  MOV     %R3         %T003
   MOV     $0          %T005
 ; Find rightmost string position
   ADD     %T003       -%T002
@@ -39,7 +36,6 @@
   JMP     @convert
 .exitError:
   MOV     $0          %T005
-  RET     %T005
 .exit:
   RET     %T005
 .end
