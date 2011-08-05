@@ -284,7 +284,9 @@ FlowGraph<DataType>::populateLiveMap(LiveMap<DataType> & liveMap)
 
   this->makeVisitList(visitList, visited);
 
+#ifdef DEBUG
   uint32_t iter = 0;
+#endif
   for(bool modified = true; modified;)
   {
     modified = false;

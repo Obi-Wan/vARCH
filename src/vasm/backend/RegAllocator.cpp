@@ -29,10 +29,12 @@ RegAllocator::simpleAllocateRegs(const InterferenceGraph & interf)
   InterferenceGraph workGraph(interf);
   for(; !workGraph.hasOnlyPrecolored();)
   {
+#ifdef DEBUG
     DebugPrintf(("Iteration of simplify. Graph Size: %lu\n",
         workGraph.getListOfNodes().size()));
     workGraph.printInterferenceGraph();
     DebugPrintf(("Printed partial InterfGraph\n"));
+#endif
 
     deque<const NodeType *> significantNodes, notSignificantNodes;
     deque<uint32_t> significantDegrees, notSignificantDegrees;
@@ -67,6 +69,7 @@ RegAllocator::simpleAllocateRegs(const InterferenceGraph & interf)
 
     workGraph.removeNode(tempLbl);
   }
+#ifdef DEBUG
   // Debug Section
   DebugPrintf(("End of iterations for simplify. Graph Size: %lu\n",
       workGraph.getListOfNodes().size()));
@@ -75,6 +78,7 @@ RegAllocator::simpleAllocateRegs(const InterferenceGraph & interf)
 
   printStack();
   // End Debug section
+#endif
 
   // Registers run from 1 to 8, 0 is for Actual Spill
   vector<bool> regs;
@@ -91,13 +95,13 @@ RegAllocator::simpleAllocateRegs(const InterferenceGraph & interf)
     for(ns_c_iterator relIt = rels.begin(); relIt != rels.end(); relIt++)
     {
       const NodeType * const rel = *relIt;
-      DebugPrintf(("Interferisce con %p, %s\n", rel, rel->label.c_str()));
+      DebugPrintf(("Interferes with %p, %s\n", rel, rel->label.c_str()));
       AssignedRegs::iterator prevAssigned = assignedRegs.find(rel->data);
       if (prevAssigned != assignedRegs.end()) {
-        DebugPrintf(("  Con assegnato: %u\n", prevAssigned->second -1));
+        DebugPrintf(("  With assigned: %u\n", prevAssigned->second -1));
         regs[prevAssigned->second -1] = false;
       } else if (rel->isPrecolored) {
-        DebugPrintf(("  Con Pre-assegnato: %u\n", rel->data -1));
+        DebugPrintf(("  With pre-assigned: %u\n", rel->data -1));
         regs[rel->data -1] = false;
       }
     }
@@ -112,7 +116,9 @@ RegAllocator::simpleAllocateRegs(const InterferenceGraph & interf)
     assignedRegs.insert(AssignedRegs::value_type(record.uid, assigned));
   }
 
+#ifdef DEBUG
   printAssigned();
+#endif
 
   // Return true if there were no spills
   for(AssignedRegs::iterator assIt = assignedRegs.begin();
