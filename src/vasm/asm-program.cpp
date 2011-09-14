@@ -141,7 +141,8 @@ asm_program::doRegisterAllocation(const AsmArgs & args)
   {
     try {
       asm_function & func = *(functions[numFunc]);
-      DebugPrintf(("Processing function: \"%s\"\n\n", func.name.c_str()));
+      DebugPrintf(("\n\n"));
+      DebugPrintf(("--> PROCESSING FUNCTION: \"%s\"\n\n", func.name.c_str()));
 
       TempsMap tempsMap;
 

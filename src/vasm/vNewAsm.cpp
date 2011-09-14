@@ -93,6 +93,7 @@ main(int argc, char** argv)
 
 void
 printAbstractTree(const asm_program * const program) {
+#ifdef DEBUG
   DebugPrintf(("-- Dumping Schematic Parsed Code --\n"));
   for(size_t funcNum = 0; funcNum < program->functions.size(); funcNum++) {
     const asm_function & func = *program->functions[funcNum];
@@ -122,5 +123,6 @@ printAbstractTree(const asm_program * const program) {
                   program->globals[num]->toString().c_str()));
   }
   DebugPrintf(("-- Terminated Dumping Parsed Code --\n\n"));
+#endif
 }
 
