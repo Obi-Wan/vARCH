@@ -8,6 +8,49 @@
 #include "InterferenceGraph.h"
 
 ////////////////////////////////////////////////////////////////////////////////
+/// Class AliasMap
+///
+/// Public Members
+////////////////////////////////////////////////////////////////////////////////
+
+void
+AliasMap::add(const NodeInterfGraph<uint32_t> * const alias,
+    const uint32_t & aliased)
+{
+  const uint32_t & uidIndex = alias->data;
+  iterator index = find(uidIndex);
+
+  if (count(uidIndex) == 0) {
+    insert(value_type(uidIndex, aliased));
+  } else {
+    throw WrongArgumentException("Alias " + alias->label
+              + " already in the aliases map");
+  }
+}
+
+void
+ReverseAliasMap::add(const NodeInterfGraph<uint32_t> * const alias,
+    const uint32_t & aliased, AliasMap & aliasMap)
+{
+  iterator index = find(aliased);
+
+  if (index == end()) {
+    insert(value_type(aliased, set<uint32_t>()));
+  } else {
+    // update alias map
+    const set<uint32_t> & aliases = index->second;
+    typedef set<uint32_t>::const_iterator sa_c_iterator;
+
+    for(sa_c_iterator al = aliases.begin(); al != aliases.end(); al++) {
+      aliasMap.insert(AliasMap::value_type(*al, aliased));
+    }
+  }
+
+  index->second.insert(alias->data);
+  aliasMap.insert(AliasMap::value_type(alias->data, aliased));
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /// Class InterferenceGraph
 ///
 /// Public Members
