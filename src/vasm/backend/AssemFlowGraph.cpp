@@ -193,9 +193,12 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
   const bool arg0_temp = args[0]->isTemporary();
   const bool arg1_temp = args[1]->isTemporary();
 
-  bool isMove = arg0_temp && arg1_temp;
+  const bool arg0_reg = args[0]->isReg();
+  const bool arg1_reg = args[1]->isReg();
 
-  if (arg0_temp || args[0]->isReg()) {
+  bool isMove = (arg0_reg && arg1_reg) && (arg0_temp || arg1_temp);
+
+  if (arg0_temp || arg0_reg) {
     asm_immediate_arg * arg = (asm_immediate_arg *) args[0];
     const uint32_t shiftedTempUID = Frame::shiftArgUID(arg, arg0_temp);
 //      // Add to temps map
@@ -218,7 +221,7 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
       default: break;
     }
   }
-  if (arg1_temp || args[1]->isReg()) {
+  if (arg1_temp || arg1_reg) {
     asm_immediate_arg * arg = (asm_immediate_arg *) args[1];
     const uint32_t shiftedTempUID = Frame::shiftArgUID(arg, arg1_temp);
     switch (arg->type) {

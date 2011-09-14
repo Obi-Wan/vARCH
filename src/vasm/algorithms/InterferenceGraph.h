@@ -26,11 +26,10 @@ public:
 };
 
 class InterferenceGraph : public Graph<uint32_t, NodeInterfGraph> {
-  ArcsMap moves;
 
-  void _addPartMoveRelation(const NodeType * const node1,
-      const NodeType * const node2);
-  void _removeMoves(const NodeType * const node);
+  typedef Graph< NodeInterfGraph<uint32_t> *> MovesMap;
+  MovesMap moves;
+
 public:
   InterferenceGraph() { }
   InterferenceGraph(const InterferenceGraph & other);
@@ -55,48 +54,6 @@ public:
 /// Private Members
 ////////////////////////////////////////////////////////////////////////////////
 
-inline void
-InterferenceGraph::_addPartMoveRelation(const NodeType * const node1,
-    const NodeType * const node2)
-{
-  am_iterator moves1 = moves.find(node1);
-  if (moves1 != moves.end()) {
-    moves1->second.insert(node2);
-  } else {
-    throw WrongArgumentException("Not existing node '" + node1->label
-        + "' in moves map");
-  }
-}
-
-inline void
-InterferenceGraph::_removeMoves(const NodeType * const node)
-{
-  am_iterator nodeMoves = moves.find(node);
-  if (nodeMoves != moves.end()) {
-    NodeSetType & nodeSetMoves = nodeMoves->second;
-    for(ns_iterator moveIt = nodeSetMoves.begin(); moveIt != nodeSetMoves.end();
-        moveIt++)
-    {
-      am_iterator nodeOtherMoves = moves.find(*moveIt);
-      if (nodeOtherMoves != moves.end()) {
-        NodeSetType & nodeSetOtherMoves = nodeOtherMoves->second;
-        ns_iterator backRefMove = nodeSetOtherMoves.find(node);
-        if (backRefMove != nodeSetOtherMoves.end()) {
-          nodeSetOtherMoves.erase(backRefMove);
-        }
-      } else {
-        throw WrongArgumentException("Not existing destination for node '"
-            + node->label + "' in moves map");
-      }
-    }
-    moves.erase(nodeMoves);
-  } else {
-    throw WrongArgumentException("Not existing node '" + node->label
-        + "' in moves map");
-  }
-  DebugPrintf(("Removed moves of node %p\n", node));
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Class InterferenceGraph
 ///
@@ -111,7 +68,7 @@ InterferenceGraph::addNewNode(const string & _label, uint32_t _data)
 
   node->isPrecolored = (_data < (FIRST_TEMPORARY+1));
 
-  moves.insert(ArcsMap::value_type(node, NodeSetType()));
+  moves.addNewNode(_label, node);
 }
 
 inline void
@@ -119,7 +76,7 @@ InterferenceGraph::removeNode(const string & _label)
 {
   const NodeType * const node =
       checkLabel(_label, "Trying to remove a node that is not in the graph");
-  _removeMoves(node);
+  moves.removeNode(_label);
   _removeNode(node);
 }
 
@@ -127,7 +84,7 @@ inline void
 InterferenceGraph::removeNode(const NodeType * const node)
 {
   checkNodePtr(node, "Trying to remove a node that is not in the graph");
-  _removeMoves(node);
+  moves.removeNode(node->label);
   _removeNode(node);
 }
 
@@ -219,6 +176,8 @@ InterferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
   {
     const FG_NodeType * const node = &*nodeIt;
     if (node->isMove) {
+//      DebugPrintf(("Found a move!! evaluating if it can be added to "
+//                    "interference graph\n"));
       const UIDMultiSetType & nodeDefs = flowGraph.getDefs().find(node)->second;
       const UIDMultiSetType & nodeUses = flowGraph.getUses().find(node)->second;
       const string & nodeDlabel = tempsMap.getLabel(*nodeDefs.begin());
@@ -226,10 +185,12 @@ InterferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
       const NodeType * const nodeD = checkLabel(nodeDlabel, "");
       const NodeType * const nodeU = checkLabel(nodeUlabel, "");
 
+      // Add a move only if it is not between interfering nodes!
       NodeSetType & nodeSuccs = succs.find(nodeD)->second;
       if (nodeSuccs.find(nodeU) == nodeSuccs.end()) {
-        _addPartMoveRelation(nodeD, nodeU);
-        _addPartMoveRelation(nodeU, nodeD);
+        moves.addDirectedArc(nodeUlabel, nodeDlabel);
+        DebugPrintf(("Added move relation \"%s\" -> \"%s\"\n",
+            nodeUlabel.c_str(), nodeDlabel.c_str()));
       }
     }
   }

@@ -14,28 +14,28 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 InterferenceGraph::InterferenceGraph(const InterferenceGraph & other)
-  : Graph<uint32_t, NodeInterfGraph>(other)
+  : Graph<uint32_t, NodeInterfGraph>(other), moves(other.moves)
 {
-  for(am_c_iterator moveIt = other.moves.begin(); moveIt != other.moves.end();
-      moveIt++)
-  {
-    const string & fromLabel = moveIt->first->label;
-    const NodeType * const fromNode = checkLabel(fromLabel, "");
-
-    moves.insert(ArcsMap::value_type(fromNode, NodeSetType()));
-
-    const NodeSetType & toSet = moveIt->second;
-    for(ns_c_iterator succIt = toSet.begin(); succIt != toSet.end(); succIt++)
-    {
-      const NodeType * const otherToNode = *succIt;
-      const string & toLabel = otherToNode->label;
-      const NodeType * const toNode = checkLabel(toLabel, "");
-
-      _addPartMoveRelation(fromNode, toNode);
-      DebugPrintf(("Added move relation from %p (%s), to %p (%s)\n", fromNode,
-                    fromLabel.c_str(), toNode, toLabel.c_str()));
-    }
-  }
+//  for(am_c_iterator moveIt = other.moves.begin(); moveIt != other.moves.end();
+//      moveIt++)
+//  {
+//    const string & fromLabel = moveIt->first->label;
+//    const NodeType * const fromNode = checkLabel(fromLabel, "");
+//
+//    moves.insert(ArcsMap::value_type(fromNode, NodeSetType()));
+//
+//    const NodeSetType & toSet = moveIt->second;
+//    for(ns_c_iterator succIt = toSet.begin(); succIt != toSet.end(); succIt++)
+//    {
+//      const NodeType * const otherToNode = *succIt;
+//      const string & toLabel = otherToNode->label;
+//      const NodeType * const toNode = checkLabel(toLabel, "");
+//
+//      _addPartMoveRelation(fromNode, toNode);
+//      DebugPrintf(("Added move relation from %p (%s), to %p (%s)\n", fromNode,
+//                    fromLabel.c_str(), toNode, toLabel.c_str()));
+//    }
+//  }
 }
 
 void
@@ -61,17 +61,35 @@ InterferenceGraph::printInterferenceGraph() const
     {
       cout << " " << *succIt;
     }
-    am_c_iterator moveIt = moves.find(node);
-    if (moveIt != moves.end()) {
-      const NodeSetType & nodeMoves = moveIt->second;
-      cout << "\n  Moves (size: " << nodeMoves.size() << "):" << flush;
-      for(ns_c_iterator moveIt = nodeMoves.begin(); moveIt != nodeMoves.end();
-          moveIt++)
+    {
+      MovesMap::NodeType * moveNode = moves.checkLabel(node->label, "");
+
+      cout << "\n  Incoming Moves:";
+      const MovesMap::NodeSetType & inMoves = moves.getPreds().find(moveNode)->second;
+      for(MovesMap::ns_c_iterator inIt = inMoves.begin(); inIt != inMoves.end();
+          inIt++)
       {
-        cout << " " << *moveIt;
+        cout << " " << *inIt;
       }
-    } else {
-      throw WrongArgumentException("Something is missing in moves");
+      cout << "\n  Outgoing Moves:";
+      const MovesMap::NodeSetType & outMoves = moves.getSuccs().find(moveNode)->second;
+      for(MovesMap::ns_c_iterator outIt = outMoves.begin();
+          outIt != outMoves.end(); outIt++)
+      {
+        cout << " " << *outIt;
+      }
+//    am_c_iterator moveIt = moves.find(node);
+//    if (moveIt != moves.end()) {
+//      const NodeSetType & nodeMoves = moveIt->second;
+//      cout << "\n  Moves (size: " << nodeMoves.size() << "):" << flush;
+//      for(ns_c_iterator moveIt = nodeMoves.begin(); moveIt != nodeMoves.end();
+//          moveIt++)
+//      {
+//        cout << " " << *moveIt;
+//      }
+//    } else {
+//      throw WrongArgumentException("Something is missing in moves");
+//    }
     }
     cout << endl;
   }
