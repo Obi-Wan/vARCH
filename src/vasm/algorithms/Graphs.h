@@ -69,6 +69,7 @@ protected:
   void _removeNode(const NodeType * const node);
   void _addDirectedArc(const NodeType * const from, const NodeType * const to);
   void _addUndirectedArc(const NodeType * const n1, const NodeType * const n2);
+  void _removeAllArcs(const NodeType * const node);
 
   size_t _inDegree(const NodeType * const node) const;
   size_t _outDegree(const NodeType * const node) const;
@@ -93,6 +94,9 @@ public:
   void addUndirectedArc(const string & node1, const string & node2);
   void addUndirectedArc(const NodeType * const n1, const NodeType * const n2);
 
+  void removeAllArcs(const string & node1);
+  void removeAllArcs(const NodeType * const n1);
+
   size_t inDegree(const NodeType * const node) const;
   size_t inDegree(const string & _label) const;
   size_t outDegree(const NodeType * const node) const;
@@ -108,6 +112,8 @@ public:
 
   const NodeSetType & getPreds(const NodeType * const node) const;
   const NodeSetType & getSuccs(const NodeType * const node) const;
+
+  bool areAdjacent(const NodeType * const n1, const NodeType * const n2) const;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -192,6 +198,44 @@ Graph<DataType, NodeBaseType>::_removeNode(const NodeType * const node)
     if (*listIter == *node) {
       listOfNodes.erase(listIter);
       break;
+    }
+  }
+}
+
+template<typename DataType, template<typename NodeDataType> class NodeBaseType>
+inline void
+Graph<DataType, NodeBaseType>::_removeAllArcs(const NodeType * const node)
+{
+  {
+    am_iterator predsIter = preds.find(node);
+    if (predsIter != preds.end()) {
+      NodeSetType & nodePreds = predsIter->second;
+
+      for(ns_iterator listIter = nodePreds.begin(); listIter != nodePreds.end();
+          listIter++)
+      {
+        am_iterator succIter = succs.find(*listIter);
+        if (succIter != succs.end()) {
+          succIter->second.erase(node);
+        }
+      }
+      nodePreds.clear();
+    }
+  }
+  {
+    am_iterator succsIter = succs.find(node);
+    if (succsIter != succs.end()) {
+      NodeSetType & nodeSuccs = succsIter->second;
+
+      for(ns_iterator listIter = nodeSuccs.begin(); listIter != nodeSuccs.end();
+          listIter++)
+      {
+        am_iterator predIter = preds.find(*listIter);
+        if (predIter != preds.end()) {
+          predIter->second.erase(node);
+        }
+      }
+      nodeSuccs.clear();
     }
   }
 }
@@ -405,6 +449,27 @@ Graph<DataType, NodeBaseType>::addUndirectedArc(const NodeType * const node1,
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
+INLINE void
+Graph<DataType, NodeBaseType>::removeAllArcs(const string & node1)
+{
+  const string errorMsg = "Trying to remove arcs from (and to) a node not in "
+      "the graph";
+
+  _removeAllArcs(checkLabel(node1, errorMsg));
+}
+
+template<typename DataType, template<typename NodeDataType> class NodeBaseType>
+INLINE void
+Graph<DataType, NodeBaseType>::removeAllArcs(const NodeType * const node1)
+{
+  const string errorMsg = "Trying to remove arcs from (and to) a node not in "
+      "the graph";
+
+  checkNodePtr(node1, errorMsg);
+  _removeAllArcs(node1);
+}
+
+template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE size_t
 Graph<DataType, NodeBaseType>::inDegree(const NodeType * const node) const
 {
@@ -492,4 +557,23 @@ Graph<DataType, NodeBaseType>::getSuccs(const NodeType * const node) const
                                   + ") in successive\n");
   }
 }
+
+template<typename DataType, template<typename NodeDataType> class NodeBaseType>
+INLINE bool
+Graph<DataType, NodeBaseType>::areAdjacent(const NodeType * const n1,
+    const NodeType * const n2) const
+{
+  am_c_iterator predsIter = preds.find(n1);
+  am_c_iterator succsIter = succs.find(n1);
+
+  if (predsIter != preds.end() && succsIter != succs.end()) {
+    return (predsIter->second.count(n2) != 0)
+        || (succsIter->second.count(n2) != 0);
+  } else {
+    throw WrongArgumentException("ERROR: Could find node (label " + n1->label
+                                  + ") in predecessors or successive\n");
+  }
+
+}
+
 #endif /* GRAPHS_H_ */

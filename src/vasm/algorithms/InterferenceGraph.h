@@ -55,6 +55,13 @@ public:
   void printInterferenceGraph() const;
 
   bool hasOnlyPrecolored() const;
+
+  const MovesMap & getMoves() const throw() { return moves; }
+
+  bool nodeIsMoveRelated(const NodeType * const node);
+  bool nodeHasOnlyHighDegMoves(const NodeType * const node,
+      const uint32_t & limitDeg);
+  void nodeFreeze(const NodeType * const node);
 };
 
 

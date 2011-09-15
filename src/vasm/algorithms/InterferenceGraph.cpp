@@ -132,3 +132,47 @@ InterferenceGraph::hasOnlyPrecolored() const
   return true;
 }
 
+bool
+InterferenceGraph::nodeIsMoveRelated(const NodeType * const node)
+{
+  return (moves.inDegree(node->label) || moves.outDegree(node->label));
+}
+
+bool
+InterferenceGraph::nodeHasOnlyHighDegMoves(const NodeType * const node,
+    const uint32_t & limitDeg)
+{
+  // It implements George's Coalescing criterion.
+  const MovesMap::NodeType * const node_m = moves.checkLabel(node->label, "");
+
+  const MovesMap::NodeSetType & outMoves = moves.getSuccs(node_m);
+  const MovesMap::NodeSetType & inMoves = moves.getPreds(node_m);
+
+  for(MovesMap::NodeSetType::const_iterator out_m = outMoves.begin();
+      out_m != outMoves.end(); out_m++)
+  {
+    const NodeType * const nodeAdj_m = (*out_m)->data;
+    if (inDegree(nodeAdj_m) < limitDeg || areAdjacent(node, nodeAdj_m)) {
+      return false;
+    }
+  }
+
+  for(MovesMap::NodeSetType::const_iterator in_m = inMoves.begin();
+      in_m != inMoves.end(); in_m++)
+  {
+    const NodeType * const nodeAdj_m = (*in_m)->data;
+    if (inDegree(nodeAdj_m) < limitDeg || areAdjacent(node, nodeAdj_m)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+void
+InterferenceGraph::nodeFreeze(const NodeType * const node)
+{
+  moves.removeAllArcs(node->label);
+}
+
+
