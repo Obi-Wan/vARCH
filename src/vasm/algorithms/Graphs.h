@@ -105,6 +105,9 @@ public:
   const NodeMapType & getMapOfNodes() const throw() { return mapOfNodes; }
   const ArcsMap & getPreds() const throw() { return preds; }
   const ArcsMap & getSuccs() const throw() { return succs; }
+
+  const NodeSetType & getPreds(const NodeType * const node) const;
+  const NodeSetType & getSuccs(const NodeType * const node) const;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -445,23 +448,42 @@ Graph<DataType, NodeBaseType>::makeVisitList(
 
     visited.insert(typename map<const NodeType *, bool>::value_type(node, true));
 
-    am_iterator succsIter = succs.find(node);
-    if (succsIter != succs.end()) {
-      const NodeSetType & succsSet = succsIter->second;
-      for(ns_iterator succ = succsSet.begin(); succ != succsSet.end();
-          succ++)
-      {
-        if (visited.find(*succ) == visited.end()) {
-          this->makeVisitList(visitList, visited, *succ);
-        }
+    const NodeSetType & succsSet = getSuccs(node);
+    for(ns_iterator succ = succsSet.begin(); succ != succsSet.end();
+        succ++)
+    {
+      if (visited.find(*succ) == visited.end()) {
+        this->makeVisitList(visitList, visited, *succ);
       }
-    } else {
-      DebugPrintf(("ERROR: Could find node %p (label %s) in successive\n",
-                   node, node->label.c_str()));
     }
 
     visitList.push_back(node);
   }
 }
 
+template<typename DataType, template<typename NodeDataType> class NodeBaseType>
+INLINE const typename Graph<DataType, NodeBaseType>::NodeSetType &
+Graph<DataType, NodeBaseType>::getPreds(const NodeType * const node) const
+{
+  am_c_iterator predsIter = preds.find(node);
+  if (predsIter != preds.end()) {
+    return predsIter->second;
+  } else {
+    throw WrongArgumentException("ERROR: Could find node (label " + node->label
+                                  + ") in predecessors\n");
+  }
+}
+
+template<typename DataType, template<typename NodeDataType> class NodeBaseType>
+INLINE const typename Graph<DataType, NodeBaseType>::NodeSetType &
+Graph<DataType, NodeBaseType>::getSuccs(const NodeType * const node) const
+{
+  am_c_iterator succsIter = succs.find(node);
+  if (succsIter != succs.end()) {
+    return succsIter->second;
+  } else {
+    throw WrongArgumentException("ERROR: Could find node (label " + node->label
+                                  + ") in successive\n");
+  }
+}
 #endif /* GRAPHS_H_ */
