@@ -62,9 +62,6 @@ protected:
 
   NodeMapType mapOfNodes;
 
-  const void * checkLabelInternal(const string & _label,
-      const string & _errorMsg) const;
-
   void checkNodePtr(const NodeType * const node, const string & errorMessage)
     const;
 
@@ -86,9 +83,9 @@ public:
 
   virtual void clear();
 
-  NodeType * checkLabel(const string & _label, const string & _errorMsg)
-    const
-  { return (NodeType *) checkLabelInternal(_label, _errorMsg); }
+  NodeType * checkLabel(const string & _label, const string & _errorMsg);
+  const NodeType * checkLabel(const string & _label, const string & _errorMsg)
+      const;
 
   void addDirectedArc(const string & _from, const string & _to);
   void addDirectedArc(const NodeType * const from, const NodeType * const to);
@@ -115,22 +112,6 @@ public:
 ///
 /// Private Members
 ////////////////////////////////////////////////////////////////////////////////
-
-template<typename DataType, template<typename NodeDataType> class NodeBaseType>
-inline const void *
-Graph<DataType, NodeBaseType>::checkLabelInternal(const string & _label,
-    const string & errorMessage)
-  const
-{
-  nm_c_iterator nodeIter = mapOfNodes.find(_label);
-
-  if (nodeIter == mapOfNodes.end()) {
-    DebugPrintf(("No label %s in map of nodes\n", _label.c_str()));
-    throw WrongArgumentException(errorMessage);
-  }
-
-  return nodeIter->second;
-}
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 inline void
@@ -263,6 +244,37 @@ Graph<DataType, NodeBaseType>::_outDegree(const NodeType * const node) const
 ///
 /// Public Members
 ////////////////////////////////////////////////////////////////////////////////
+
+template<typename DataType, template<typename NodeDataType> class NodeBaseType>
+inline const typename Graph<DataType, NodeBaseType>::NodeType *
+Graph<DataType, NodeBaseType>::checkLabel(const string & _label,
+    const string & errorMessage)
+  const
+{
+  nm_c_iterator nodeIter = mapOfNodes.find(_label);
+
+  if (nodeIter == mapOfNodes.end()) {
+    DebugPrintf(("No label %s in map of nodes\n", _label.c_str()));
+    throw WrongArgumentException(errorMessage);
+  }
+
+  return nodeIter->second;
+}
+
+template<typename DataType, template<typename NodeDataType> class NodeBaseType>
+inline typename Graph<DataType, NodeBaseType>::NodeType *
+Graph<DataType, NodeBaseType>::checkLabel(const string & _label,
+    const string & errorMessage)
+{
+  nm_iterator nodeIter = mapOfNodes.find(_label);
+
+  if (nodeIter == mapOfNodes.end()) {
+    DebugPrintf(("No label %s in map of nodes\n", _label.c_str()));
+    throw WrongArgumentException(errorMessage);
+  }
+
+  return (NodeType *) nodeIter->second;
+}
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 Graph<DataType, NodeBaseType>::Graph(const Graph<DataType, NodeBaseType> & old)
