@@ -139,10 +139,10 @@ asm_program::doRegisterAllocation(const AsmArgs & args)
 
   for(size_t numFunc = 0; numFunc < functions.size(); numFunc++)
   {
+    asm_function & func = *(functions[numFunc]);
+    DebugPrintf(("\n\n"));
+    DebugPrintf(("--> PROCESSING FUNCTION: \"%s\"\n\n", func.name.c_str()));
     try {
-      asm_function & func = *(functions[numFunc]);
-      DebugPrintf(("\n\n"));
-      DebugPrintf(("--> PROCESSING FUNCTION: \"%s\"\n\n", func.name.c_str()));
 
       TempsMap tempsMap;
 
@@ -205,7 +205,8 @@ asm_program::doRegisterAllocation(const AsmArgs & args)
         default: break;
       }
     } catch (const BasicException & e) {
-      fprintf(stderr, "Error: %s", e.what());
+      fprintf(stderr, "Error in function \"%s\": %s\n", func.name.c_str(),
+              e.what());
       error = true;
     }
   }

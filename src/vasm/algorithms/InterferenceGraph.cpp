@@ -68,7 +68,13 @@ InterferenceGraph::printInterferenceGraph() const
   {
     const NodeType * const node = &*nodeIt;
     cout << "Node - pointer: " << node << ", label: " << node->label
-          << ", precolored: " << boolalpha << node->isPrecolored;
+          << ", pre-colored: " << boolalpha << node->isPrecolored;
+
+    CHECK_THROW((this->preds.count(node) != 0),
+        WrongArgumentException("Node: " + node->label + " not in preds"));
+    CHECK_THROW((this->succs.count(node) != 0),
+        WrongArgumentException("Node: " + node->label + " not in succs"));
+
     cout << "\n  Preds:";
     const NodeSetType & nodePreds = this->preds.find(node)->second;
     for(ns_c_iterator predIt = nodePreds.begin(); predIt != nodePreds.end();
@@ -84,17 +90,20 @@ InterferenceGraph::printInterferenceGraph() const
       cout << " " << *succIt;
     }
     {
-      MovesMap::NodeType * moveNode = moves.checkLabel(node->label, "");
+      const MovesMap::NodeType * const moveNode
+                                            = moves.checkLabel(node->label, "");
 
       cout << "\n  Incoming Moves:";
-      const MovesMap::NodeSetType & inMoves = moves.getPreds().find(moveNode)->second;
+      const MovesMap::NodeSetType & inMoves
+                                      = moves.getPreds().find(moveNode)->second;
       for(MovesMap::ns_c_iterator inIt = inMoves.begin(); inIt != inMoves.end();
           inIt++)
       {
         cout << " " << *inIt;
       }
       cout << "\n  Outgoing Moves:";
-      const MovesMap::NodeSetType & outMoves = moves.getSuccs().find(moveNode)->second;
+      const MovesMap::NodeSetType & outMoves
+                                      = moves.getSuccs().find(moveNode)->second;
       for(MovesMap::ns_c_iterator outIt = outMoves.begin();
           outIt != outMoves.end(); outIt++)
       {
