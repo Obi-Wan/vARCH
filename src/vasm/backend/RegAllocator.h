@@ -12,8 +12,6 @@
 #include "algorithms/InterferenceGraph.h"
 #include "../Cpu.h"
 
-#include <stack>
-
 struct SimlifyRecord {
   uint32_t uid;
   bool isPotentialSpill;
@@ -50,8 +48,13 @@ protected:
 
   const uint32_t maxRegs;
 
-  void _findMax(const deque<const NodeType *> & nodes,
-      const deque<uint32_t> & degrees, SimlifyRecord & record) const;
+  void _findMax(const vector<const NodeType *> & nodes,
+      const vector<uint32_t> & degrees, SimlifyRecord & record) const;
+  void _pushNode(const SimlifyRecord & record, InterferenceGraph & graph);
+
+  void _simpleSelect(const InterferenceGraph & interf);
+  void _simpleSimplify(const InterferenceGraph & interf);
+
 public:
   RegAllocator(const TempsMap & _temps, const uint32_t & regs = NUM_REGS)
     : tempsMap(_temps), maxRegs(regs)

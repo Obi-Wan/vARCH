@@ -7,9 +7,9 @@
 
 #include "RegAllocator.h"
 
-void
-RegAllocator::_findMax(const deque<const NodeType *> & nodes,
-    const deque<uint32_t> & degrees, SimlifyRecord & record)
+inline void
+RegAllocator::_findMax(const vector<const NodeType *> & nodes,
+    const vector<uint32_t> & degrees, SimlifyRecord & record)
   const
 {
   for(size_t nodeNum = 0; nodeNum < nodes.size(); nodeNum++)
@@ -23,8 +23,20 @@ RegAllocator::_findMax(const deque<const NodeType *> & nodes,
   }
 }
 
-bool
-RegAllocator::simpleAllocateRegs(const InterferenceGraph & interf)
+inline void
+RegAllocator::_pushNode(const SimlifyRecord & record, InterferenceGraph & graph)
+{
+  nodesStack.push_back(record);
+
+  const string &tempLbl = tempsMap.getLabel(record.uid);
+  DebugPrintf(("Selected temp: %u\n  label: %s\n  degree: %u\n", record.uid,
+      tempLbl.c_str(), record.degree));
+
+  graph.removeNode(tempLbl);
+}
+
+inline void
+RegAllocator::_simpleSimplify(const InterferenceGraph & interf)
 {
   InterferenceGraph workGraph(interf);
   for(; !workGraph.hasOnlyPrecolored();)
@@ -36,8 +48,8 @@ RegAllocator::simpleAllocateRegs(const InterferenceGraph & interf)
     DebugPrintf(("Printed partial InterfGraph\n"));
 #endif
 
-    deque<const NodeType *> significantNodes, notSignificantNodes;
-    deque<uint32_t> significantDegrees, notSignificantDegrees;
+    vector<const NodeType *> significantNodes, notSignificantNodes;
+    vector<uint32_t> significantDegrees, notSignificantDegrees;
 
     for(nl_c_iterator nodeIt = workGraph.getListOfNodes().begin();
         nodeIt != workGraph.getListOfNodes().end(); nodeIt++)
@@ -61,13 +73,8 @@ RegAllocator::simpleAllocateRegs(const InterferenceGraph & interf)
     } else {
       _findMax(notSignificantNodes, notSignificantDegrees, record);
     }
-    nodesStack.push_back(record);
 
-    const string &tempLbl = tempsMap.getLabel(record.uid);
-    DebugPrintf(("Selected temp: %u\n  label: %s\n  degree: %u\n", record.uid,
-        tempLbl.c_str(), record.degree));
-
-    workGraph.removeNode(tempLbl);
+    _pushNode(record, workGraph);
   }
 #ifdef DEBUG
   // Debug Section
@@ -79,7 +86,11 @@ RegAllocator::simpleAllocateRegs(const InterferenceGraph & interf)
   printStack();
   // End Debug section
 #endif
+}
 
+inline void
+RegAllocator::_simpleSelect(const InterferenceGraph & interf)
+{
   // Registers run from 1 to 8, 0 is for Actual Spill
   vector<bool> regs;
   for(; nodesStack.size(); )
@@ -115,6 +126,14 @@ RegAllocator::simpleAllocateRegs(const InterferenceGraph & interf)
     }
     assignedRegs.insert(AssignedRegs::value_type(record.uid, assigned));
   }
+}
+
+bool
+RegAllocator::simpleAllocateRegs(const InterferenceGraph & interf)
+{
+  _simpleSimplify(interf);
+
+  _simpleSelect(interf);
 
 #ifdef DEBUG
   printAssigned();
