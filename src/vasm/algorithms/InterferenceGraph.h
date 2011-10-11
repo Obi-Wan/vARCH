@@ -204,9 +204,12 @@ InterferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
       const NodeType * const nodeD = checkLabel(nodeDlabel, "");
       const NodeType * const nodeU = checkLabel(nodeUlabel, "");
 
-      // Add a move only if it is not between interfering nodes!
+      /* Add a move only if it is not between interfering nodes!
+       * And nodes are not both pre-colored */
       NodeSetType & nodeSuccs = succs.find(nodeD)->second;
-      if (nodeSuccs.find(nodeU) == nodeSuccs.end()) {
+      if (nodeSuccs.find(nodeU) == nodeSuccs.end()
+          && !(nodeU->isPrecolored && nodeU->isPrecolored))
+      {
         moves.addDirectedArc(nodeUlabel, nodeDlabel);
         DebugPrintf(("Added move relation \"%s\" -> \"%s\"\n",
             nodeUlabel.c_str(), nodeDlabel.c_str()));
