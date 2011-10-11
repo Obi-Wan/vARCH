@@ -28,6 +28,9 @@ struct asm_arg {
   asm_arg(const YYLTYPE& pos, const TypeOfArgument& _type)
             : type(_type), relOffset(0), relative(false), position(pos) { }
   asm_arg(const YYLTYPE& pos) : relOffset(0), relative(false), position(pos) { }
+
+  virtual ~asm_arg() { }
+
   virtual const string toString() const { return ""; }
   virtual const int getCode() const { return 0; }
   virtual const ObjType getType() const throw() { return ASM_ARG; }

@@ -22,6 +22,8 @@ struct asm_statement {
   asm_statement(const YYLTYPE& pos, const int& _offs)
     : offset(_offs), position(pos) { }
 
+  virtual ~asm_statement() { }
+
   virtual bool isInstruction() const throw() { return false; }
 
   virtual const string toString() const { return ""; }

@@ -81,6 +81,7 @@ protected:
 public:
 //  FlowGraph() { }
 //  FlowGraph(const FlowGraph<DataType> & other);
+  virtual ~FlowGraph() { }
 
   virtual void addNewNode(const string & _label, DataType _data);
   virtual void removeNode(const string & _label);
