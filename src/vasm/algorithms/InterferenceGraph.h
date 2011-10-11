@@ -61,6 +61,8 @@ public:
   bool nodeIsMoveRelated(const NodeType * const node);
   bool nodeHasOnlyHighDegMoves(const NodeType * const node,
       const uint32_t & limitDeg);
+  bool nodeBriggsCanCoalesce(const NodeType * const node1,
+      const NodeType * const node2, const uint32_t & limitDeg);
   void nodeFreeze(const NodeType * const node);
 };
 

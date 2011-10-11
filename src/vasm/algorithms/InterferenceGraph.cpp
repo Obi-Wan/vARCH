@@ -169,6 +169,28 @@ InterferenceGraph::nodeHasOnlyHighDegMoves(const NodeType * const node,
   return true;
 }
 
+bool
+InterferenceGraph::nodeBriggsCanCoalesce(const NodeType * const node1,
+    const NodeType * const node2, const uint32_t & limitDeg)
+{
+  NodeSetType adjNodes;
+  uint32_t numHighDeg = 0;
+
+  const NodeSetType & incoming1 = preds.find(node1)->second;
+  adjNodes.insert(incoming1.begin(), incoming1.end());
+
+  const NodeSetType & incoming2 = preds.find(node2)->second;
+  adjNodes.insert(incoming2.begin(), incoming2.end());
+
+  for(ns_iterator it = adjNodes.begin(); it != adjNodes.begin(); it++)
+  {
+    const NodeType * const node = *it;
+    if (inDegree(node) >= limitDeg) numHighDeg++;
+  }
+
+  return (numHighDeg < limitDeg);
+}
+
 void
 InterferenceGraph::nodeFreeze(const NodeType * const node)
 {
