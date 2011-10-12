@@ -82,7 +82,8 @@ public:
   size_t outDegree(const NodeType * const node) const;
   size_t outDegree(const string & _label) const;
 
-  void makeVisitList(deque<const NodeType *> & list, map<const NodeType *, bool> & visited,
+  void makeVisitList(deque<const NodeType *> & list,
+      map<const NodeType *, bool> & visited,
       const NodeType * const rootNode = NULL);
 
   const ArcsMap & getPreds() const throw() { return preds; }
@@ -498,7 +499,7 @@ Graph<DataType, NodeBaseType>::makeVisitList(
       node = &*getListOfNodes().begin();
     }
 
-    visited.insert(typename map<const NodeType *, bool>::value_type(node, true));
+    visited.insert(typename map<const NodeType *, bool>::value_type(node,true));
 
     const NodeSetType & succsSet = getSuccs(node);
     for(ns_iterator succ = succsSet.begin(); succ != succsSet.end();
