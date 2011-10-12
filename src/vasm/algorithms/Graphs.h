@@ -37,7 +37,7 @@ public:
 
 protected:
   BaseGraph<DataType, NodeBaseType> * baseGraph;
-  const bool baseGraphIsCopy;
+  const bool baseGraphIsPrivate;
 
   ArcsMap preds;
   ArcsMap succs;
@@ -54,12 +54,13 @@ protected:
 
 public:
   Graph()
-    : baseGraph(new BaseGraph<DataType, NodeBaseType>()), baseGraphIsCopy(true)
+    : baseGraph(new BaseGraph<DataType, NodeBaseType>())
+    , baseGraphIsPrivate(true)
   { }
   Graph(BaseGraph<DataType, NodeBaseType> * bg, const bool & copy = true);
   Graph(const Graph<DataType, NodeBaseType> & other);
 
-  virtual ~Graph() { if (baseGraph && baseGraphIsCopy) delete baseGraph; }
+  virtual ~Graph() { if (baseGraph && baseGraphIsPrivate) delete baseGraph; }
 
   virtual NodeType * addNewNode(const string & _label, DataType _data);
   virtual void removeNode(const string & _label);
@@ -269,7 +270,7 @@ Graph<DataType, NodeBaseType>::_outDegree(const NodeType * const node) const
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 Graph<DataType, NodeBaseType>::Graph(const Graph<DataType, NodeBaseType> & old)
   : baseGraph(new BaseGraph<DataType, NodeBaseType>(*old.baseGraph))
-  , baseGraphIsCopy(true)
+  , baseGraphIsPrivate(true)
 {
   for(nl_c_iterator nodeIt = getListOfNodes().begin();
       nodeIt != getListOfNodes().end(); nodeIt++)
@@ -299,7 +300,7 @@ template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 Graph<DataType, NodeBaseType>::Graph(BaseGraph<DataType, NodeBaseType> * old,
     const bool & copy)
   : baseGraph(copy ? new BaseGraph<DataType, NodeBaseType>(old) : old)
-  , baseGraphIsCopy(copy)
+  , baseGraphIsPrivate(copy)
 {
   for(nl_iterator nodeIt = getListOfNodes().begin();
       nodeIt != getListOfNodes().end(); nodeIt++)
@@ -316,12 +317,17 @@ INLINE typename Graph<DataType, NodeBaseType>::NodeType *
 Graph<DataType, NodeBaseType>::addNewNode(const string & _label,
     DataType _data)
 {
-  if (getMapOfNodes().count(_label)) {
-    throw DuplicateLabelException("Label: '" + _label +
-        "' already associated to a node in the graph");
-  }
+  NodeType * node = NULL;
+  if (baseGraphIsPrivate) {
+    if (getMapOfNodes().count(_label)) {
+      throw DuplicateLabelException("Label: '" + _label +
+          "' already associated to a node in the graph");
+    }
 
-  NodeType * const node = baseGraph->_addNewNode(_label,_data);
+    node = baseGraph->_addNewNode(_label,_data);
+  } else {
+    node = this->checkLabel(_label, "Reference Graph was not updated");
+  }
 
   preds.insert(typename ArcsMap::value_type(node, NodeSetType() ));
   succs.insert(typename ArcsMap::value_type(node, NodeSetType() ));
@@ -334,22 +340,35 @@ INLINE void
 Graph<DataType, NodeBaseType>::removeNode(const NodeType * const node)
 {
   checkNodePtr(node, "Trying to remove a node that is not in the graph");
-  baseGraph->_removeNode(node);
+
+  if (baseGraphIsPrivate) {
+    this->_removeNode(node);
+  } else {
+    this->_removeAllArcs(node, true);
+  }
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE void
 Graph<DataType, NodeBaseType>::removeNode(const string & _label)
 {
-  baseGraph->_removeNode(
-      checkLabel(_label, "Trying to remove a node that is not in the graph"));
+  const string errorMsg = "Trying to remove a node that is not in the graph";
+  const NodeType * const node = checkLabel(_label, errorMsg);
+
+  if (baseGraphIsPrivate) {
+    this->_removeNode(node);
+  } else {
+    this->_removeAllArcs(node, true);
+  }
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE void
 Graph<DataType, NodeBaseType>::clear()
 {
-  baseGraph->clear();
+  if (baseGraphIsPrivate) {
+    baseGraph->clear();
+  }
   preds.clear();
   succs.clear();
 }
