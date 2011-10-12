@@ -13,7 +13,7 @@
 #include "../algorithms/TempsMap.h"
 
 class AssemFlowGraph : public FlowGraph<asm_statement *> {
-  typedef map<asm_statement *, NodeFlowGraph<asm_statement *> * > StmtToNode;
+  typedef map<asm_statement *, const NodeFlowGraph<asm_statement *> * > StmtToNode;
 
   StmtToNode backReference;
 

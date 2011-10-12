@@ -48,6 +48,7 @@ protected:
 
   NodeMapType mapOfNodes;
 
+public:
   void checkNodePtr(const NodeType * const node, const string & errorMessage)
     const;
 
@@ -57,6 +58,8 @@ protected:
 public:
   BaseGraph() { }
   BaseGraph(const BaseGraph<DataType, NodeBaseType> & old);
+
+  void clear();
 
   NodeType * checkLabel(const string & _label, const string & _errorMsg);
   const NodeType * checkLabel(const string & _label, const string & _errorMsg)
@@ -165,5 +168,15 @@ BaseGraph<DataType, NodeBaseType>::BaseGraph(const BaseGraph<DataType, NodeBaseT
     DebugPrintf(("Inserted pair: %p, %s\n", node, node->label.c_str()));
   }
 }
+
+template<typename DataType, template<typename NodeDataType> class NodeBaseType>
+inline void
+BaseGraph<DataType, NodeBaseType>::clear()
+{
+  listOfNodes.clear();
+  mapOfNodes.clear();
+}
+
+
 
 #endif /* BASEGRAPH_H_ */

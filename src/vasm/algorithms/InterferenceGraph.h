@@ -44,7 +44,7 @@ public:
   InterferenceGraph() { }
   InterferenceGraph(const InterferenceGraph & other);
 
-  virtual void addNewNode(const string & _label, uint32_t _data);
+  virtual NodeType * addNewNode(const string & _label, uint32_t _data);
   virtual void removeNode(const string & _label);
   virtual void removeNode(const NodeType * const node);
 
@@ -79,15 +79,17 @@ public:
 /// Public Members
 ////////////////////////////////////////////////////////////////////////////////
 
-inline void
+inline Graph<uint32_t, NodeInterfGraph>::NodeType *
 InterferenceGraph::addNewNode(const string & _label, uint32_t _data)
 {
-  Graph<uint32_t, NodeInterfGraph>::addNewNode(_label, _data);
-  NodeType * node = &listOfNodes.back();
+
+  NodeType * node = Graph<uint32_t, NodeInterfGraph>::addNewNode(_label, _data);
 
   node->isPrecolored = (_data < (FIRST_TEMPORARY+1));
 
   moves.addNewNode(_label, node);
+
+  return node;
 }
 
 inline void
@@ -145,7 +147,7 @@ InterferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
   TempsMap::LabelToUID::const_iterator itMap = tempsMap.getLabelTable().begin();
   for(; itMap != endMap; itMap++) {
     const string & tempLabel = itMap->first;
-    if (!this->mapOfNodes.count(tempLabel)) {
+    if (!this->getMapOfNodes().count(tempLabel)) {
       this->addNewNode(tempLabel, itMap->second);
     }
   }

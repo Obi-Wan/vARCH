@@ -63,8 +63,8 @@ InterferenceGraph::InterferenceGraph(const InterferenceGraph & other)
 void
 InterferenceGraph::printInterferenceGraph() const
 {
-  for(nl_c_iterator nodeIt = this->listOfNodes.begin();
-      nodeIt != this->listOfNodes.end(); nodeIt++)
+  for(nl_c_iterator nodeIt = getListOfNodes().begin();
+      nodeIt != getListOfNodes().end(); nodeIt++)
   {
     const NodeType * const node = &*nodeIt;
     cout << "Node - pointer: " << node << ", label: " << node->label
@@ -113,8 +113,8 @@ InterferenceGraph::printInterferenceGraph() const
     cout << endl;
   }
   DebugPrintf(("Map of labels\n"));
-  for(nm_c_iterator mapIter = this->mapOfNodes.begin();
-      mapIter != this->mapOfNodes.end(); mapIter++)
+  for(nm_c_iterator mapIter = getMapOfNodes().begin();
+      mapIter != getMapOfNodes().end(); mapIter++)
   {
     DebugPrintf((" label: %s, pointer %p\n", mapIter->first.c_str(), mapIter->second));
   }
@@ -123,8 +123,8 @@ InterferenceGraph::printInterferenceGraph() const
 bool
 InterferenceGraph::hasOnlyPrecolored() const
 {
-  for(nl_c_iterator nodeIt = this->listOfNodes.begin();
-      nodeIt != this->listOfNodes.end(); nodeIt++)
+  for(nl_c_iterator nodeIt = getListOfNodes().begin();
+      nodeIt != getListOfNodes().end(); nodeIt++)
   {
     const NodeType * const node = &*nodeIt;
     if (!node->isPrecolored) { return false; }

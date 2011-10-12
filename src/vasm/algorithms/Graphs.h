@@ -18,7 +18,7 @@
 
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType = NodeGraph>
-class Graph : public BaseGraph<DataType, NodeBaseType> {
+class Graph {
 public:
   typedef typename BaseGraph<DataType, NodeBaseType>::NodeType     NodeType;
   typedef typename BaseGraph<DataType, NodeBaseType>::NodeListType NodeListType;
@@ -36,10 +36,12 @@ public:
   typedef typename ArcsMap::const_iterator      am_c_iterator;
 
 protected:
+  BaseGraph<DataType, NodeBaseType> * baseGraph;
+  const bool baseGraphIsCopy;
+
   ArcsMap preds;
   ArcsMap succs;
 
-  void * _addNewNode(const string & _label, DataType _data);
   void _removeNode(const NodeType * const node);
   void _delDirectedArc(const NodeType * const from, const NodeType * const to);
   void _addDirectedArc(const NodeType * const from, const NodeType * const to);
@@ -51,11 +53,15 @@ protected:
   size_t _outDegree(const NodeType * const node) const;
 
 public:
-  Graph() { }
+  Graph()
+    : baseGraph(new BaseGraph<DataType, NodeBaseType>()), baseGraphIsCopy(true)
+  { }
+  Graph(BaseGraph<DataType, NodeBaseType> * bg, const bool & copy = true);
   Graph(const Graph<DataType, NodeBaseType> & other);
-  virtual ~Graph() { }
 
-  virtual void addNewNode(const string & _label, DataType _data);
+  virtual ~Graph() { if (baseGraph && baseGraphIsCopy) delete baseGraph; }
+
+  virtual NodeType * addNewNode(const string & _label, DataType _data);
   virtual void removeNode(const string & _label);
   virtual void removeNode(const NodeType * const node);
 
@@ -85,6 +91,23 @@ public:
   const NodeSetType & getSuccs(const NodeType * const node) const;
 
   bool areAdjacent(const NodeType * const n1, const NodeType * const n2) const;
+
+  /* Wrappers to BaseGraph */
+
+  void checkNodePtr(const NodeType * const node, const string & errorMessage)
+    const
+  { baseGraph->checkNodePtr(node, errorMessage); }
+
+  NodeType * checkLabel(const string & _label, const string & _errorMsg)
+  { return baseGraph->checkLabel(_label, _errorMsg); }
+  const NodeType * checkLabel(const string & _label, const string & _errorMsg)
+      const
+  { return baseGraph->checkLabel(_label, _errorMsg); }
+
+  const NodeListType & getListOfNodes() const throw()
+  { return baseGraph->getListOfNodes(); }
+  const NodeMapType & getMapOfNodes() const throw()
+  { return baseGraph->getMapOfNodes(); }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,29 +117,17 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
-inline void *
-Graph<DataType, NodeBaseType>::_addNewNode(const string & _label,
-    DataType _data)
-{
-  NodeType * const node = BaseGraph<DataType, NodeBaseType>::_addNewNode(_label,_data);
-
-  preds.insert(typename ArcsMap::value_type(node, NodeSetType() ));
-  succs.insert(typename ArcsMap::value_type(node, NodeSetType() ));
-
-  return node;
-}
-
-template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 inline void
 Graph<DataType, NodeBaseType>::_removeNode(const NodeType * const node)
 {
   _removeAllArcs(node, true);
-  BaseGraph<DataType, NodeBaseType>::_removeNode(node);
+  baseGraph->_removeNode(node);
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 inline void
-Graph<DataType, NodeBaseType>::_removeAllArcs(const NodeType * const node, const bool & noTrace)
+Graph<DataType, NodeBaseType>::_removeAllArcs(const NodeType * const node,
+    const bool & noTrace)
 {
   {
     am_iterator predsIter = preds.find(node);
@@ -257,10 +268,11 @@ Graph<DataType, NodeBaseType>::_outDegree(const NodeType * const node) const
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 Graph<DataType, NodeBaseType>::Graph(const Graph<DataType, NodeBaseType> & old)
-  : BaseGraph<DataType, NodeBaseType>(old)
+  : baseGraph(new BaseGraph<DataType, NodeBaseType>(*old.baseGraph))
+  , baseGraphIsCopy(true)
 {
-  for(nl_iterator nodeIt = this->listOfNodes.begin(); nodeIt != this->listOfNodes.end();
-      nodeIt++)
+  for(nl_c_iterator nodeIt = getListOfNodes().begin();
+      nodeIt != getListOfNodes().end(); nodeIt++)
   {
     const NodeType * const node = &*nodeIt;
 
@@ -277,50 +289,69 @@ Graph<DataType, NodeBaseType>::Graph(const Graph<DataType, NodeBaseType> & old)
       const NodeType * const toNode = *succIt;
       this->addDirectedArc(fromLabel, toNode->label);
       DebugPrintf(("Added arc: from %s (%p), to %s (%p)\n",
-          fromLabel.c_str(), this->checkLabel(fromLabel,""),
-          toNode->label.c_str(), this->checkLabel(toNode->label,"")));
+          fromLabel.c_str(), checkLabel(fromLabel,""),
+          toNode->label.c_str(), checkLabel(toNode->label,"")));
     }
   }
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
-INLINE void
+Graph<DataType, NodeBaseType>::Graph(BaseGraph<DataType, NodeBaseType> * old,
+    const bool & copy)
+  : baseGraph(copy ? new BaseGraph<DataType, NodeBaseType>(old) : old)
+  , baseGraphIsCopy(copy)
+{
+  for(nl_iterator nodeIt = getListOfNodes().begin();
+      nodeIt != getListOfNodes().end(); nodeIt++)
+  {
+    const NodeType * const node = &*nodeIt;
+
+    preds.insert(typename ArcsMap::value_type(node, NodeSetType() ));
+    succs.insert(typename ArcsMap::value_type(node, NodeSetType() ));
+  }
+}
+
+template<typename DataType, template<typename NodeDataType> class NodeBaseType>
+INLINE typename Graph<DataType, NodeBaseType>::NodeType *
 Graph<DataType, NodeBaseType>::addNewNode(const string & _label,
     DataType _data)
 {
-  if (this->mapOfNodes.count(_label)) {
+  if (getMapOfNodes().count(_label)) {
     throw DuplicateLabelException("Label: '" + _label +
         "' already associated to a node in the graph");
   }
 
-  this->_addNewNode(_label, _data);
+  NodeType * const node = baseGraph->_addNewNode(_label,_data);
+
+  preds.insert(typename ArcsMap::value_type(node, NodeSetType() ));
+  succs.insert(typename ArcsMap::value_type(node, NodeSetType() ));
+
+  return node;
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE void
 Graph<DataType, NodeBaseType>::removeNode(const NodeType * const node)
 {
-  this->checkNodePtr(node, "Trying to remove a node that is not in the graph");
-  this->_removeNode(node);
+  checkNodePtr(node, "Trying to remove a node that is not in the graph");
+  baseGraph->_removeNode(node);
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE void
 Graph<DataType, NodeBaseType>::removeNode(const string & _label)
 {
-  this->_removeNode(
-      this->checkLabel(_label,
-          "Trying to remove a node that is not in the graph"));
+  baseGraph->_removeNode(
+      checkLabel(_label, "Trying to remove a node that is not in the graph"));
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE void
 Graph<DataType, NodeBaseType>::clear()
 {
-  this->mapOfNodes.clear();
+  baseGraph->clear();
   preds.clear();
   succs.clear();
-  this->listOfNodes.clear();
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
@@ -328,10 +359,10 @@ INLINE void
 Graph<DataType, NodeBaseType>::addDirectedArc(const string & _from,
     const string & _to)
 {
-  _addDirectedArc(
-      this->checkLabel(_from, "Trying to add an arc from a node not in the graph"),
-      this->checkLabel(_to, "Trying to add an arc to a node not in the graph")
-      );
+  const string errorMsgF = "Trying to add an arc from a node not in the graph";
+  const string errorMsgT = "Trying to add an arc to a node not in the graph";
+
+  _addDirectedArc( checkLabel(_from, errorMsgF), checkLabel(_to, errorMsgT) );
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
@@ -339,8 +370,11 @@ INLINE void
 Graph<DataType, NodeBaseType>::addDirectedArc(const NodeType * const from,
     const NodeType * const to)
 {
-  checkNodePtr(from, "Trying to add an arc from a node not in the graph");
-  checkNodePtr(to, "Trying to add an arc to a node not in the graph");
+  const string errorMsgF = "Trying to add an arc from a node not in the graph";
+  const string errorMsgT = "Trying to add an arc to a node not in the graph";
+
+  checkNodePtr(from, errorMsgF);
+  checkNodePtr(to, errorMsgT);
 
   _addDirectedArc(from, to);
 }
@@ -353,10 +387,7 @@ Graph<DataType, NodeBaseType>::addUndirectedArc(const string & node1,
   const string errorMsg = "Trying to add an arc from (and to) a node not in the"
       " graph";
 
-  _addUndirectedArc(
-      this->checkLabel(node1, errorMsg),
-      this->checkLabel(node2, errorMsg)
-      );
+  _addUndirectedArc( checkLabel(node1, errorMsg), checkLabel(node2, errorMsg) );
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
@@ -380,7 +411,7 @@ Graph<DataType, NodeBaseType>::removeAllArcs(const string & node1)
   const string errorMsg = "Trying to remove arcs from (and to) a node not in "
       "the graph";
 
-  _removeAllArcs(this->checkLabel(node1, errorMsg));
+  _removeAllArcs(checkLabel(node1, errorMsg));
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
@@ -390,7 +421,7 @@ Graph<DataType, NodeBaseType>::removeAllArcs(const NodeType * const node1)
   const string errorMsg = "Trying to remove arcs from (and to) a node not in "
       "the graph";
 
-  checkNodePtr(node1, errorMsg);
+  baseGraph->checkNodePtr(node1, errorMsg);
   _removeAllArcs(node1);
 }
 
@@ -398,7 +429,10 @@ template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE size_t
 Graph<DataType, NodeBaseType>::inDegree(const NodeType * const node) const
 {
-  checkNodePtr(node, "Trying to get the In Degree of a node not in the graph");
+  const string errorMsg = "Trying to get the In Degree of a node not in the "
+      "graph";
+
+  checkNodePtr(node, errorMsg);
   return _inDegree(node);
 }
 
@@ -406,15 +440,20 @@ template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE size_t
 Graph<DataType, NodeBaseType>::inDegree(const string & _label) const
 {
-  const string errorMsg = "Trying to get the In Degree of a node not in the graph";
-  return _inDegree( this->checkLabel( _label, errorMsg ) );
+  const string errorMsg = "Trying to get the In Degree of a node not in the "
+      "graph";
+
+  return _inDegree( checkLabel( _label, errorMsg ) );
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE size_t
 Graph<DataType, NodeBaseType>::outDegree(const NodeType * const node) const
 {
-  checkNodePtr(node, "Trying to get the Out Degree of a node not in the graph");
+  const string errorMsg = "Trying to get the Out Degree of a node not in the "
+      "graph";
+
+  checkNodePtr(node, errorMsg);
   return _outDegree(node);
 }
 
@@ -422,8 +461,10 @@ template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE size_t
 Graph<DataType, NodeBaseType>::outDegree(const string & _label) const
 {
-  const string errorMsg = "Trying to get the Out Degree of a node not in the graph";
-  return _inDegree( this->checkLabel( _label, errorMsg ) );
+  const string errorMsg = "Trying to get the Out Degree of a node not in the "
+      "graph";
+
+  return _inDegree( checkLabel( _label, errorMsg ) );
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
@@ -433,9 +474,9 @@ Graph<DataType, NodeBaseType>::makeVisitList(
     const NodeType * const rootNode)
 {
   const NodeType * node = rootNode;
-  if (this->listOfNodes.size()) {
+  if (getListOfNodes().size()) {
     if (!node) {
-      node = &*this->listOfNodes.begin();
+      node = &*getListOfNodes().begin();
     }
 
     visited.insert(typename map<const NodeType *, bool>::value_type(node, true));

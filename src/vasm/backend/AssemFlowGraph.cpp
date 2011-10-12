@@ -97,7 +97,7 @@ AssemFlowGraph::_addNodesToGraph(asm_function & function)
     asm_statement * stmt = *stmtIt;
     this->addNewNode(buildStmtLabel(stmt, progr++), stmt);
 
-    NodeType * const node = &listOfNodes.back();
+    const NodeType * const node = &getListOfNodes().back();
     backReference.insert(StmtToNode::value_type(stmt, node));
   }
 }
@@ -105,16 +105,16 @@ AssemFlowGraph::_addNodesToGraph(asm_function & function)
 inline void
 AssemFlowGraph::_createArcs(const TableOfSymbols & functionSymbols)
 {
-  for(nl_iterator nodeIt = listOfNodes.begin(); nodeIt != listOfNodes.end();
-      nodeIt++)
+  for(nl_c_iterator nodeIt = getListOfNodes().begin();
+      nodeIt != getListOfNodes().end(); nodeIt++)
   {
     const NodeType * const node = &*nodeIt;
-    nl_iterator nextNodeIt = nodeIt;
+    nl_c_iterator nextNodeIt = nodeIt;
     nextNodeIt++;
 
     asm_statement * stmt = node->data;
     if (stmt->getType() == ASM_LABEL_STATEMENT) {
-      if (nextNodeIt != listOfNodes.end()) {
+      if (nextNodeIt != getListOfNodes().end()) {
         DebugPrintf(("Adding arc to next node\n"));
         addDirectedArc(node, &*nextNodeIt);
       }
@@ -136,7 +136,7 @@ AssemFlowGraph::_createArcs(const TableOfSymbols & functionSymbols)
         case IFMOJ:
         case IFLEJ:
         case IFMEJ: {
-          if (nextNodeIt != listOfNodes.end()) {
+          if (nextNodeIt != getListOfNodes().end()) {
             DebugPrintf(("Adding arc to next node\n"));
             addDirectedArc(node, &*nextNodeIt);
           }
@@ -166,7 +166,7 @@ AssemFlowGraph::_createArcs(const TableOfSymbols & functionSymbols)
           break;
         }
         default: {
-          if (nextNodeIt != listOfNodes.end()) {
+          if (nextNodeIt != getListOfNodes().end()) {
             DebugPrintf(("Adding arc to next node\n"));
             addDirectedArc(node, &*nextNodeIt);
           }
@@ -298,10 +298,12 @@ AssemFlowGraph::_argIsDefined(const int & instruction, const size_t & argNum,
 inline void
 AssemFlowGraph::_findUsesDefines()
 {
-  for(nl_iterator nodeIt = listOfNodes.begin(); nodeIt != listOfNodes.end();
-      nodeIt++)
+  for(nl_c_iterator nodeIt = getListOfNodes().begin();
+      nodeIt != getListOfNodes().end(); nodeIt++)
   {
-    NodeType * const node = &*nodeIt;
+    /* Explicit override of default const behavior */
+    NodeType * const node = (NodeType *) &*nodeIt;
+
     asm_statement * stmt = node->data;
     if (stmt->isInstruction()) {
       asm_instruction_statement * i_stmt = (asm_instruction_statement *) stmt;
@@ -397,10 +399,10 @@ AssemFlowGraph::checkTempsUsedUndefined(const asm_function & func,
     const LiveMap<asm_statement *> & lm)
   const
 {
-  CHECK_THROW( (listOfNodes.begin() != listOfNodes.end()),
+  CHECK_THROW( (getListOfNodes().begin() != getListOfNodes().end()),
       WrongArgumentException("Not possible to check for temporaries used, while"
                         " undefined, because an empty function was passed.") );
-  const NodeType * const node = &*listOfNodes.begin();
+  const NodeType * const node = &*getListOfNodes().begin();
 
   const LiveMap<asm_statement*>::um_c_iterator liveIns = lm.liveIn.find(node);
   CHECK_THROW( liveIns != lm.liveIn.end(),
@@ -429,8 +431,8 @@ AssemFlowGraph::checkTempsUsedUndefined(const asm_function & func,
 void
 AssemFlowGraph::applySelectedRegisters(const AssignedRegs & regs)
 {
-  for(nl_iterator nodeIt = listOfNodes.begin(); nodeIt != listOfNodes.end();
-      nodeIt++)
+  for(nl_c_iterator nodeIt = getListOfNodes().begin();
+      nodeIt != getListOfNodes().end(); nodeIt++)
   {
     if (nodeIt->data->getType() == ASM_INSTRUCTION_STATEMENT) {
       asm_instruction_statement * stmt =

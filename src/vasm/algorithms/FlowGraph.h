@@ -83,7 +83,7 @@ public:
 //  FlowGraph(const FlowGraph<DataType> & other);
   virtual ~FlowGraph() { }
 
-  virtual void addNewNode(const string & _label, DataType _data);
+  virtual NodeType * addNewNode(const string & _label, DataType _data);
   virtual void removeNode(const string & _label);
   virtual void removeNode(const NodeType * const node);
 
@@ -211,16 +211,14 @@ FlowGraph<DataType>::_numDefs(const uint32_t & uid) const
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename DataType>
-void
+typename FlowGraph<DataType>::NodeType *
 FlowGraph<DataType>::addNewNode(const string & _label, DataType _data)
 {
-  if (this->mapOfNodes.find(_label) != this->mapOfNodes.end()) {
-    throw DuplicateLabelException("Label: '" + _label +
-        "' already associated to a node in the graph");
-  }
-
-  NodeType * const node = (NodeType *) this->_addNewNode(_label, _data);
+  NodeType * const node =
+                      Graph<DataType, NodeFlowGraph>::addNewNode(_label, _data);
   _addNewUseDefRecords(node);
+
+  return node;
 }
 
 template<typename DataType>
@@ -268,8 +266,8 @@ FlowGraph<DataType>::populateLiveMap(LiveMap<DataType> & liveMap)
   liveMap.liveIn.clear();
   liveMap.liveOut.clear();
 
-  for(nl_iterator listIter = this->listOfNodes.begin();
-      listIter != this->listOfNodes.end(); listIter++)
+  for(nl_c_iterator listIter = this->getListOfNodes().begin();
+      listIter != this->getListOfNodes().end(); listIter++)
   {
     const NodeType * const node = &*listIter;
     const UIDMultiSetType & nodeUses = uses[node];
@@ -342,8 +340,8 @@ template<typename DataType>
 void
 FlowGraph<DataType>::printFlowGraph() const
 {
-  for(nl_c_iterator nodeIt = this->listOfNodes.begin();
-      nodeIt != this->listOfNodes.end(); nodeIt++)
+  for(nl_c_iterator nodeIt = this->getListOfNodes().begin();
+      nodeIt != this->getListOfNodes().end(); nodeIt++)
   {
     const NodeType * const node = &*nodeIt;
     cout << "Node - pointer: " << node << "\n  label: " << node->label
@@ -379,8 +377,8 @@ FlowGraph<DataType>::printFlowGraph() const
     cout << endl;
   }
   DebugPrintf(("Map of labels\n"));
-  for(nm_c_iterator mapIter = this->mapOfNodes.begin();
-      mapIter != this->mapOfNodes.end(); mapIter++)
+  for(nm_c_iterator mapIter = this->getMapOfNodes().begin();
+      mapIter != this->getMapOfNodes().end(); mapIter++)
   {
     DebugPrintf((" label: %s, pointer %p\n", mapIter->first.c_str(), mapIter->second));
   }
