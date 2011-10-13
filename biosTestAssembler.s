@@ -20,7 +20,10 @@
   JSR     @print      %T001
 ; call recursive subroutine
   MOV     $4          %T002
-  JSR     @recursive  %T002
+  MOV     %T002       %T012
+  MOV     %T012       %T013
+  MOV     %T013       %T014
+  JSR     @recursive  %T014
 ; call conversion subroutine
   MOV     @bufferEnd  %T003
   SUB     @buffer     %T003
