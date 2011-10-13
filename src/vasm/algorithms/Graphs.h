@@ -48,6 +48,7 @@ protected:
   void _delUndirectedArc(const NodeType * const n1, const NodeType * const n2);
   void _addUndirectedArc(const NodeType * const n1, const NodeType * const n2);
   void _removeAllArcs(const NodeType * const node, const bool &noTrace = false);
+  void _coalesce(const NodeType * const final, const NodeType * const alias);
 
   size_t _inDegree(const NodeType * const node) const;
   size_t _outDegree(const NodeType * const node) const;
@@ -78,6 +79,9 @@ public:
 
   void removeAllArcs(const string & node1);
   void removeAllArcs(const NodeType * const n1);
+
+  void coalesce(const string & final, const string & alias);
+  void coalesce(const NodeType * const final, const NodeType * const alias);
 
   size_t inDegree(const NodeType * const node) const;
   size_t inDegree(const string & _label) const;
@@ -119,6 +123,7 @@ public:
   const NodeMapType & getMapOfNodes() const throw()
   { return baseGraph->getMapOfNodes(); }
 };
+
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Class Graph
@@ -268,6 +273,39 @@ Graph<DataType, NodeBaseType>::_outDegree(const NodeType * const node) const
 {
   am_c_iterator succsIter = succs.find(node);
   return succsIter->second.size();
+}
+
+template<typename DataType, template<typename NodeDataType> class NodeBaseType>
+inline void
+Graph<DataType, NodeBaseType>::_coalesce(const NodeType * const final,
+    const NodeType * const alias)
+{
+//  DebugPrintf(("Doing coalesce of nodes %p <- %p\n", final, alias));
+  {
+    const NodeSetType & aliasSuccs = succs.find(alias)->second;
+
+    for(ns_c_iterator succIt = aliasSuccs.begin();
+        succIt != aliasSuccs.end(); succIt++)
+    {
+//      DebugPrintf(("Added arc from %p to %p\n", final, *succIt));
+      _addDirectedArc(final, *succIt);
+    }
+  }
+  {
+    const NodeSetType & aliasPreds = preds.find(alias)->second;
+
+    for(ns_c_iterator predIt = aliasPreds.begin();
+        predIt != aliasPreds.end(); predIt++)
+    {
+//      DebugPrintf(("Added arc from %p to %p\n", *predIt, final));
+      _addDirectedArc(*predIt, final);
+    }
+  }
+  if (baseGraphIsPrivate) {
+    _removeNode(alias);
+  } else {
+    _removeAllArcs(alias, true);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -483,6 +521,32 @@ Graph<DataType, NodeBaseType>::removeAllArcs(const NodeType * const node1)
 
   baseGraph->checkNodePtr(node1, errorMsg);
   _removeAllArcs(node1);
+}
+
+template<typename DataType, template<typename NodeDataType> class NodeBaseType>
+INLINE void
+Graph<DataType, NodeBaseType>::coalesce(const string & final,
+    const string & alias)
+{
+  const string errorMsg = "Trying to coalesce nodes not in the graph";
+
+ this->_coalesce(
+     this->checkLabel(final, errorMsg),
+     this->checkLabel(alias, errorMsg)
+     );
+}
+
+template<typename DataType, template<typename NodeDataType> class NodeBaseType>
+INLINE void
+Graph<DataType, NodeBaseType>::coalesce(const NodeType * const final,
+    const NodeType * const alias)
+{
+  const string errorMsg = "Trying to coalesce nodes not in the graph";
+
+  checkNodePtr(final, errorMsg);
+  checkNodePtr(alias, errorMsg);
+
+  this->_coalesce(final, alias);
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
