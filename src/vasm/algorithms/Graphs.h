@@ -70,6 +70,8 @@ public:
 
   void addDirectedArc(const string & _from, const string & _to);
   void addDirectedArc(const NodeType * const from, const NodeType * const to);
+  void delDirectedArc(const string & _from, const string & _to);
+  void delDirectedArc(const NodeType * const from, const NodeType * const to);
 
   void addUndirectedArc(const string & node1, const string & node2);
   void addUndirectedArc(const NodeType * const n1, const NodeType * const n2);
@@ -397,6 +399,34 @@ Graph<DataType, NodeBaseType>::addDirectedArc(const NodeType * const from,
   checkNodePtr(to, errorMsgT);
 
   _addDirectedArc(from, to);
+}
+
+template<typename DataType, template<typename NodeDataType> class NodeBaseType>
+INLINE void
+Graph<DataType, NodeBaseType>::delDirectedArc(const string & _from,
+    const string & _to)
+{
+  const string errorMsgF = "Trying to remove an arc from a node not in the graph";
+  const string errorMsgT = "Trying to remove an arc to a node not in the graph";
+
+  _delDirectedArc(
+      this->checkLabel(_from, errorMsgF),
+      this->checkLabel(_to,   errorMsgT)
+      );
+}
+
+template<typename DataType, template<typename NodeDataType> class NodeBaseType>
+INLINE void
+Graph<DataType, NodeBaseType>::delDirectedArc(const NodeType * const from,
+    const NodeType * const to)
+{
+  const string errorMsgF = "Trying to remove an arc from a node not in the graph";
+  const string errorMsgT = "Trying to remove an arc to a node not in the graph";
+
+  checkNodePtr(from, errorMsgF);
+  checkNodePtr(to, errorMsgT);
+
+  _delDirectedArc(from, to);
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
