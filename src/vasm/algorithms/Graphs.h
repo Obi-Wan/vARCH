@@ -58,7 +58,7 @@ public:
     , baseGraphIsPrivate(true)
   { }
   Graph(BaseGraph<DataType, NodeBaseType> * bg, const bool & copy = true);
-  Graph(const Graph<DataType, NodeBaseType> & other);
+  Graph(const Graph<DataType, NodeBaseType> & other, const bool & copy = true);
 
   virtual ~Graph() { if (baseGraph && baseGraphIsPrivate) delete baseGraph; }
 
@@ -96,7 +96,13 @@ public:
 
   bool areAdjacent(const NodeType * const n1, const NodeType * const n2) const;
 
-  /* Wrappers to BaseGraph */
+  const BaseGraph<DataType, NodeBaseType> * getBaseGraph() const throw()
+  { return baseGraph; }
+  const bool & isBaseGRaphPrivate() const throw() { return baseGraphIsPrivate; }
+
+  //////////////////////////////////////////////////////////////////////////////
+  /// Wrappers to BaseGraph
+  //////////////////////////////////////////////////////////////////////////////
 
   void checkNodePtr(const NodeType * const node, const string & errorMessage)
     const
@@ -271,9 +277,10 @@ Graph<DataType, NodeBaseType>::_outDegree(const NodeType * const node) const
 ////////////////////////////////////////////////////////////////////////////////
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
-Graph<DataType, NodeBaseType>::Graph(const Graph<DataType, NodeBaseType> & old)
-  : baseGraph(new BaseGraph<DataType, NodeBaseType>(*old.baseGraph))
-  , baseGraphIsPrivate(true)
+Graph<DataType, NodeBaseType>::Graph(const Graph<DataType, NodeBaseType> & old,
+    const bool & copy)
+  : baseGraph(copy ? new BaseGraph<DataType, NodeBaseType>(*old.baseGraph) : old.baseGraph)
+  , baseGraphIsPrivate(copy)
 {
   for(nl_c_iterator nodeIt = getListOfNodes().begin();
       nodeIt != getListOfNodes().end(); nodeIt++)
@@ -302,10 +309,10 @@ Graph<DataType, NodeBaseType>::Graph(const Graph<DataType, NodeBaseType> & old)
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 Graph<DataType, NodeBaseType>::Graph(BaseGraph<DataType, NodeBaseType> * old,
     const bool & copy)
-  : baseGraph(copy ? new BaseGraph<DataType, NodeBaseType>(old) : old)
+  : baseGraph(copy ? new BaseGraph<DataType, NodeBaseType>(*old) : old)
   , baseGraphIsPrivate(copy)
 {
-  for(nl_iterator nodeIt = getListOfNodes().begin();
+  for(nl_c_iterator nodeIt = getListOfNodes().begin();
       nodeIt != getListOfNodes().end(); nodeIt++)
   {
     const NodeType * const node = &*nodeIt;
@@ -384,7 +391,10 @@ Graph<DataType, NodeBaseType>::addDirectedArc(const string & _from,
   const string errorMsgF = "Trying to add an arc from a node not in the graph";
   const string errorMsgT = "Trying to add an arc to a node not in the graph";
 
-  _addDirectedArc( checkLabel(_from, errorMsgF), checkLabel(_to, errorMsgT) );
+  _addDirectedArc(
+      this->checkLabel(_from, errorMsgF),
+      this->checkLabel(_to,   errorMsgT)
+      );
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
@@ -514,7 +524,7 @@ Graph<DataType, NodeBaseType>::outDegree(const string & _label) const
   const string errorMsg = "Trying to get the Out Degree of a node not in the "
       "graph";
 
-  return _inDegree( checkLabel( _label, errorMsg ) );
+  return _outDegree( checkLabel( _label, errorMsg ) );
 }
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
@@ -552,8 +562,12 @@ Graph<DataType, NodeBaseType>::getPreds(const NodeType * const node) const
   if (predsIter != preds.end()) {
     return predsIter->second;
   } else {
-    throw WrongArgumentException("ERROR: Could find node (label " + node->label
-                                  + ") in predecessors\n");
+    string errorMsg = "ERROR in function ";
+    errorMsg.append(__PRETTY_FUNCTION__);
+    errorMsg.append(": Couldn't find node (label ");
+    errorMsg.append(node->label);
+    errorMsg.append(") in predecessors\n");
+    throw WrongArgumentException(errorMsg);
   }
 }
 
@@ -565,8 +579,12 @@ Graph<DataType, NodeBaseType>::getSuccs(const NodeType * const node) const
   if (succsIter != succs.end()) {
     return succsIter->second;
   } else {
-    throw WrongArgumentException("ERROR: Could find node (label " + node->label
-                                  + ") in successive\n");
+    string errorMsg = "ERROR in function ";
+    errorMsg.append(__PRETTY_FUNCTION__);
+    errorMsg.append(": Couldn't find node (label ");
+    errorMsg.append(node->label);
+    errorMsg.append(") successive\n");
+    throw WrongArgumentException(errorMsg);
   }
 }
 
@@ -582,8 +600,12 @@ Graph<DataType, NodeBaseType>::areAdjacent(const NodeType * const n1,
     return (predsIter->second.count(n2) != 0)
         || (succsIter->second.count(n2) != 0);
   } else {
-    throw WrongArgumentException("ERROR: Could find node (label " + n1->label
-                                  + ") in predecessors or successive\n");
+    string errorMsg = "ERROR in function ";
+    errorMsg.append(__PRETTY_FUNCTION__);
+    errorMsg.append(": Couldn't find node (label ");
+    errorMsg.append(n1->label);
+    errorMsg.append(") in predecessors or successive\n");
+    throw WrongArgumentException(errorMsg);
   }
 
 }
