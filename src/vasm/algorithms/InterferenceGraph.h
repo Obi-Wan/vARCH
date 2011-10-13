@@ -26,12 +26,14 @@ public:
 };
 
 class InterferenceGraph : public Graph<uint32_t, NodeInterfGraph> {
+public:
+  typedef Graph<uint32_t, NodeInterfGraph> MovesMap;
 
-  typedef Graph< NodeInterfGraph<uint32_t> *> MovesMap;
+protected:
   MovesMap moves;
 
 public:
-  InterferenceGraph() { }
+  InterferenceGraph();
   InterferenceGraph(const InterferenceGraph & other);
 
   virtual NodeType * addNewNode(const string & _label, uint32_t _data);
@@ -48,11 +50,22 @@ public:
 
   const MovesMap & getMoves() const throw() { return moves; }
 
+  bool getCoalesceCouple(const NodeType * const startNode,
+      const uint32_t & maxRegs, const NodeType *& final,
+      const NodeType *& alias);
+
+  void coalesce(const NodeType * const final, const NodeType * const alias);
+  void coalesce(const string & final, const string & alias);
+
+  void fixCoalesce();
+
   bool nodeIsMoveRelated(const NodeType * const node);
   bool nodeHasOnlyHighDegMoves(const NodeType * const node,
       const uint32_t & limitDeg);
   bool nodeBriggsCanCoalesce(const NodeType * const node1,
       const NodeType * const node2, const uint32_t & limitDeg);
+  bool nodeGeorgeCanCoalesce(const NodeType * const final,
+      const NodeType * const alias, const uint32_t & limitDeg);
   void nodeFreeze(const NodeType * const node);
 };
 
@@ -69,7 +82,7 @@ public:
 /// Public Members
 ////////////////////////////////////////////////////////////////////////////////
 
-inline Graph<uint32_t, NodeInterfGraph>::NodeType *
+inline InterferenceGraph::NodeType *
 InterferenceGraph::addNewNode(const string & _label, uint32_t _data)
 {
 
@@ -77,7 +90,7 @@ InterferenceGraph::addNewNode(const string & _label, uint32_t _data)
 
   node->isPrecolored = (_data < (FIRST_TEMPORARY+1));
 
-  moves.addNewNode(_label, node);
+  moves.addNewNode(_label, _data);
 
   return node;
 }
@@ -129,6 +142,7 @@ InterferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
   typedef typename UIDsMap::iterator um_iterator;
 
   // Clean graph
+  moves.clear();
   this->clear();
 
   // Populate with nodes
@@ -196,11 +210,14 @@ InterferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
       const NodeType * const nodeD = checkLabel(nodeDlabel, "");
       const NodeType * const nodeU = checkLabel(nodeUlabel, "");
 
+      DebugPrintf(("Interf: evaluating Move %s -> %s\n", nodeUlabel.c_str(),
+          nodeDlabel.c_str()));
+
       /* Add a move only if it is not between interfering nodes!
        * And nodes are not both pre-colored */
       NodeSetType & nodeSuccs = succs.find(nodeD)->second;
       if (nodeSuccs.find(nodeU) == nodeSuccs.end()
-          && !(nodeU->isPrecolored && nodeU->isPrecolored))
+          && !(nodeU->isPrecolored && nodeD->isPrecolored))
       {
         moves.addDirectedArc(nodeUlabel, nodeDlabel);
         DebugPrintf(("Added move relation \"%s\" -> \"%s\"\n",
