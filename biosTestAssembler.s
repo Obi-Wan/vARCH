@@ -55,6 +55,9 @@
       .int            $0
     .stateRegister:
       .int            $0
+    .localString:
+      .string         "local_string"
+      .int            $13
   .end
 
   SUB     .decrement  %T001
