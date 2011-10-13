@@ -39,7 +39,10 @@ public:
   void populateGraph(asm_function & function);
   void checkTempsUsedUndefined(const asm_function & func,
       const LiveMap<asm_statement *> & lm) const;
+
   void applySelectedRegisters(const AssignedRegs & regs);
+  void applySelectedRegisters(const AssignedRegs & regs,
+      const AliasMap & aliases);
 
   virtual void clear();
 };

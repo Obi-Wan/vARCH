@@ -46,6 +46,13 @@ protected:
   // Relation 1-to-1 to nodes in the list of given interference graph
   AssignedRegs assignedRegs;
 
+  AliasMap safeAliases;
+  AliasMap unsafeAliases;
+  bool usingSafeAliases;
+
+  ReverseAliasMap safeReverseAliases;
+  ReverseAliasMap unsafeReverseAliases;
+
   const uint32_t maxRegs;
 
   void _findMax(const vector<const NodeType *> & nodes,
@@ -54,18 +61,28 @@ protected:
 
   void _simpleSelect(const InterferenceGraph & interf);
   void _simpleSimplify(const InterferenceGraph & interf);
+  void _coalesceSimplify(const InterferenceGraph & interf);
+
+  void _applyCoalescingToGraph(InterferenceGraph & interf);
 
 public:
   RegAllocator(const TempsMap & _temps, const uint32_t & regs = NUM_REGS)
-    : tempsMap(_temps), maxRegs(regs)
+    : tempsMap(_temps), usingSafeAliases(true), maxRegs(regs)
   { }
 
   bool simpleAllocateRegs(const InterferenceGraph & interf);
+  bool coalesceAllocateRegs(const InterferenceGraph & interf);
 
   void printStack() const;
   void printAssigned() const;
 
-  const AssignedRegs &getAssignedRegs() const throw() {return assignedRegs;}
+  const AssignedRegs &getAssignedRegs() const throw() { return assignedRegs; }
+  const AliasMap & getAliases() const throw() {
+    return usingSafeAliases ? safeAliases : unsafeAliases;
+  }
+  const ReverseAliasMap & getReverseAliases() const throw() {
+    return usingSafeAliases ? safeReverseAliases : unsafeReverseAliases;
+  }
 };
 
 #endif /* REGALLOCATOR_H_ */

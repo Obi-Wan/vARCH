@@ -315,6 +315,8 @@ AssemFlowGraph::_findUsesDefines()
         // Special treatment of "move" instruction
         if (i_stmt->instruction == MOV) {
           node->isMove = _moveInstr(i_stmt->args, nodeUses, nodeDefs);
+          DebugPrintf(("Considering Move instr at line %d: is %s\n",
+              i_stmt->position.first_line, node->isMove ? "Move" : "NOT Move"));
         } else {
           // Other instructions
           for(size_t argNum = 0; argNum < i_stmt->args.size(); argNum++)
@@ -452,6 +454,53 @@ AssemFlowGraph::applySelectedRegisters(const AssignedRegs & regs)
           }
           if (reg->second) {
             arg->content.tempUID = reg->second -1;
+            arg->isTemp = false;
+          } else {
+            throw WrongArgumentException(
+                "Pending Spills! not using a solution!");
+          }
+        }
+      }
+    }
+  }
+}
+
+void
+AssemFlowGraph::applySelectedRegisters(const AssignedRegs & regs,
+    const AliasMap & aliases)
+{
+  for(nl_c_iterator nodeIt = getListOfNodes().begin();
+      nodeIt != getListOfNodes().end(); nodeIt++)
+  {
+    if (nodeIt->data->getType() == ASM_INSTRUCTION_STATEMENT) {
+      asm_instruction_statement * stmt =
+                                    (asm_instruction_statement *) nodeIt->data;
+      for(vector<asm_arg *>::iterator argIt = stmt->args.begin();
+          argIt != stmt->args.end(); argIt++)
+      {
+        if ((*argIt)->isTemporary()) {
+          asm_immediate_arg * arg = (asm_immediate_arg *) *argIt;
+          const uint32_t temp_uid = Frame::shiftArgUID(arg, true);
+
+          /* Verify that maybe it is an alias */
+          const uint32_t temp_alias = aliases.getFinal(temp_uid);
+
+          uint32_t to_be_assigned = 0;
+          if (temp_alias && temp_alias < (FIRST_TEMPORARY + 1) ) {
+            to_be_assigned = temp_alias;
+          } else {
+            /* temp_alias is != 0 then we should use the aliased value */
+            AssignedRegs::const_iterator reg
+                                = regs.find(temp_alias ? temp_alias : temp_uid);
+            if (reg == regs.end()) {
+              throw WrongArgumentException(
+                  "A temporary in instruction was not considered! ("
+                  + tempsMap.getLabel(temp_uid) + ")");
+            }
+            to_be_assigned = reg->second;
+          }
+          if (to_be_assigned) {
+            arg->content.tempUID = to_be_assigned -1;
             arg->isTemp = false;
           } else {
             throw WrongArgumentException(
