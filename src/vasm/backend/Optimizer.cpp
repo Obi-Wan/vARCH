@@ -51,7 +51,7 @@ Optimizer::removeUselessMoves(asm_function & func)
 }
 
 void
-Optimizer::removeUselessArithemtics(asm_function & func)
+Optimizer::removeUselessArithmetics(asm_function & func)
 {
   // Remove Arithmetic operations that do nothing
 

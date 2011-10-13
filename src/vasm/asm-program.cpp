@@ -210,7 +210,7 @@ asm_program::doRegisterAllocation(const AsmArgs & args)
         case 2:
         case 1: {
           optimizer.removeUselessMoves(func);
-          optimizer.removeUselessArithemtics(func);
+          optimizer.removeUselessArithmetics(func);
         }
         default: break;
       }

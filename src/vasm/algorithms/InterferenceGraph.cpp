@@ -19,7 +19,7 @@ InterferenceGraph::InterferenceGraph()
 
 InterferenceGraph::InterferenceGraph(const InterferenceGraph & other)
   : Graph<uint32_t, NodeInterfGraph>(other), moves(this->baseGraph, false)
-{ //
+{
   DebugPrintf(("Copy constructor of InterferenceGraph\n"));
   for(am_c_iterator predIt = other.moves.getPreds().begin();
       predIt != other.moves.getPreds().end();
@@ -34,8 +34,8 @@ InterferenceGraph::InterferenceGraph(const InterferenceGraph & other)
       DebugPrintf(("Added MOVE arc: from %s (%p), to %s (%p)\n",
           fromLabel.c_str(), checkLabel(fromLabel,""),
           toNode->label.c_str(), checkLabel(toNode->label,"")));
-    } //
-  } //
+    }
+  }
 }
 
 void

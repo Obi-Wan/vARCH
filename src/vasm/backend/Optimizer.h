@@ -16,7 +16,7 @@ public:
 
   void removeUselessMoves(asm_function & func);
 
-  void removeUselessArithemtics(asm_function & func);
+  void removeUselessArithmetics(asm_function & func);
 };
 
 #endif /* OPTIMIZER_H_ */
