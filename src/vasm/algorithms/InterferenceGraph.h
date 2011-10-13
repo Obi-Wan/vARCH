@@ -25,16 +25,6 @@ public:
   }
 };
 
-struct AliasMap : public map<uint32_t, uint32_t> {
-  void add(const NodeInterfGraph<uint32_t> * const alias,
-      const uint32_t & aliased);
-};
-
-struct ReverseAliasMap : public map<uint32_t, set<uint32_t> > {
-  void add(const NodeInterfGraph<uint32_t> * const alias,
-      const uint32_t & aliased, AliasMap & aliasMap);
-};
-
 class InterferenceGraph : public Graph<uint32_t, NodeInterfGraph> {
 
   typedef Graph< NodeInterfGraph<uint32_t> *> MovesMap;

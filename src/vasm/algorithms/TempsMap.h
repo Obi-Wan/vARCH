@@ -9,6 +9,7 @@
 #define TEMPSMAP_H_
 
 #include <map>
+#include <set>
 #include <string>
 
 using namespace std;
@@ -38,6 +39,19 @@ public:
 
   const LabelToUID & getLabelTable() const throw() { return labelToUID; }
   const UIDToLabel & getUIDTable() const throw() { return uidToLabel; }
+};
+
+struct AliasMap : public map<uint32_t, uint32_t> {
+  uint32_t getFinal(const uint32_t & alias) const;
+
+  void print() const;
+};
+
+struct ReverseAliasMap : public map<uint32_t, set<uint32_t> > {
+  void add(const uint32_t & alias, const uint32_t & aliased,
+      AliasMap & aliasMap);
+
+  void print() const;
 };
 
 #endif /* TEMPSMAP_H_ */
