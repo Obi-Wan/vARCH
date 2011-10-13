@@ -89,7 +89,7 @@ openFile(const char * filename, const char *& path);
           }
 
 SLEEP|PUSHA|POPA|RET|RETEX|REBOOT|HALT|NOT|INCR|DECR|COMP2|LSH|RSH|STACK|PUSH|POP|JSR|JMP|IFJ|IFNJ|TCJ|TZJ|TOJ|TNJ|TSJ|MOV|ADD|MULT|SUB|DIV|QUOT|AND|OR|XOR|MMU|PUT|GET|EQ|LO|MO|LE|ME|NEQ|BPUT|BGET|IFEQJ|IFNEQJ|IFLOJ|IFMOJ|IFLEJ|IFMEJ {
-            yylval->instruction = ISet.getIstr(yytext);
+            yylval->instruction = ISet.getInstr(yytext);
             return INSTRUCTION;
           }
 
