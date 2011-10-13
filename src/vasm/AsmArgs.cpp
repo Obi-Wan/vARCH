@@ -53,6 +53,9 @@ AsmArgs::parse() throw (WrongArgumentException)
     } else if (!tempArg.compare("-reg-auto-alloc")) {
       regAutoAlloc = true;
 
+    } else if (!tempArg.compare("-reg-coalesce")) {
+      regCoalesce = true;
+
     } else if (!tempArg.compare("-d")) {
       /* Tells which file will be the output */
       CHECK_THROW( debugSymbolsName.empty(),
@@ -80,8 +83,10 @@ AsmArgs::parse() throw (WrongArgumentException)
   InfoPrintf(("DebugSymbols filename: %s\n", debugSymbolsName.c_str()));
   InfoPrintf(("Include dirs: %s\n", includes.c_str()));
   InfoPrintf(("Optimization Level: %u\n", optimLevel));
-  InfoPrintf(("Register auto allocation: %s\n\n",
+  InfoPrintf(("Register auto allocation: %s\n",
                 regAutoAlloc ? "Enabled" : "Disabled"));
+  InfoPrintf(("Register Coalescing: %s\n\n",
+                regCoalesce ? "Enabled" : "Disabled"));
 
   CHECK_THROW( !inputName.empty(),
           WrongArgumentException("you didn't specify the input file") );
@@ -100,6 +105,8 @@ AsmArgs::printHelp() const throw()
             "generated)" << endl;
   cout << "To let the assembler auto allocate registers:" << endl
         << "  add flag -reg-auto-alloc" << endl;
+  cout << "To let the assembler coalesce registers (when auto allocating):"
+        << endl << "  add flag -reg-auto-alloc" << endl;
   cout << "To enable some sort of optimizations:" << endl
         << "  -O<optimization_level> with <optimization_level> as a number "
         << "between 0 and 3" << endl;

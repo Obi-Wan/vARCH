@@ -183,11 +183,21 @@ asm_program::doRegisterAllocation(const AsmArgs & args)
 
       RegAllocator regAlloc(tempsMap);
       DebugPrintf((" --> Printing Allocator Stack!! <--\n"));
-      bool success = regAlloc.simpleAllocateRegs(interfGraph);
+      bool success = args.getRegCoalesce()
+          ? regAlloc.coalesceAllocateRegs(interfGraph)
+          : regAlloc.simpleAllocateRegs(interfGraph);
       DebugPrintf((" --> Printed Allocator Stack!! <--\n\n"));
 
       if (success) {
-        flowGraph.applySelectedRegisters(regAlloc.getAssignedRegs());
+        if (args.getRegCoalesce()) {
+          regAlloc.getAliases().print();
+          regAlloc.getReverseAliases().print();
+
+          flowGraph.applySelectedRegisters(regAlloc.getAssignedRegs(),
+              regAlloc.getAliases());
+        } else {
+          flowGraph.applySelectedRegisters(regAlloc.getAssignedRegs());
+        }
       } else {
         throw WrongArgumentException(
             "Couldn't find a registers allocation solution for function "

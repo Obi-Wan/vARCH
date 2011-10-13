@@ -26,9 +26,10 @@ class AsmArgs {
   uint32_t optimLevel;
 
   bool regAutoAlloc;
+  bool regCoalesce;
 public:
   AsmArgs(int _argc, char** _argv)
-    : argc(_argc), argv(_argv), regAutoAlloc(false) { }
+    : argc(_argc), argv(_argv), regAutoAlloc(false), regCoalesce(false) { }
 
   void parse() throw(WrongArgumentException);
 
@@ -40,6 +41,7 @@ public:
   const vector<string> &getIncludeDirs() const throw() { return includeDirs; }
   const uint32_t &getOptimizationLevel() const throw() { return optimLevel; }
   const bool &getRegAutoAlloc() const throw() { return regAutoAlloc; }
+  const bool &getRegCoalesce() const throw() { return regCoalesce; }
 };
 
 #endif /* ASMARGS_H_ */
