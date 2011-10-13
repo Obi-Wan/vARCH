@@ -317,7 +317,12 @@ Frame::allocateLocalVariables(asm_function & function)
       initIt != localVars.end(); initIt++)
   {
     const asm_data_statement * data = *initIt;
-    if (data->getType() != ASM_LABEL_STATEMENT)
+    if (data->getType() == ASM_STRING_KEYWORD_STATEMENT)
+    {
+      allocateLocalString( (const asm_string_keyword_statement *) data,
+                            function.position, stmts);
+    }
+    else if (data->getType() != ASM_LABEL_STATEMENT)
     {
       asm_immediate_arg * tempArg = makeInitArg(
                   (const asm_data_keyword_statement *) data, function.position);
@@ -329,6 +334,25 @@ Frame::allocateLocalVariables(asm_function & function)
       stmts.push_front(stmt);
     }
   }
+}
+
+void
+Frame::allocateLocalString(const asm_string_keyword_statement * data,
+    const YYLTYPE &pos, ListOfStmts & stmts)
+{
+  ListOfStmts localStmts;
+  for(string::const_iterator charIt = data->str.begin();
+      charIt != data->str.end(); charIt++)
+  {
+    asm_immediate_arg * tempArg = new asm_immediate_arg(pos);
+    tempArg->content.val = *charIt;
+
+    asm_instruction_statement * stmt = new asm_instruction_statement(pos, PUSH);
+    stmt->addArg(tempArg);
+
+    localStmts.push_back(stmt);
+  }
+  stmts.insert(stmts.begin(), localStmts.begin(), localStmts.end());
 }
 
 void

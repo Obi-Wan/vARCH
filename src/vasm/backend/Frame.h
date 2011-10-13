@@ -31,6 +31,9 @@ class Frame {
   asm_immediate_arg * makeInitArg(const asm_data_keyword_statement * data,
       const YYLTYPE &pos);
 
+  void allocateLocalString(const asm_string_keyword_statement * data,
+      const YYLTYPE &pos, ListOfStmts & stmts);
+
 public:
   Frame(TempsMap & _tm) : tempsMap(_tm), minNewTemp(FIRST_TEMPORARY) { }
 
