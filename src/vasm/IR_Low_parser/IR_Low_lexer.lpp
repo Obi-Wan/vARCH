@@ -1,7 +1,7 @@
 /**/
 %top{
 #include "IR/IR_LowLevel_LexerHelpers.h"
-#include "asm-parser.h"
+#include "IR_Low_parser.h"
 }
 
 %s STRING_CONTEXT

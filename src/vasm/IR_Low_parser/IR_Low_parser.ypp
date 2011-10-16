@@ -1,6 +1,6 @@
 %code requires {
-#ifndef ASM_PARSER_YPP
-#define ASM_PARSER_YPP
+#ifndef IR_LOW_PARSER_YPP
+#define IR_LOW_PARSER_YPP
 
 #include "parser_definitions.h"
 #include "IR/IR_LowLevel_ParserHelpers.h"
@@ -21,7 +21,7 @@ void cleanParser();
 
 %code top {
 #include <cstdio>
-#include "asm-parser.h"
+#include "IR_Low_parser.h"
 #include "IncludesTree.h"
 
 void yyerror (YYLTYPE *locp, asm_program * program, char const *);
