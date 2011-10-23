@@ -1,7 +1,7 @@
 AM_YFLAGS = -d
 #AM_LFLAGS = --header-file=$(<:.lpp=.h)
 
-bin_PROGRAMS = vasm_low
+bin_PROGRAMS = vasm_low vasm_mid
 
 COMMON_ASM_SRC = \
 		  IncludesTree.cpp \
@@ -24,4 +24,11 @@ vasm_low_SOURCES = \
 			IR_Low_parser/IR_Low_parser.ypp \
 		  IR_Low_parser/IR_Low_lexer.lpp \
 		  vAsmLow.cpp
+
+vasm_mid_SOURCES = \
+			${COMMON_ASM_SRC} \
+			IR_Mid_parser/IR_Mid_parser.ypp \
+		  IR_Mid_parser/IR_Mid_lexer.lpp \
+		  AST_Mid/AST_Mid_Tree.cpp \
+		  vAsmMid.cpp
 

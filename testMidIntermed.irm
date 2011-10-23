@@ -1,0 +1,20 @@
+
+// Function with no parameters and no return
+void_t <- function1();
+
+u32_t <- function2( good : i32_t, bad : ptr_i32 );
+
+i32_t globalGood <- 0 : i32_t;
+
+void_t <- function1() {
+  SLEEP;
+  SLEEP : void_t;
+  i32_t someValue <- 4 : i32_t;
+  someValue <- 8 : i32_t;
+  i32_t incremented <- INCR : i32_t, 4 : i32_t;
+  i32_t sum <- ADD : i32_t, 4 : i32_t, 8 : i32_t;
+  i32_t sumAgain <- ADD : i32_t, 4 : i32_t, %globalGood : i32_t;
+.exit:
+  RET;
+}
+

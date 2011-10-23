@@ -1,0 +1,404 @@
+/**/
+%top{
+#include "IR/IR_LowLevel_LexerHelpers.h"
+#include "IR_Mid_parser.h"
+}
+
+%s STRING_CONTEXT
+%s COMMENT
+
+%x PREPROC_STATE_INCLUDE_FILE
+
+DIGIT     [0-9]
+LETTER    [a-zA-Z]
+PUNCT     [\-!"#$%&'()*+,./:;<=>?@[\\\]^_`{|}~]
+LETT_DIG  ({LETTER}|{DIGIT})
+ID        {LETTER}{LETT_DIG}*
+KEYBKEYS  ([ \t]|{LETT_DIG}|[\-!#$%&'()*+,./:;<=>?@[\\\]^_`{|}~])
+
+LABEL     \.{ID}\:
+AT_LABEL  \@{ID}
+
+STK_PTR   SP
+USTK_PTR  USP
+SREG      SR
+
+REGISTER  \%([RA][1-8]|[U]?SP)
+ADDR_REG  r?\(([RA][1-8]|[U]?SP)\)
+
+%option bison-bridge bison-locations noyywrap
+
+%{
+#include "IncludesTree.h"
+
+#include <stack>
+
+using namespace std;
+
+#define MAX_STR_CONST 256
+
+char string_buf[MAX_STR_CONST];
+char *string_buf_ptr;
+
+#define YY_USER_ACTION \
+   do {\
+      yylloc->first_column = yylloc->last_column;\
+      yylloc->last_column += yyleng;\
+      yylloc->fileNode = includesTree->getCurrent();\
+   } while(0);
+
+struct FileBuffer {
+  YY_BUFFER_STATE buff;         /* saved buffer */
+  FILE * infile;                /* current file descriptor */
+};
+
+stack<FileBuffer> includesStack;
+
+const vector<string> * includeDirs = NULL;
+
+IncludesTree * includesTree = NULL;
+
+FILE *
+openFile(const char * filename, const char *& path);
+
+%}
+
+%%
+
+<INITIAL>{
+
+^[ \t]*"#"[ \t]*include { BEGIN(PREPROC_STATE_INCLUDE_FILE); }
+
+^[ \t]*"#"[ \t]*pragma { return PREPROC_PRAGMA; }
+
+^[ \t]*"#"[ \t]*define { return PREPROC_DEFINE; }
+
+<<EOF>>   { if(!closeIncludeFile(yylloc)) yyterminate(); }
+
+({DIGIT}+|{DIGIT}+\.{DIGIT}*|.{DIGIT}+) {
+            yylval->str.text = yytext;
+            yylval->str.len = yyleng;
+            return NUMBER;
+          }
+
+SLEEP|PUSHA|POPA|RET|RETEX|REBOOT|HALT|NOT|INCR|DECR|COMP2|LSH|RSH|STACK|PUSH|POP|JSR|JMP|IFJ|IFNJ|TCJ|TZJ|TOJ|TNJ|TSJ|MOV|ADD|MULT|SUB|DIV|QUOT|AND|OR|XOR|MMU|PUT|GET|EQ|LO|MO|LE|ME|NEQ|BPUT|BGET|IFEQJ|IFNEQJ|IFLOJ|IFMOJ|IFLEJ|IFMEJ {
+            yylval->instruction = ISet.getInstr(yytext);
+            return INSTRUCTION;
+          }
+
+BITCAST {
+            return BITCAST_OP;
+          }
+
+i8_t      return KEYWORD_I8;
+i16_t     return KEYWORD_I16;
+i32_t     return KEYWORD_I32;
+i64_t     return KEYWORD_I64;
+
+u8_t      return KEYWORD_U8;
+u16_t     return KEYWORD_U16;
+u32_t     return KEYWORD_U32;
+u64_t     return KEYWORD_U64;
+
+f32_t     return KEYWORD_F32;
+f64_t     return KEYWORD_F64;
+void_t    return KEYWORD_VOID;
+
+ptr_i8    return KEYWORD_PTR_I8;
+ptr_i16   return KEYWORD_PTR_I16;
+ptr_i32   return KEYWORD_PTR_I32;
+ptr_i64   return KEYWORD_PTR_I64;
+
+ptr_u8    return KEYWORD_PTR_U8;
+ptr_u16   return KEYWORD_PTR_U16;
+ptr_u32   return KEYWORD_PTR_U32;
+ptr_u64   return KEYWORD_PTR_U64;
+
+ptr_f32   return KEYWORD_PTR_F32;
+ptr_f64   return KEYWORD_PTR_F64;
+ptr_void  return KEYWORD_PTR_VOID;
+
+char      return KEYWORD_CHAR;
+string    return KEYWORD_STRING;
+
+rel       return KEYWORD_RELATIVE;
+
+const     return KEYWORD_CONST;
+shared    return KEYWORD_SHARED;
+
+"<-"      return ASSIGN_ARROW;
+
+(","|":"|";"|"("|")"|"{"|"}"|"+"|"-") {
+           return *yytext;
+}
+
+{LABEL}   {
+            yytext[yyleng-1] = '\0';
+            yylval->str.text = yytext+1;
+            yylval->str.len = yyleng-2;
+            return DEF_LABEL;
+          }
+{AT_LABEL} {
+            yylval->str.text = yytext+1;
+            yylval->str.len = yyleng-1;
+            return REF_LABEL;
+          }
+
+\%{SREG} {
+            yylval->str.text = yytext+1;
+            yylval->str.len = yyleng-1;
+            return SPECIAL_REGISTER;
+          }
+\%{STK_PTR} {
+            yylval->str.text = yytext+1;
+            yylval->str.len = yyleng-1;
+            return SPECIAL_REGISTER;
+          }
+\%{USTK_PTR} {
+            yylval->str.text = yytext+1;
+            yylval->str.len = yyleng-1;
+            return SPECIAL_REGISTER;
+          }
+\%{ID} {
+            yylval->str.text = yytext+1;
+            yylval->str.len = yyleng-1;
+            return REGISTER;
+          }
+
+{ID} {
+            yylval->str.text = yytext;
+            yylval->str.len = yyleng;
+            return ID;
+          }
+
+"/*"        BEGIN(COMMENT);
+
+\" {
+            string_buf_ptr = string_buf;
+            BEGIN(STRING_CONTEXT);
+          }
+
+"//".*\n|\n {
+            yylloc->first_line++;
+            yylloc->first_column = 1;
+            yylloc->last_line++;
+            yylloc->last_column = 1;
+          }
+
+{DIGIT}+{ID} {
+            fprintf( stderr, "Line %4d Lexing Error, forbidden symbol: '%s'\n",
+                     yylloc->first_line, yytext );
+            includesTree->printStderrCurrent();
+            includesTree->printStderrStackIncludes();
+            exit(1);
+          }
+[ \t]+      /* eat up whitespace */
+
+. {
+//            return *yytext;
+
+            fprintf( stderr, "Line %4d Lexing Error, unknown symbol: '%s'\n",
+                     yylloc->first_line, yytext );
+            includesTree->printStderrCurrent();
+            includesTree->printStderrStackIncludes();
+            exit(1);
+          }
+}
+
+<PREPROC_STATE_INCLUDE_FILE>{
+
+[ \t]+      /* eat up whitespace */
+
+[\"<].+[\">] {
+            char * newFileName = new char[yyleng-1];
+            if (!newFileName) {
+              fprintf( stderr,
+                       "Line %4d include filename too long (%4d chars): %s\n",
+                       yylloc->first_line, yyleng-2, yytext+1 );
+              includesTree->printStderrCurrent();
+              includesTree->printStderrStackIncludes();
+              exit(1);
+            }
+            strncpy(newFileName, yytext+1, yyleng-2);
+            newFileName[yyleng-2] = '\0';
+            if(!openIncludeFile(newFileName, yylloc)) {
+              fprintf( stderr, "Line %4d inexisting include file name: %s\n",
+                       yylloc->first_line, newFileName );
+              includesTree->printStderrCurrent();
+              includesTree->printStderrStackIncludes();
+              exit(1);
+            }
+            delete newFileName;
+
+            yylloc->first_line = 1, yylloc->first_column = 1;
+            yylloc->last_line = 1,  yylloc->last_column = 1;
+            yylloc->fileNode = includesTree->getCurrent();
+
+            BEGIN(INITIAL);
+          }
+
+.|\n      {
+            fprintf( stderr, "Line %4d bad include line\n", yylloc->first_line);
+            includesTree->printStderrCurrent();
+            includesTree->printStderrStackIncludes();
+            exit(1);
+          }
+}
+
+<COMMENT>{
+
+<<EOF>>   {
+            fprintf( stderr, "End of file in comment\n" );
+            includesTree->printStderrCurrent();
+            includesTree->printStderrStackIncludes();
+            exit(1);
+          }
+
+\n  {
+            yylloc->first_line++;
+            yylloc->first_column = 1;
+            yylloc->last_line++;
+            yylloc->last_column = 1;
+          }
+"*/"        BEGIN(INITIAL);
+.           /* eat up */
+}
+
+<STRING_CONTEXT>{
+
+<<EOF>>   {
+            fprintf( stderr, "End of file in string\n" );
+            includesTree->printStderrCurrent();
+            includesTree->printStderrStackIncludes();
+            exit(1);
+          }
+
+\\n         *string_buf_ptr++ = '\n';
+\\t         *string_buf_ptr++ = '\t';
+\\r         *string_buf_ptr++ = '\r';
+\\b         *string_buf_ptr++ = '\b';
+\\f         *string_buf_ptr++ = '\f';
+
+\\(.|\n) {
+            *string_buf_ptr++ = yytext[0];
+            *string_buf_ptr++ = yytext[1];
+          }
+
+[^\\\n\"]+ {
+            char *yptr = yytext;
+            while ( *yptr )
+              *string_buf_ptr++ = *yptr++;
+          }
+
+\" {
+            BEGIN(INITIAL);
+            *string_buf_ptr = '\0';
+            yylval->str.text = string_buf;
+            yylval->str.len = strlen(string_buf);
+            return STRING;
+          }
+}
+
+%%
+
+void
+setIncludeDirs(const vector<string> * _dirs)
+{
+  includeDirs = _dirs;
+}
+
+FILE *
+openFile(const char * filename, const char *& path)
+{
+  if (!includeDirs) {
+    throw BasicException("Implementation Error: Not initialized 'IncludeDirs'");
+  }
+
+  FILE * infile = fopen(filename, "r");
+  path = ".";
+
+  for(size_t dir = 0; !infile && dir < includeDirs->size(); dir++) {
+    const string & inclDir = (*includeDirs)[dir];
+    infile = fopen( ( inclDir + '/' + filename).c_str(), "r");
+    path = inclDir.c_str();
+  }
+
+  return infile;
+}
+
+bool
+openFirstFile(const char * const _filename)
+{
+  FileBuffer buff;
+  const char * filepath = ".";
+  
+  buff.infile = openFile(_filename, filepath);
+  if(!buff.infile) {
+    perror(_filename);
+    return false;
+  }
+
+  includesTree = new IncludesTree(filepath, _filename);
+
+  buff.buff = yy_create_buffer(buff.infile, YY_BUF_SIZE);
+  yy_switch_to_buffer(buff.buff);
+
+  includesStack.push(buff);
+  
+  return true;
+}
+
+bool
+openIncludeFile(const char * const _filename, const YYLTYPE * loc)
+{
+  FileBuffer buff;
+  const char * filepath = ".";
+  
+  buff.infile = openFile(_filename, filepath);
+  if(!buff.infile) {
+    perror(_filename);
+    return false;
+  }
+
+  includesTree->enterIncludeOfCurrent(filepath, _filename, *loc);
+
+  buff.buff = yy_create_buffer(buff.infile, YY_BUF_SIZE);
+  yy_switch_to_buffer(buff.buff);
+
+  includesStack.push(buff);
+  
+  return true;
+}
+
+bool
+closeIncludeFile(YYLTYPE * loc)
+{
+  if(!includesStack.size()) {
+    return false;
+  }
+
+  FileBuffer buff = includesStack.top();
+  fclose(buff.infile);
+  yy_delete_buffer(buff.buff);
+
+  includesStack.pop();  
+  if(!includesStack.size()) {
+    return false;
+  }
+
+  buff = includesStack.top();
+  yy_switch_to_buffer(buff.buff);
+  
+  *loc = includesTree->getCurrentInclusionPosition();
+  includesTree->exitInclude();
+
+  return true;
+}
+
+void
+cleanParser()
+{
+  delete includesTree;
+}
+
+

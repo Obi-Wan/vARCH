@@ -14,7 +14,7 @@
 using namespace std;
 
 void
-printAbstractTree(const asm_program * const program);
+printAssembler(const asm_program * const program);
 
 /*
  * 
@@ -54,7 +54,7 @@ main(int argc, char** argv)
     program->moveMainToTop();
     program->checkInstructions(usingTemps);
 #ifdef DEBUG
-    printAbstractTree(program);
+    printAssembler(program);
 #endif
 
     if (usingTemps) {
@@ -85,14 +85,14 @@ main(int argc, char** argv)
     }
     cleanParser();
 
-  } catch (BasicException e) {
+  } catch (const BasicException & e) {
     fprintf(stderr, "Error: %s\n", e.what());
     return (EXIT_FAILURE);
   }
 }
 
 void
-printAbstractTree(const asm_program * const program) {
+printAssembler(const asm_program * const program) {
 #ifdef DEBUG
   DebugPrintf(("-- Dumping Schematic Parsed Code --\n"));
   for(size_t funcNum = 0; funcNum < program->functions.size(); funcNum++) {
