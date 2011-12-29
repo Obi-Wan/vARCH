@@ -220,6 +220,7 @@ public:
     assignNew("USER_STACK_POINTER");
 
     assignNew("STATE_REGISTER");
+    assignNew("PROGRAM_COUNTER");
   }
 } RTypeSet;
 

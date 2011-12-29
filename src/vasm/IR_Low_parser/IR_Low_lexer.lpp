@@ -26,6 +26,7 @@ DREG      R[1-8]
 AREG      A[1-8]
 TREG      T{DIGIT}*
 SREG      SR
+PCOUNT    PC
 
 REGISTER  \%([RA][1-8]|[U]?SP)
 ADDR_REG  r?\(([RA][1-8]|[U]?SP)\)
@@ -116,6 +117,11 @@ SLEEP|PUSHA|POPA|RET|RETEX|REBOOT|HALT|NOT|INCR|DECR|COMP2|LSH|RSH|STACK|PUSH|PO
 \%{SREG} {
             ArgumentsHandler::getSpecialReg(yylval->arg, yylloc,
                 STATE_REGISTER);
+            return REGISTER;
+          }
+\%{PCOUNT} {
+            ArgumentsHandler::getSpecialReg(yylval->arg, yylloc,
+                PROGRAM_COUNTER);
             return REGISTER;
           }
 \%{STK_PTR} {

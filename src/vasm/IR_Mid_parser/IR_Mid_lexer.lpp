@@ -22,6 +22,7 @@ AT_LABEL  \@{ID}
 STK_PTR   SP
 USTK_PTR  USP
 SREG      SR
+PCOUNT    PC
 
 REGISTER  \%([RA][1-8]|[U]?SP)
 ADDR_REG  r?\(([RA][1-8]|[U]?SP)\)
@@ -144,17 +145,7 @@ shared    return KEYWORD_SHARED;
             return REF_LABEL;
           }
 
-\%{SREG} {
-            yylval->str.text = yytext+1;
-            yylval->str.len = yyleng-1;
-            return SPECIAL_REGISTER;
-          }
-\%{STK_PTR} {
-            yylval->str.text = yytext+1;
-            yylval->str.len = yyleng-1;
-            return SPECIAL_REGISTER;
-          }
-\%{USTK_PTR} {
+(\%{SREG}|\%{STK_PTR}|\%{USTK_PTR}|\%{PCOUNT}) {
             yylval->str.text = yytext+1;
             yylval->str.len = yyleng-1;
             return SPECIAL_REGISTER;

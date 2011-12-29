@@ -86,7 +86,7 @@ Frame::shiftArgUID(const uint32_t & uid, const bool & isTemp)
 inline bool
 Frame::shiftedIsSpecialReg(const uint32_t & uid)
 {
-  return (uid >= (STACK_POINTER+1) && uid <= (STATE_REGISTER+1));
+  return (uid >= (STACK_POINTER+1) && uid < (FIRST_TEMPORARY+1));
 }
 
 #endif /* STATICLINKER_H_ */

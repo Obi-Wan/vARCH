@@ -468,7 +468,6 @@ Cpu::loadArg(const int& arg,const int& typeArg)
       
     default:
       throw WrongArgumentException("Failed in loading: wrong argument type");
-      break;
   }
 }
 
@@ -534,7 +533,6 @@ Cpu::storeArg(const int& arg, const int& typeArg, int value)
       break;
     default:
       throw WrongArgumentException("Failed in storing: wrong argument type");
-      break;
   }
 }
 
@@ -554,7 +552,9 @@ Cpu::getReg(const int& arg)
     case STACK_POINTER:
       return sP.getStackPointer();
     case STATE_REGISTER:
-      return (flags & F_SVISOR) ? flags : int(flags);
+      return flags;
+    case PROGRAM_COUNTER:
+      return progCounter;
     default: {
       stringstream stream;
       stream << "No such register: " << arg << ". Couldn't load it.";
@@ -592,6 +592,8 @@ Cpu::setReg(const int& arg, const int& value)
       } else {
         throw WrongArgumentException("Not Allowed to modify SR");
       }
+    case PROGRAM_COUNTER:
+      progCounter = value;
       break;
     default: {
       stringstream stream;

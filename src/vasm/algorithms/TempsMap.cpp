@@ -71,6 +71,10 @@ TempsMap::putTemp(const uint32_t & uid, const bool & ignoreDups)
       stream << "SR";
       break;
     }
+    case PROGRAM_COUNTER+1: {
+      stream << "PC";
+      break;
+    }
     default: {
       stream << "T";
       stream.width(10);
