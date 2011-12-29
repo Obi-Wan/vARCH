@@ -106,7 +106,7 @@ AsmArgs::printHelp() const throw()
   cout << "To let the assembler auto allocate registers:" << endl
         << "  add flag -reg-auto-alloc" << endl;
   cout << "To let the assembler coalesce registers (when auto allocating):"
-        << endl << "  add flag -reg-auto-alloc" << endl;
+        << endl << "  add flag -reg-coalesce" << endl;
   cout << "To enable some sort of optimizations:" << endl
         << "  -O<optimization_level> with <optimization_level> as a number "
         << "between 0 and 3" << endl;
