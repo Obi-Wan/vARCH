@@ -10,7 +10,8 @@
 #include "Chipset.h"
 #include "exceptions.h"
 
-#define MAX_MEM 350
+#define NUM_MEM_BYTES 350
+#define MAX_MEM_ADDR  (NUM_MEM_BYTES * 4)
 
 /*
  * 
@@ -18,7 +19,7 @@
 int
 main(int argc, char** argv) {
   
-  Chipset chipset(MAX_MEM, new int[MAX_MEM]);
+  Chipset chipset(MAX_MEM_ADDR, new DoubleWord[NUM_MEM_BYTES]);
   try {
     chipset.startClock();
   } catch (BasicException e) {

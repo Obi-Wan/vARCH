@@ -7,14 +7,14 @@
 
 #include <unistd.h>
 
-#include "Chipset.h"
-#include "../include/std_istructions.h"
-#include "../include/asm_helpers.h"
-#include "SystemTimer.h"
-#include "CharTerminal.h"
+#include "std_istructions.h"
 #include "macros.h"
 
-Chipset::Chipset(const uint32_t& _maxMem, int32_t * _mainMem)
+#include "Chipset.h"
+#include "SystemTimer.h"
+#include "CharTerminal.h"
+
+Chipset::Chipset(const uint32_t& _maxMem, DoubleWord * _mainMem)
     : cpu(* (new Cpu(*this,*(new Mmu(_maxMem,_mainMem))))), mainMem(_mainMem)
       , maxMem(_maxMem) {
 
@@ -33,32 +33,6 @@ Chipset::Chipset(const uint32_t& _maxMem, int32_t * _mainMem)
 
 Chipset::~Chipset() { }
 
-//const int
-//Chipset::bios[] = {
-//  MOV + ARG_1(CONST) + ARG_2(REG), 10, REG_DATA_1,
-//  MOV + ARG_1(CONST) + ARG_2(REG), 20, REG_DATA_2,
-//  ADD + ARG_1(REG) + ARG_2(REG), REG_DATA_1, REG_DATA_2,
-//  MOV + ARG_1(REG) + ARG_2(ADDR), REG_DATA_2, 16,
-//  HALT, 0, 0 };
-
-const int32_t
-Chipset::bios[] = {
-  MOV   + ARG_1(CONST) + ARG_2(REG), 10          , REG_DATA_1,
-  MOV   + ARG_1(CONST) + ARG_2(REG), 20          , REG_DATA_2,
-  ADD   + ARG_1(REG)  + ARG_2(REG), REG_DATA_1  , REG_DATA_2,
-  PUSH  + ARG_1(REG)              , REG_DATA_2  ,
-  HALT, 0, 0 };
-
-//const int32_t
-//Chipset::bios[] = {
-//  MOV + ARG_1(CONST) + ARG_2(REG),                   7,          REG_DATA_1,
-//  MOV + ARG_1(CONST) + ARG_2(REG),                   1,          REG_DATA_2,
-//  IFEQJ + ARG_1(CONST) + ARG_2(REG) + ARG_3(CONST),   17,         REG_DATA_1, 0,
-//  MULT + ARG_1(REG_POST_DECR) + ARG_2(REG),         REG_DATA_1, REG_DATA_2,
-//  IFNEQJ + ARG_1(CONST) + ARG_2(REG) + ARG_3(CONST),  10,         REG_DATA_1, 0,
-//  MOV + ARG_1(REG) + ARG_2(ADDR),                   REG_DATA_2, 23,
-//  HALT, 0, 0 };
-
 inline Bloat
 Chipset::loadBiosFromFile(const char * file) {
   BinLoader handler(file);
@@ -72,19 +46,18 @@ Chipset::initMem() {
     Bloat biosLoad = loadBiosFromFile("bios.bin");
 
     CHECK_THROW(biosLoad.size() < maxMem,
-        WrongFileException("Bios Too Big! It doesn't fit memory!"));
+        WrongFileException("Bios Too Big! It doesn't fit in memory!"));
 
     for (i = 0; i < biosLoad.size(); i++) {
-      mainMem[i] = biosLoad[i];
+      mainMem[i].u32 = biosLoad[i];
     }
   } catch (const WrongFileException & e) {
     printf("Failed to load bios from file:\n%s\n", e.what());
-    for (i = 0; !(bios[i-1] == HALT && (bios[i] == 0 || bios[i+1] == 0)); i++) {
-      mainMem[i] = bios[i];
-    }
+    printf("Exiting.\n");
+    throw e;
   }
   for (; i < maxMem; i++) {
-    mainMem[i] = 0;
+    mainMem[i].u32 = 0;
   }
 }
 

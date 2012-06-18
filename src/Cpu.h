@@ -11,6 +11,7 @@
 #include "Mmu.h"
 #include "exceptions.h"
 #include "CpuDefinitions.h"
+#include "std_istructions.h"
 
 class Chipset; /* just a class declaration */
 
@@ -39,7 +40,7 @@ private:
   /** the MMU */
   Mmu& memoryController;
 
-  /** The data registers */
+  /** The raw_data registers */
   int regsData[NUM_REGS];
 
   /** The addresses registers */
@@ -64,45 +65,38 @@ private:
     }
     const uint32_t & getUStackPointer() const throw() { return uSP; }
 
-    void push(const int& data) {
-      uint32_t& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
-      cpu.memoryController.storeToMem(data,--ref);
-    }
-    int pop() {
-      uint32_t& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
-      return cpu.memoryController.loadFromMem(ref++);
-    }
+    void push(const int32_t& data);
+    int32_t pop();
 
-    void pushAllRegs() {
-      uint32_t& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
-      for(uint32_t i = 0; i < NUM_REGS; i++) {
-        cpu.memoryController.storeToMem(cpu.regsData[i],--ref);
-        cpu.memoryController.storeToMem(cpu.regsAddr[i],--ref);
-      }
-    }
-    void popAllRegs() {
-      uint32_t& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
-      for(int i = NUM_REGS-1; i >= 0; i--) {
-        cpu.regsAddr[i] = cpu.memoryController.loadFromMem(ref++);
-        cpu.regsData[i] = cpu.memoryController.loadFromMem(ref++);
-      }
-    }
+    void pushAllRegs();
+    void popAllRegs();
   } sP;
 
   /** The program counter */
-  int progCounter;
+  uint32_t progCounter;
 
   //|//////////////////////|//
   //|  Functions           |//
   //|//////////////////////|//
-  int instructsOneArg(const int& instr, int& newFlags);
-  int instructsZeroArg(const int& instr, int& newFlags);
-  int instructsTwoArg(const int& instr, int& newFlags);
-  int instructsThreeArg(const int& instr, int& newFlags);
+  int32_t instructsOneArg(const int32_t& instr, int32_t& newFlags);
+  int32_t instructsZeroArg(const int32_t& instr, int32_t& newFlags);
+  int32_t instructsTwoArg(const int32_t& instr, int32_t& newFlags);
+  int32_t instructsThreeArg(const int32_t& instr, int32_t& newFlags);
+
+  /**
+   * Temporary record for arguments processing
+   */
+  struct ArgRecord {
+    uint8_t scale;
+    uint8_t type;
+    uint32_t raw_data;
+
+    ArgRecord(const int32_t & packedType, const int32_t & data);
+  };
 
   /* Arguments functions */
-  int loadArg(const int& arg,const int& typeArg);
-  void storeArg(const int& arg, const int& typeArg, int value);
+  uint32_t loadArg(int32_t & temp, const ArgRecord &argRecord);
+  uint32_t storeArg(const int32_t & value, const ArgRecord & argRecord);
 
   /* Regs functions */
   int getReg(const int& arg);
@@ -127,6 +121,12 @@ private:
     flags |= mask;
     return oldFlags;
   }
+
+  static int32_t fromMemorySpace(const DoubleWord & data, const uint8_t & scale);
+  static void toMemorySpace(DoubleWord & data, const int32_t & value,
+      const uint8_t & scale);
+
+  static bool isAutoIncrDecrArg(const ArgRecord & arg);
 };
 
 #endif	/* _CPU_H */

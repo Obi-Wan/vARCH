@@ -9,7 +9,8 @@
 
 #include <sstream>
 
-Mmu::Mmu(const uint32_t & _maxMem, int * _mem) : maxMem(_maxMem), mainMem(_mem)
+Mmu::Mmu(const uint32_t & _maxMem, DoubleWord * _mem)
+  : maxMem(_maxMem), mainMem(_mem)
 {
   base = 0;
   limit = maxMem;
@@ -20,45 +21,190 @@ Mmu::Mmu(const Mmu& orig) : maxMem(orig.maxMem), mainMem(orig.mainMem) {
   limit = orig.limit;
 }
 
-
-
-/** Stores data to memory
+/**
+ * Stores data to memory
  *
- * @param data Data to store
- * @param addr The addres where to store data.
+ * @param data Contains data to write
+ * @param addr Starting address of the data
+ * @param size Size of the data (As coded in ScaleOfArgument)
  *
- * @throws RuntimeException when address is wrong
+ * @return Time taken by the operation
  */
-void
-Mmu::storeToMem(const int32_t & data, const uint32_t & addr)
+uint32_t
+Mmu::storeToMem(const DoubleWord & data, const uint32_t & addr,
+    const uint8_t & size)
 {
-  if (addr >= limit) {
-    stringstream errorMess(string(""));
-    errorMess << "StoreToMem Failed, wrong addr: " << addr
-              << " upper limit: " << limit << "\n";
-    throw MmuException(errorMess.str());
-  }
-
-  mainMem[addr + base] = data;
-}
-
-/** Loads data from memory
- *
- * @param addr The addres where to find data.
- *
- * @throws RuntimeException when address is wrong
- */
-const int32_t &
-Mmu::loadFromMem(const uint32_t & addr) const
-{
-  if (addr >= limit) {
+  if ((addr + (1 << size)) >= limit) {
     stringstream errorMess(string(""));
     errorMess << "LoadFromMem Failed, wrong addr: " << addr
+              << " size: " << (1 << size)
               << " upper limit: " << limit << "\n";
     throw MmuException(errorMess.str());
   }
 
-  return mainMem[addr + base];
+  const uint32_t blockNum = ((addr + base) >> 2);
+  const uint32_t blockOffset = ((addr + base) & 3);
+
+  switch (size) {
+    case BYTE1: {
+      /* Aligned access */
+      mainMem[blockNum].u8[blockOffset] = data.u8[0];
+      return Mmu::accessTime;
+    }
+    case BYTE2: {
+      switch (blockOffset) {
+        case 0:
+          /* Aligned access */
+          mainMem[blockNum].u16[0] = data.u16[0];
+          return Mmu::accessTime;
+        case 2:
+          /* Aligned access */
+          mainMem[blockNum].u16[1] = data.u16[0];
+          return Mmu::accessTime;
+        case 1:
+          /* Misaligned access */
+          mainMem[blockNum].u8[1] = data.u8[0];
+          mainMem[blockNum].u8[2] = data.u8[1];
+          return Mmu::accessTime * 2;
+        case 3:
+          /* Misaligned access */
+          mainMem[blockNum].u8[3] = data.u8[0];
+          mainMem[blockNum+1].u8[0] = data.u8[1];
+          return Mmu::accessTime * 2;
+        default:
+          break;
+      }
+      throw MmuException("We shouldn't get here");
+    }
+    case BYTE4: {
+      switch (blockOffset) {
+        case 0:
+          /* Aligned access */
+          mainMem[blockNum].u32 = data.u32;
+          return Mmu::accessTime;
+        case 1:
+          /* Misaligned access */
+          mainMem[blockNum].u8[1] = data.u8[0];
+          mainMem[blockNum].u8[2] = data.u8[1];
+          mainMem[blockNum].u8[3] = data.u8[2];
+          mainMem[blockNum+1].u8[0] = data.u8[3];
+          return Mmu::accessTime * 2;
+        case 2:
+          /* Misaligned access */
+          mainMem[blockNum].u16[1] = data.u16[0];
+          mainMem[blockNum+1].u16[0] = data.u16[1];
+          return Mmu::accessTime * 2;
+        case 3:
+          /* Misaligned access */
+          mainMem[blockNum].u8[3] = data.u8[0];
+          mainMem[blockNum+1].u8[0] = data.u8[1];
+          mainMem[blockNum+1].u8[1] = data.u8[2];
+          mainMem[blockNum+1].u8[2] = data.u8[3];
+          return Mmu::accessTime * 2;
+        default:
+          break;
+      }
+      throw MmuException("We shouldn't get here");
+    }
+    default:
+      stringstream errorMess(string(""));
+      errorMess << "Size of " << (1 << size)
+                << " bytes not supported (just 1, 2, 4)\n";
+      throw MmuException(errorMess.str());
+  }
+}
+
+/**
+ * Loads data from memory
+ *
+ * @param data Data to read
+ * @param addr Starting address of the data
+ * @param size Size of the data (As coded in ScaleOfArgument)
+ *
+ * @return Time taken by the operation
+ */
+uint32_t
+Mmu::loadFromMem(DoubleWord & data, const uint32_t & addr, const uint8_t & size)
+  const
+{
+  if ((addr + (1 << size)) >= limit) {
+    stringstream errorMess(string(""));
+    errorMess << "LoadFromMem Failed, wrong addr: " << addr
+              << ", size: " << (1 << size)
+              << ", upper limit: " << limit << "\n";
+    throw MmuException(errorMess.str());
+  }
+
+  const uint32_t blockNum = ((addr + base) >> 2);
+  const uint32_t blockOffset = ((addr + base) & 3);
+
+  switch (size) {
+    case BYTE1: {
+      /* Aligned access */
+      data.u8[0] = mainMem[blockNum].u8[blockOffset];
+      return Mmu::accessTime;
+    }
+    case BYTE2: {
+      switch (blockOffset) {
+        case 0:
+          /* Aligned access */
+          data.u16[0] = mainMem[blockNum].u16[0];
+          return Mmu::accessTime;
+        case 2:
+          /* Aligned access */
+          data.u16[0] = mainMem[blockNum].u16[1];
+          return Mmu::accessTime;
+        case 1:
+          /* Misaligned access */
+          data.u8[0] = mainMem[blockNum].u8[1];
+          data.u8[1] = mainMem[blockNum].u8[2];
+          return Mmu::accessTime * 2;
+        case 3:
+          /* Misaligned access */
+          data.u8[0] = mainMem[blockNum].u8[3];
+          data.u8[1] = mainMem[blockNum+1].u8[0];
+          return Mmu::accessTime * 2;
+        default:
+          break;
+      }
+      throw MmuException("We shouldn't get here");
+    }
+    case BYTE4: {
+      switch (blockOffset) {
+        case 0:
+          /* Aligned access */
+          data.u32 = mainMem[blockNum].u32;
+          return Mmu::accessTime;
+        case 1:
+          /* Misaligned access */
+          data.u8[0] = mainMem[blockNum].u8[1];
+          data.u8[1] = mainMem[blockNum].u8[2];
+          data.u8[2] = mainMem[blockNum].u8[3];
+          data.u8[3] = mainMem[blockNum+1].u8[0];
+          return Mmu::accessTime * 2;
+        case 2:
+          /* Misaligned access */
+          data.u16[0] = mainMem[blockNum].u16[1];
+          data.u16[1] = mainMem[blockNum+1].u16[0];
+          return Mmu::accessTime * 2;
+        case 3:
+          /* Misaligned access */
+          data.u8[0] = mainMem[blockNum].u8[3];
+          data.u8[1] = mainMem[blockNum+1].u8[0];
+          data.u8[2] = mainMem[blockNum+1].u8[1];
+          data.u8[3] = mainMem[blockNum+1].u8[2];
+          return Mmu::accessTime * 2;
+        default:
+          break;
+      }
+      throw MmuException("We shouldn't get here");
+    }
+    default:
+      stringstream errorMess(string(""));
+      errorMess << "Size of " << (1 << size)
+                << " bytes not supported (just 1, 2, 4)\n";
+      throw MmuException(errorMess.str());
+  }
 }
 
 /** Sets Base and Limit to the desired values

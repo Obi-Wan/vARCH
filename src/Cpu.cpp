@@ -9,7 +9,6 @@
 
 #include "Chipset.h"
 #include "std_istructions.h"
-#include "asm_helpers.h"
 #include "macros.h"
 
 #ifdef DEBUG
@@ -18,6 +17,47 @@
 
 #include <cstdio>
 #include <sstream>
+
+inline
+Cpu::ArgRecord::ArgRecord(const int32_t & packedType, const int32_t & data)
+  : scale(GET_ARG_SCALE(packedType)), type(GET_ARG_TYPE(packedType))
+  , raw_data(data)
+{ }
+
+inline void
+Cpu::StackPointers::push(const int32_t& data) {
+  uint32_t& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
+  cpu.memoryController.storeToMemUI32(uint32_t(data),--ref);
+}
+
+inline int32_t
+Cpu::StackPointers::pop() {
+  uint32_t& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
+  DoubleWord data;
+  cpu.memoryController.loadFromMem(data, ref++, BYTE4);
+  return fromMemorySpace(data, BYTE4);
+}
+
+inline void
+Cpu::StackPointers::pushAllRegs() {
+  uint32_t& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
+  for(uint32_t i = 0; i < NUM_REGS; i++) {
+    cpu.memoryController.storeToMemUI32(uint32_t(cpu.regsData[i]), --ref);
+    cpu.memoryController.storeToMemUI32(uint32_t(cpu.regsAddr[i]), --ref);
+  }
+}
+
+inline void
+Cpu::StackPointers::popAllRegs() {
+  uint32_t& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
+  DoubleWord data;
+  for(int32_t i = NUM_REGS-1; i >= 0; i--) {
+    cpu.memoryController.loadFromMem(data, ref++, BYTE4);
+    cpu.regsAddr[i] = fromMemorySpace(data, BYTE4);
+    cpu.memoryController.loadFromMem(data, ref++, BYTE4);
+    cpu.regsData[i] = fromMemorySpace(data, BYTE4);
+  }
+}
 
 #define SET_ARITM_FLAGS( x ) (( x < 0) ? F_NEGATIVE : ( (! x ) ? F_ZERO : 0 ))
 
@@ -45,12 +85,12 @@ Cpu::dumpRegistersAndMemory() const
 //  int old = setFlags(F_SVISOR);
 
   printf("Data Registers:");
-  for( int i = 0; i < NUM_REGS; i++) {
+  for(size_t i = 0; i < NUM_REGS; i++) {
     printf(" %d", regsData[i]);
   }
   
   printf("\nAddress Registers:");
-  for (int i = 0; i < 8; i++) {
+  for (size_t i = 0; i < 8; i++) {
     printf(" %d", regsAddr[i]);
   }
 
@@ -59,9 +99,10 @@ Cpu::dumpRegistersAndMemory() const
   printf( "Stack pointers, user: %04u \tsupervisor: %04u\n",
           sP.getUStackPointer(), sP.getStackPointer());
 
-  for(size_t i = 0; i < memoryController.getMaxMem(); i++) {
-    printf( "Mem: %04lu Data: %12d\n", (uint64_t) i,
-            memoryController.loadFromMem(i));
+  DoubleWord doubleWord;
+  for(uint32_t i = 0; i < memoryController.getMaxMem(); i += 4) {
+    memoryController.loadFromMem(doubleWord, i, BYTE4);
+    printf( "Mem: %04lu Data: %12d\n", (uint64_t) i, doubleWord.u32);
   }
 
 //  restoreFlags(old);
@@ -76,34 +117,44 @@ Cpu::coreStep()
     const InterruptHandler::InterruptsRecord &intRecord = chipset.getTopInterrupt();
     if (intRecord.getPriority() > INT_GET(flags)) {
       DebugPrintf(("we got an interrupt!"));
-      int currentFlags = flags;
+      int32_t currentFlags = flags;
       flags += F_SVISOR;
       sP.push(currentFlags);
       sP.push(progCounter);
 
-      progCounter = memoryController.loadFromMem(regsAddr[7] +
-              2 * intRecord.getDeviceId());
-      restoreFlags( memoryController.loadFromMem(
-              regsAddr[7] + 2 * intRecord.getDeviceId() + 1) );
+      DoubleWord doubleWord;
+
+      timeDelay = memoryController.loadFromMem(doubleWord, regsAddr[7] +
+              2 * intRecord.getDeviceId(), BYTE4);
+      progCounter = doubleWord.u32;
+
+      timeDelay += memoryController.loadFromMem( doubleWord,
+              regsAddr[7] + 2 * intRecord.getDeviceId() + 1, BYTE4);
+      restoreFlags( int32_t(doubleWord.u32) );
 
       chipset.topInterruptServed();
     }
+  } else {
+    timeDelay = 0;
   }
 
   //DebugPrintf(("Proceding with instructions execution\n"));
   // Now proced with instruction execution
-  timeDelay = 0;
-  int newFlags = flags;
+  int32_t newFlags = flags;
   resetFlags(newFlags);
-  int currentInstr = memoryController.loadFromMem(progCounter++);
+  DoubleWord fetchedInstr;
+  timeDelay = memoryController.loadFromMem(fetchedInstr, progCounter, BYTE4);
+  int32_t currentInstr = int32_t( fetchedInstr.u32 );
 
-  DebugPrintf(("Istruzione nell'area di mem: %d num args: %d\n", progCounter-1,
-         (currentInstr >> 30 ) & 3));
+  DebugPrintf(("Istruzione nell'area di mem: %d num args: %d\n", progCounter,
+         GET_NUM_ARGS(currentInstr) ));
+
+  SCALE_ADDR_INCREM(progCounter, BYTE4);
 
   int res = 0;
 
   try {
-    switch ((currentInstr >> 30 ) & 3) {
+    switch (GET_NUM_ARGS(currentInstr)) {
       case 0:
         res = instructsZeroArg(currentInstr, newFlags);
         break;
@@ -154,20 +205,24 @@ Cpu::instructsZeroArg(const int& instr, int& newFlags)
 
     default:
       throw WrongInstructionException();
-      break;
   }
   return 0;
 }
 
-inline int
-Cpu::instructsOneArg(const int& instr, int& newFlags)
+inline int32_t
+Cpu::instructsOneArg(const int32_t& instr, int32_t& newFlags)
 {
-  const int typeArg = GET_ARG_1(instr);
-  const int arg = memoryController.loadFromMem(progCounter++);
-  DebugPrintf(("Type arg 1: 0x%X arg: 0x%X\n", typeArg, arg));
-  int temp = loadArg(arg, typeArg);
+  const int32_t typeArg = GET_ARG_1(instr);
+  const int32_t polishedInstr = instr - ARG_1(typeArg);
 
-  const int polishedInstr = instr - ARG_1(typeArg);
+  DoubleWord rawArg;
+  timeDelay += memoryController.loadFromMem(rawArg, progCounter, BYTE4);
+  SCALE_ADDR_INCREM(progCounter, BYTE4);
+
+  ArgRecord argRecord(typeArg, rawArg.u32);
+
+  int32_t temp = 0;
+  timeDelay += loadArg(temp, argRecord);
 
   DebugPrintf(("  Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
   switch (polishedInstr) {
@@ -239,32 +294,37 @@ Cpu::instructsOneArg(const int& instr, int& newFlags)
       
     default:
       throw WrongInstructionException();
-      break;
   }
 
-  if (polishedInstr < STACK || polishedInstr == POP || IS_PRE_POST_MOD(typeArg))
+  if ( polishedInstr < STACK || polishedInstr == POP
+       || isAutoIncrDecrArg(argRecord) )
   {
     newFlags += SET_ARITM_FLAGS(temp);
-    storeArg(arg, typeArg, temp);
+    storeArg(temp, argRecord);
   }
 
   return 0;
 }
 
-inline int
-Cpu::instructsTwoArg(const int& instr, int& newFlags)
+inline int32_t
+Cpu::instructsTwoArg(const int32_t& instr, int32_t& newFlags)
 {
-  const int typeArg1 = GET_ARG_1(instr);
-  const int arg1 = memoryController.loadFromMem(progCounter++);
-  DebugPrintf(("Type arg 1: 0x%X arg: 0x%X\n", typeArg1, arg1));
-  int temp1 = loadArg(arg1, typeArg1);
+  const int32_t typeArg1 = GET_ARG_1(instr);
+  const int32_t typeArg2 = GET_ARG_2(instr);
+  const int32_t polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2);
 
-  const int typeArg2 = GET_ARG_2(instr);
-  const int arg2 = memoryController.loadFromMem(progCounter++);
-  DebugPrintf(("Type arg 2: 0x%X arg: 0x%X\n", typeArg2, arg2));
-  int temp2 = loadArg(arg2, typeArg2);
+  DoubleWord rawArg1, rawArg2;
+  timeDelay += memoryController.loadFromMem(rawArg1, progCounter, BYTE4);
+  SCALE_ADDR_INCREM(progCounter, BYTE4);
+  timeDelay += memoryController.loadFromMem(rawArg2, progCounter, BYTE4);
+  SCALE_ADDR_INCREM(progCounter, BYTE4);
 
-  const int polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2);
+  ArgRecord argRecord1(typeArg1, rawArg1.u32);
+  ArgRecord argRecord2(typeArg2, rawArg2.u32);
+
+  int32_t temp1 = 0, temp2 = 0;
+  timeDelay += loadArg(temp1, argRecord1);
+  timeDelay += loadArg(temp2, argRecord2);
 
   DebugPrintf(("  Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
   switch (polishedInstr) {
@@ -341,36 +401,46 @@ Cpu::instructsTwoArg(const int& instr, int& newFlags)
       break;
   }
 
-  if (polishedInstr <= XOR || polishedInstr == GET || IS_PRE_POST_MOD(typeArg2))
-  {
+  if ( polishedInstr <= XOR || polishedInstr == GET
+       || isAutoIncrDecrArg(argRecord2) )
+  { /* Operations that do modify args */
     newFlags += SET_ARITM_FLAGS(temp2);
-    storeArg(arg2, typeArg2, temp2); /* Operations that do modify args */
+    storeArg(temp2, argRecord2);
   }
 
-  if (IS_PRE_POST_MOD(typeArg1)) { /* in case the first arg was modified */
-    storeArg(arg1, typeArg1, temp1);
+  if (isAutoIncrDecrArg(argRecord1)) { /* in case the first arg was modified */
+    storeArg(temp1, argRecord1);
   }
 
   return 0;
 }
 
-inline int
-Cpu::instructsThreeArg(const int& instr, int& newFlags)
+inline int32_t
+Cpu::instructsThreeArg(const int32_t& instr, int32_t& newFlags)
 {
-  const int typeArg1 = GET_ARG_1(instr);
-  const int arg1 = memoryController.loadFromMem(progCounter++);
-  int temp1 = loadArg(arg1, typeArg1);
+  const int32_t typeArg1 = GET_ARG_1(instr);
+  const int32_t typeArg2 = GET_ARG_2(instr);
+  const int32_t typeArg3 = GET_ARG_3(instr);
+  const int32_t polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2)
+                                      - ARG_3(typeArg3);
 
-  const int typeArg2 = GET_ARG_2(instr);
-  const int arg2 = memoryController.loadFromMem(progCounter++);
-  int temp2 = loadArg(arg2, typeArg2);
+  DoubleWord rawArg1, rawArg2, rawArg3;
+  timeDelay += memoryController.loadFromMem(rawArg1, progCounter, BYTE4);
+  SCALE_ADDR_INCREM(progCounter, BYTE4);
+  timeDelay += memoryController.loadFromMem(rawArg2, progCounter, BYTE4);
+  SCALE_ADDR_INCREM(progCounter, BYTE4);
+  timeDelay += memoryController.loadFromMem(rawArg3, progCounter, BYTE4);
+  SCALE_ADDR_INCREM(progCounter, BYTE4);
 
-  const int typeArg3 = GET_ARG_3(instr);
-  const int arg3 = memoryController.loadFromMem(progCounter++);
-  int temp3 = loadArg(arg3, typeArg3);
+  ArgRecord argRecord1(typeArg1, rawArg1.u32);
+  ArgRecord argRecord2(typeArg2, rawArg2.u32);
+  ArgRecord argRecord3(typeArg3, rawArg3.u32);
 
-  const int polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2)
-                                  - ARG_3(typeArg3);
+  int32_t temp1 = 0, temp2 = 0, temp3 = 0;
+  timeDelay += loadArg(temp1, argRecord1);
+  timeDelay += loadArg(temp2, argRecord2);
+  timeDelay += loadArg(temp3, argRecord3);
+
 
   DebugPrintf(("  Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
   switch (polishedInstr) {
@@ -402,135 +472,364 @@ Cpu::instructsThreeArg(const int& instr, int& newFlags)
       break;
   }
 
-  if (IS_PRE_POST_MOD(typeArg1)) { /* in case the first arg was modified */
-    storeArg(arg1, typeArg1, temp1);
+  if (isAutoIncrDecrArg(argRecord1)) { /* in case the first arg was modified */
+    storeArg(temp1, argRecord1);
   }
 
-  if (IS_PRE_POST_MOD(typeArg2)) { /* in case the second arg was modified */
-    storeArg(arg2, typeArg2, temp2);
+  if (isAutoIncrDecrArg(argRecord2)) { /* in case the second arg was modified */
+    storeArg(temp2, argRecord2);
   }
 
-  if (IS_PRE_POST_MOD(typeArg1)) { /* in case the third arg was modified */
-    storeArg(arg3, typeArg3, temp3);
+  if (isAutoIncrDecrArg(argRecord3)) { /* in case the third arg was modified */
+    storeArg(temp3, argRecord3);
   }
 
   return 0;
 }
 
 
-inline int
-Cpu::loadArg(const int& arg,const int& typeArg)
+inline uint32_t
+Cpu::loadArg(int32_t & temp, const ArgRecord & arg)
 {
-  const uint32_t relative = IS_RELATIVE(typeArg) * sP.getStackPointer();
-  DebugPrintf(("  Relative: %d\n", relative));
-  switch (typeArg & 0xf) {
-    case CONST:
-      DebugPrintf(("  CONST: %d\n", arg));
-      return (arg + relative);
+  DebugPrintf(("Type arg 1: 0x%X scale: 0x%X arg: 0x%X\n", arg.type, arg.scale,
+      arg.raw_data));
+  switch (arg.type) {
+    case IMMED:
+      DebugPrintf(("  CONST: %d\n", arg.raw_data));
+      temp = int32_t(arg.raw_data);
+      return 0;
+    case REG: {
+      const uint32_t reg_raw_data = GET_FIRST_REG(arg.raw_data);
+      const uint32_t reg_pos = FILTER_PRE_POST(reg_raw_data);
+      const int32_t pre = IS_PRE_POST_MOD(reg_raw_data)
+                          * (!IS_POST(reg_raw_data))
+                          * (1 - (2 * IS_DECR(reg_raw_data)) );
+      temp = getReg(reg_pos) + pre;
+#ifdef DEBUG
+      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
+        if (IS_DECR(arg.raw_data)) {
+          DebugPrintf(("  REG_PRE_DECR: %d\n", reg_pos));
+        } else {
+          DebugPrintf(("  REG_PRE_INCR: %d\n", reg_pos));
+        }
+      } else {
+        DebugPrintf(("  REG / REG_POST_*: %d\n", reg_pos));
+      }
+#endif
+      return 0;
+    }
+    case DIRECT: {
+      DoubleWord data;
+      DebugPrintf(("  ADDR: %d\n", arg.raw_data));
+      const uint32_t delay = memoryController.loadFromMem(data, arg.raw_data, arg.scale);
+      temp = fromMemorySpace(data, arg.scale);
+      return delay;
+    }
+    case REG_INDIR: {
+      DoubleWord data;
+      const uint32_t reg_raw_data = GET_FIRST_REG(arg.raw_data);
+      const uint32_t reg_pos = FILTER_PRE_POST(reg_raw_data);
+      const int32_t pre = IS_PRE_POST_MOD(reg_raw_data) * (1 << arg.scale)
+                          * (!IS_POST(reg_raw_data))
+                          * (1 - (2 * IS_DECR(reg_raw_data)) );
+      const uint32_t addr = getReg(reg_pos) + pre;
+      const uint32_t delay = memoryController.loadFromMem(data, addr, arg.scale);
+      temp = fromMemorySpace(data, arg.scale);
+#ifdef DEBUG
+      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
+        if (IS_DECR(arg.raw_data)) {
+          DebugPrintf(("  ADDR_IN_REG_PRE_DECR: %d\n", reg_pos));
+        } else {
+          DebugPrintf(("  ADDR_IN_REG_PRE_INCR: %d\n", reg_pos));
+        }
+      } else {
+        DebugPrintf(("  ADDR_IN_REG / ADDR_IN_REG_POST_*: %d\n", reg_pos));
+      }
+#endif
+      return delay;
+    }
+    case MEM_INDIR: {
+      DoubleWord data;
+      const uint32_t reg_raw_data = GET_FIRST_REG(arg.raw_data);
+      const uint32_t reg_pos = FILTER_PRE_POST(reg_raw_data);
+      const int32_t pre = IS_PRE_POST_MOD(reg_raw_data) * (1 << arg.scale)
+                          * (!IS_POST(reg_raw_data))
+                          * (1 - (2 * IS_DECR(reg_raw_data)) );
+      const uint32_t addr = getReg(reg_pos) + pre;
+      uint32_t delay = memoryController.loadFromMem(data, addr, BYTE4);
+      delay += memoryController.loadFromMem(data, data.u32, arg.scale);
+      temp = fromMemorySpace(data, arg.scale);
+#ifdef DEBUG
+      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
+        if (IS_DECR(arg.raw_data)) {
+          DebugPrintf(("  ADDR_IN_MEM_PRE_DECR: %d\n", reg_pos));
+        } else {
+          DebugPrintf(("  ADDR_IN_MEM_PRE_INCR: %d\n", reg_pos));
+        }
+      } else {
+        DebugPrintf(("  ADDR_IN_MEM / ADDR_IN_MEM_POST_*: %d\n", reg_pos));
+      }
+#endif
+      return delay;
+    }
+    case DISPLACED: {
+      DoubleWord data;
+      const int32_t displ = GET_BIG_DISPL(arg.raw_data);
+      const uint32_t reg_raw_data = GET_FIRST_REG(arg.raw_data);
+      const uint32_t reg_pos = FILTER_PRE_POST(reg_raw_data);
+      const int32_t pre = IS_PRE_POST_MOD(reg_raw_data) * (1 << arg.scale)
+                          * (!IS_POST(reg_raw_data))
+                          * (1 - (2 * IS_DECR(reg_raw_data)) );
+      const uint32_t addr = getReg(reg_pos) + pre + displ;
+      const uint32_t delay = memoryController.loadFromMem(data, addr, arg.scale);
+      temp = fromMemorySpace(data, arg.scale);
+#ifdef DEBUG
+      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
+        if (IS_DECR(arg.raw_data)) {
+          DebugPrintf(("  DISPLACED_PRE_DECR: %d\n", reg_pos));
+        } else {
+          DebugPrintf(("  DISPLACED_PRE_INCR: %d\n", reg_pos));
+        }
+      } else {
+        DebugPrintf(("  DISPLACED / DISPLACED_POST_*: %d\n", reg_pos));
+      }
+#endif
+      return delay;
+    }
+    case INDEXED: {
+      DoubleWord data;
+      const uint32_t index_raw = GET_INDEX_REG(arg.raw_data);
+      const uint32_t index = FILTER_PRE_POST(index_raw);
+      const uint32_t reg_pos = FILTER_PRE_POST(GET_FIRST_REG(arg.raw_data));
+      const int32_t pre = IS_PRE_POST_MOD(index_raw)
+                          * (!IS_POST(index_raw))
+                          * (1 - (2 * IS_DECR(index_raw)) );
+      const uint32_t addr = getReg(reg_pos) + (pre + getReg(index)) * (1 << arg.scale);
+      const uint32_t delay = memoryController.loadFromMem(data, addr, arg.scale);
+      temp = fromMemorySpace(data, arg.scale);
+#ifdef DEBUG
+      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
+        if (IS_DECR(arg.raw_data)) {
+          DebugPrintf(("  INDEXED_PRE_DECR: %d\n", reg_pos));
+        } else {
+          DebugPrintf(("  INDEXED_PRE_INCR: %d\n", reg_pos));
+        }
+      } else {
+        DebugPrintf(("  INDEXED / INDEXED_POST_*: %d\n", reg_pos));
+      }
+#endif
+      return delay;
+    }
+    case INDX_DISP: {
+      DoubleWord data;
+      const int32_t displ = GET_INDEX_DISPL(arg.raw_data);
+      const uint32_t index_raw = GET_INDEX_REG(arg.raw_data);
+      const uint32_t index = FILTER_PRE_POST(index_raw);
+      const uint32_t reg_pos = FILTER_PRE_POST(GET_FIRST_REG(arg.raw_data));
+      const int32_t pre = IS_PRE_POST_MOD(index_raw)
+                          * (!IS_POST(index_raw))
+                          * (1 - (2 * IS_DECR(index_raw)) );
+      const uint32_t addr = getReg(reg_pos) + (pre + getReg(index)) * (1 << arg.scale) + displ;
+      const uint32_t delay = memoryController.loadFromMem(data, addr, arg.scale);
+      temp = fromMemorySpace(data, arg.scale);
+#ifdef DEBUG
+      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
+        if (IS_DECR(arg.raw_data)) {
+          DebugPrintf(("  INDEXED_PRE_DECR: %d\n", reg_pos));
+        } else {
+          DebugPrintf(("  INDEXED_PRE_INCR: %d\n", reg_pos));
+        }
+      } else {
+        DebugPrintf(("  INDEXED / INDEXED_POST_*: %d\n", reg_pos));
+      }
+#endif
+      return delay;
+    }
 
-    case REG_PRE_INCR:
-      DebugPrintf(("  REG_PRE_INCR: %d\n", arg));
-      return (getReg(arg) +1);
-    case REG_PRE_DECR:
-      DebugPrintf(("  REG_PRE_DECR: %d\n", arg));
-      return (getReg(arg) -1);
-    case REG:
-    case REG_POST_INCR:
-    case REG_POST_DECR:
-      DebugPrintf(("  REG / REG_POST_*: %d\n", arg));
-      return getReg(arg);
-
-    /// ADDR_P* modify the referenced content!
-    case ADDR_PRE_INCR:
-      DebugPrintf(("  ADDR_PRE_INCR: %d\n", arg));
-      return (memoryController.loadFromMem(arg + relative) +1);
-    case ADDR_PRE_DECR:
-      DebugPrintf(("  ADDR_PRE_DECR: %d\n", arg));
-      return (memoryController.loadFromMem(arg + relative) -1);
-    case ADDR:
-    case ADDR_POST_INCR:
-    case ADDR_POST_DECR:
-      DebugPrintf(("  ADDR / ADDR_POST_*: %d\n", arg));
-      return memoryController.loadFromMem(arg + relative);
-
-    /// ADDR_IN_REG_P* modify the register content!
-    case ADDR_IN_REG_PRE_INCR:
-      DebugPrintf(("  ADDR_IN_REG_PRE_INCR: %d\n", arg));
-      return (memoryController.loadFromMem(getReg(arg) +1 + relative));
-    case ADDR_IN_REG_PRE_DECR:
-      DebugPrintf(("  ADDR_IN_REG_PRE_DECR: %d\n", arg));
-      return (memoryController.loadFromMem(getReg(arg) -1 + relative));
-    case ADDR_IN_REG:
-    case ADDR_IN_REG_POST_INCR:
-    case ADDR_IN_REG_POST_DECR:
-      DebugPrintf(("  ADDR_IN_REG / ADDR_IN_REG_POST_*: %d\n", arg));
-      return memoryController.loadFromMem(getReg(arg) + relative);
-      
     default:
       throw WrongArgumentException("Failed in loading: wrong argument type");
   }
 }
 
-inline void
-Cpu::storeArg(const int& arg, const int& typeArg, int value)
+inline uint32_t
+Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
 {
-  const uint32_t relative = IS_RELATIVE(typeArg) * sP.getStackPointer();
-  DebugPrintf(("  Relative: %d\n", relative));
-  switch (typeArg & 0xf) {
-    case REG:
-    case REG_PRE_INCR:
-    case REG_PRE_DECR:
-      DebugPrintf(("  REG / REG_PRE_*: %d\n", arg));
-      setReg(arg, value);
-      break;
-    case REG_POST_INCR:
-      DebugPrintf(("  REG_POST_INCR: %d\n", arg));
-      setReg(arg, ++value);
-      break;
-    case REG_POST_DECR:
-      DebugPrintf(("  REG_POST_DECR: %d\n", arg));
-      setReg(arg, --value);
-      break;
+  DebugPrintf(("Type arg 1: 0x%X scale: 0x%X arg: 0x%X\n", arg.type, arg.scale,
+      arg.raw_data));
+  switch (arg.type) {
+    case IMMED: {
+      throw WrongArgumentException("Can't store an immediate!");
+    }
+    case REG: {
+      const uint32_t reg_pos = FILTER_PRE_POST(arg.raw_data);
+      const int32_t post = IS_PRE_POST_MOD(arg.raw_data)
+                           * (IS_POST(arg.raw_data))
+                           * (1 - (2 * IS_DECR(arg.raw_data)) );
+      setReg(reg_pos, temp + post);
+#ifdef DEBUG
+      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
+        if (IS_DECR(arg.raw_data)) {
+          DebugPrintf(("  REG_POST_DECR: %d\n", reg_pos));
+        } else {
+          DebugPrintf(("  REG_POST_INCR: %d\n", reg_pos));
+        }
+      } else {
+        DebugPrintf(("  REG / REG_PRE_*: %d\n", reg_pos));
+      }
+#endif
+      return 0;
+    }
+    case DIRECT: {
+      DoubleWord data;
+      DebugPrintf(("  ADDR: %d\n", arg.raw_data));
+      toMemorySpace(data, temp, arg.scale);
+      const uint32_t delay = memoryController.storeToMem(data, arg.raw_data, arg.scale);
+      return delay;
+    }
+    case REG_INDIR: {
+      DoubleWord data;
+      const uint32_t reg_pos = FILTER_PRE_POST(arg.raw_data);
+      const int32_t pre = IS_PRE_POST_MOD(arg.raw_data) * (1 << arg.scale)
+                          * (!IS_POST(arg.raw_data))
+                          * (1 - (2 * IS_DECR(arg.raw_data)) );
+      const uint32_t addr = getReg(reg_pos) + pre;
+      toMemorySpace(data, temp, arg.scale);
+      const uint32_t delay = memoryController.storeToMem(data, addr, arg.scale);
 
-    /// ADDR_P* modify the referenced content!
-    case ADDR:
-    case ADDR_PRE_INCR:
-    case ADDR_PRE_DECR:
-      DebugPrintf(("  ADDR / ADDR_PRE_*: %d\n", arg));
-      memoryController.storeToMem(value, arg + relative);
-      timeDelay += Mmu::accessTime;
-      break;
-    case ADDR_POST_INCR:
-      DebugPrintf(("  ADDR_POST_INCR: %d\n", arg));
-      memoryController.storeToMem(++value, arg + relative);
-      timeDelay += Mmu::accessTime;
-      break;
-    case ADDR_POST_DECR:
-      DebugPrintf(("  ADDR_POST_DECR: %d\n", arg));
-      memoryController.storeToMem(--value, arg + relative);
-      timeDelay += Mmu::accessTime;
-      break;
+      const int32_t post = IS_PRE_POST_MOD(arg.raw_data) * (1 << arg.scale)
+                           * (IS_POST(arg.raw_data))
+                           * (1 - (2 * IS_DECR(arg.raw_data)) );
+      setReg(reg_pos, addr + post);
+#ifdef DEBUG
+      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
+        if (IS_DECR(arg.raw_data)) {
+          DebugPrintf(("  ADDR_IN_REG_POST_DECR: %d\n", reg_pos));
+        } else {
+          DebugPrintf(("  ADDR_IN_REG_POST_INCR: %d\n", reg_pos));
+        }
+      } else {
+        DebugPrintf(("  ADDR_IN_REG / ADDR_IN_REG_PRE_*: %d\n", reg_pos));
+      }
+#endif
+      return delay;
+    }
+    case MEM_INDIR: {
+      DoubleWord data;
+      const uint32_t reg_pos = FILTER_PRE_POST(arg.raw_data);
+      const int32_t pre = IS_PRE_POST_MOD(arg.raw_data) * (1 << arg.scale)
+                          * (!IS_POST(arg.raw_data))
+                          * (1 - (2 * IS_DECR(arg.raw_data)) );
+      const uint32_t addr = getReg(reg_pos) + pre;
+      uint32_t delay = memoryController.loadFromMem(data, addr, BYTE4);
+      const uint32_t new_addr = data.u32;
+      toMemorySpace(data, temp, arg.scale);
+      delay += memoryController.storeToMem(data, new_addr, arg.scale);
 
-    /// ADDR_IN_REG_P* modify the register content!
-    case ADDR_IN_REG:
-      DebugPrintf(("  ADDR_IN_REG: %d\n", arg));
-      memoryController.storeToMem(value, getReg(arg) + relative);
-      timeDelay += Mmu::accessTime;
-      break;
-    case ADDR_IN_REG_PRE_INCR:
-    case ADDR_IN_REG_POST_INCR:
-      DebugPrintf(("  ADDR_IN_REG_P*_INCR: %d\n", arg));
-      memoryController.storeToMem(value, getReg(arg) + relative);
-      setReg(arg, getReg(arg) +1);
-      timeDelay += Mmu::accessTime;
-      break;
-    case ADDR_IN_REG_PRE_DECR:
-    case ADDR_IN_REG_POST_DECR:
-      DebugPrintf(("  ADDR_IN_REG_P*_DECR: %d\n", arg));
-      memoryController.storeToMem(value, getReg(arg) + relative);
-      setReg(arg, getReg(arg) -1);
-      timeDelay += Mmu::accessTime;
-      break;
+      const int32_t post = IS_PRE_POST_MOD(arg.raw_data) * (1 << arg.scale)
+                           * (IS_POST(arg.raw_data))
+                           * (1 - (2 * IS_DECR(arg.raw_data)) );
+      setReg(reg_pos, addr + post);
+#ifdef DEBUG
+      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
+        if (IS_DECR(arg.raw_data)) {
+          DebugPrintf(("  ADDR_IN_MEM_POST_DECR: %d\n", reg_pos));
+        } else {
+          DebugPrintf(("  ADDR_IN_MEM_POST_INCR: %d\n", reg_pos));
+        }
+      } else {
+        DebugPrintf(("  ADDR_IN_MEM / ADDR_IN_MEM_PRE_*: %d\n", reg_pos));
+      }
+#endif
+      return delay;
+    }
+    case DISPLACED: {
+      DoubleWord data;
+      const uint32_t reg_pos = FILTER_PRE_POST(GET_FIRST_REG(arg.raw_data));
+      const int32_t displ = GET_BIG_DISPL(arg.raw_data);
+      const int32_t pre = IS_PRE_POST_MOD(arg.raw_data) * (1 << arg.scale)
+                          * (!IS_POST(arg.raw_data))
+                          * (1 - (2 * IS_DECR(arg.raw_data)) );
+      const uint32_t addr = getReg(reg_pos) + pre + displ;
+      toMemorySpace(data, temp, arg.scale);
+      const uint32_t delay = memoryController.storeToMem(data, addr, arg.scale);
+
+      const int32_t post = IS_PRE_POST_MOD(arg.raw_data) * (1 << arg.scale)
+                           * (IS_POST(arg.raw_data))
+                           * (1 - (2 * IS_DECR(arg.raw_data)) );
+      setReg(reg_pos, addr - displ + post);
+#ifdef DEBUG
+      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
+        if (IS_DECR(arg.raw_data)) {
+          DebugPrintf(("  DISPLACED_PRE_DECR: %d\n", reg_pos));
+        } else {
+          DebugPrintf(("  DISPLACED_PRE_INCR: %d\n", reg_pos));
+        }
+      } else {
+        DebugPrintf(("  DISPLACED / DISPLACED_POST_*: %d\n", reg_pos));
+      }
+#endif
+      return delay;
+    }
+    case INDEXED: {
+      DoubleWord data;
+      const uint32_t index_raw = GET_INDEX_REG(arg.raw_data);
+      const uint32_t index = FILTER_PRE_POST(index_raw);
+      const uint32_t reg_pos = FILTER_PRE_POST(GET_FIRST_REG(arg.raw_data));
+      const int32_t pre = IS_PRE_POST_MOD(index_raw)
+                          * (!IS_POST(index_raw))
+                          * (1 - (2 * IS_DECR(index_raw)) );
+      const uint32_t addr = getReg(reg_pos) + (pre + getReg(index)) * (1 << arg.scale);
+      toMemorySpace(data, temp, arg.scale);
+      const uint32_t delay = memoryController.storeToMem(data, addr, arg.scale);
+
+      const int32_t post = IS_PRE_POST_MOD(index_raw)
+                           * (IS_POST(index_raw))
+                           * (1 - (2 * IS_DECR(index_raw)) );
+      setReg(index, pre + getReg(index) + post);
+#ifdef DEBUG
+      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
+        if (IS_DECR(arg.raw_data)) {
+          DebugPrintf(("  INDEXED_PRE_DECR: %d\n", reg_pos));
+        } else {
+          DebugPrintf(("  INDEXED_PRE_INCR: %d\n", reg_pos));
+        }
+      } else {
+        DebugPrintf(("  INDEXED / INDEXED_POST_*: %d\n", reg_pos));
+      }
+#endif
+      return delay;
+    }
+    case INDX_DISP: {
+      DoubleWord data;
+      const int32_t displ = GET_INDEX_DISPL(arg.raw_data);
+      const uint32_t index_raw = GET_INDEX_REG(arg.raw_data);
+      const uint32_t index = FILTER_PRE_POST(index_raw);
+      const uint32_t reg_pos = FILTER_PRE_POST(GET_FIRST_REG(arg.raw_data));
+      const int32_t pre = IS_PRE_POST_MOD(index_raw)
+                          * (!IS_POST(index_raw))
+                          * (1 - (2 * IS_DECR(index_raw)) );
+      const uint32_t addr = getReg(reg_pos) + (pre + getReg(index)) * (1 << arg.scale) + displ;
+      toMemorySpace(data, temp, arg.scale);
+      const uint32_t delay = memoryController.storeToMem(data, addr, arg.scale);
+
+      const int32_t post = IS_PRE_POST_MOD(index_raw)
+                           * (IS_POST(index_raw))
+                           * (1 - (2 * IS_DECR(index_raw)) );
+      setReg(index, pre + getReg(index) + post);
+#ifdef DEBUG
+      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
+        if (IS_DECR(arg.raw_data)) {
+          DebugPrintf(("  INDEXED_PRE_DECR: %d\n", reg_pos));
+        } else {
+          DebugPrintf(("  INDEXED_PRE_INCR: %d\n", reg_pos));
+        }
+      } else {
+        DebugPrintf(("  INDEXED / INDEXED_POST_*: %d\n", reg_pos));
+      }
+#endif
+      return delay;
+    }
+
     default:
       throw WrongArgumentException("Failed in storing: wrong argument type");
   }
@@ -602,3 +901,52 @@ Cpu::setReg(const int& arg, const int& value)
     }
   }
 }
+
+inline int32_t
+Cpu::fromMemorySpace(const DoubleWord & data, const uint8_t & scale)
+{
+  switch (scale) {
+    case BYTE1:
+      return static_cast<int32_t>(int8_t(data.u8[0]));
+    case BYTE2:
+      return static_cast<int32_t>(int16_t(data.u16[0]));
+    case BYTE4:
+      return int32_t(data.u32);
+    default:
+      throw WrongInstructionException("No support for 8 bytes data");
+  }
+}
+
+inline void
+Cpu::toMemorySpace(DoubleWord & data, const int32_t & value,
+      const uint8_t & scale)
+{
+  switch (scale) {
+    case BYTE1:
+      data.u8[0] = uint8_t(static_cast<int8_t>(value));
+      break;
+    case BYTE2:
+      data.u16[0] = uint16_t(static_cast<int16_t>(value));
+      break;
+    case BYTE4:
+      data.u32 = uint32_t(value);
+      break;
+    default:
+      throw WrongInstructionException("No support for 8 bytes data");
+  }
+}
+
+inline bool
+Cpu::isAutoIncrDecrArg(const ArgRecord & arg)
+{
+  switch (arg.type) {
+    case REG:
+    case REG_INDIR ... DISPLACED:
+      return IS_PRE_POST_MOD(GET_FIRST_REG(arg.raw_data));
+    case INDEXED ... INDX_DISP:
+      return IS_PRE_POST_MOD(GET_INDEX_REG(arg.raw_data));
+    default:
+      return false;
+  }
+}
+

@@ -8,7 +8,6 @@
 #ifndef _PARSER_DEFINITIONS_H
 #define	_PARSER_DEFINITIONS_H
 
-#include "asm_helpers.h"
 #include "std_istructions.h"
 #include "exceptions.h"
 #include "macros.h"
