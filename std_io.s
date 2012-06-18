@@ -4,32 +4,32 @@
   .param    %R1         %T001 ; address of the string to print
 
   .local
-    .printCmd:
-      .const .int     $131072
-    .printCmd1:
-      .const .int     $131073
-    .endChar:
-      .const .int     $13
+    .const .printCmd:
+      .i32_t   131072
+    .const .printCmd1:
+      .i32_t   131073
+    .const .endChar:
+      .i32_t   13
   .end
 
-  MOV     $0          %T002
+  MOV:.i32_t,  0 ,    %T002
 .test:
-  EQ      (T001)      .endChar
-  IFJ     @exit
-  PUT     (T001)+     .printCmd1
-  INCR    %T002
-  JMP     @test
+  EQ:.i32_t,   (%T001),  .endChar
+  IFJ:.i32_t,  @exit
+  PUT:.i32_t,  (%T001)+, .printCmd1
+  INCR:.i32_t, %T002
+  JMP:.i32_t,  @test
 .exit:
-  RET     %T002
+  RET:.i32_t,  %T002
 .end
 
 .function   "get_end_char"
   .local
-    .endChar:
-      .const .int     $13
+    .const .endChar:
+      .i32_t   13
   .end
 
-  MOV     .endChar    %T001
-  RET     %T001
+  MOV:.i32_t,  .endChar,  %T001
+  RET:.i32_t,  %T001
 .end
 
