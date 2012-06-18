@@ -9,7 +9,7 @@
 #define AST_MID_TREE_H_
 
 #include "AST_Mid_Function.h"
-#include "../asm-program.h"
+#include "../../asm-program.h"
 
 class ASTM_Tree {
 public:

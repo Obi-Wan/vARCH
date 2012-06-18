@@ -27,9 +27,13 @@ class AsmArgs {
 
   bool regAutoAlloc;
   bool regCoalesce;
+
+  bool onlyValidate;
 public:
   AsmArgs(int _argc, char** _argv)
-    : argc(_argc), argv(_argv), regAutoAlloc(false), regCoalesce(false) { }
+    : argc(_argc), argv(_argv), optimLevel(2), regAutoAlloc(false)
+    , regCoalesce(false), onlyValidate(false)
+  { }
 
   void parse() throw(WrongArgumentException);
 
@@ -42,6 +46,7 @@ public:
   const uint32_t &getOptimizationLevel() const throw() { return optimLevel; }
   const bool &getRegAutoAlloc() const throw() { return regAutoAlloc; }
   const bool &getRegCoalesce() const throw() { return regCoalesce; }
+  const bool &getOnlyValidate() const throw() { return onlyValidate; }
 };
 
 #endif /* ASMARGS_H_ */

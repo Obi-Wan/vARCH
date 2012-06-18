@@ -68,7 +68,7 @@ struct asm_instruction_statement : asm_statement {
     int op = instruction;
     for (size_t argNum = 0; argNum < args.size(); argNum++) {
       const asm_arg & arg = *args[argNum];
-      op += ARG(argNum, (arg.type + (arg.relative ? RELATIVE_ARG : 0)) );
+      op += ARG(argNum, BUILD_ARG(arg.scale, arg.type) );
     }
     *(position++) = op;
 
@@ -103,8 +103,7 @@ struct asm_function_call : asm_instruction_statement {
   void emitCode(Bloat::iterator & position) {
     const asm_arg * arg = args[0];
 
-    *(position++) = instruction
-                          + ARG_1( arg->type + (arg->relative * RELATIVE_ARG) );
+    *(position++) = instruction + ARG_1( BUILD_ARG(arg->scale, arg->type) );
     *(position++) = arg->getCode();
   }
 

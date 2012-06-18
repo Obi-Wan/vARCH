@@ -206,17 +206,19 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
     // Add to uses
     _addToSet(nodeUses, shiftedTempUID );
     // Test if it should be in Defines, too
-    switch(arg->type) {
+    switch(arg->regModType) {
       case REG_PRE_INCR:
       case REG_PRE_DECR:
       case REG_POST_INCR:
-      case REG_POST_DECR:
-      case ADDR_IN_REG_PRE_INCR:
-      case ADDR_IN_REG_PRE_DECR:
-      case ADDR_IN_REG_POST_INCR:
-      case ADDR_IN_REG_POST_DECR: {
-        _addToSet(nodeDefs, shiftedTempUID );
+      case REG_POST_DECR: {
+        if (arg->type | INDEXED) {
+          const uint32_t shiftedTempIndexUID = Frame::shiftArgUID(arg->index, arg->isIndexTemp);
+          _addToSet(nodeDefs, shiftedTempIndexUID );
+        } else {
+          _addToSet(nodeDefs, shiftedTempUID );
+        }
         isMove = false;
+        break;
       }
       default: break;
     }
@@ -225,22 +227,46 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
     asm_immediate_arg * arg = (asm_immediate_arg *) args[1];
     const uint32_t shiftedTempUID = Frame::shiftArgUID(arg, arg1_temp);
     switch (arg->type) {
-      case ADDR_IN_REG_PRE_INCR:
-      case ADDR_IN_REG_PRE_DECR:
-      case ADDR_IN_REG_POST_INCR:
-      case ADDR_IN_REG_POST_DECR:
-        // Add to defs
-        _addToSet(nodeDefs, shiftedTempUID );
-      case ADDR_IN_REG: {
+      case REG_INDIR:
+      case MEM_INDIR:
+      case DISPLACED: {
         // Add to uses
         _addToSet(nodeUses, shiftedTempUID );
         isMove = false;
+        switch (arg->regModType) {
+          case REG_PRE_INCR:
+          case REG_PRE_DECR:
+          case REG_POST_INCR:
+          case REG_POST_DECR:
+            // Add to defs
+            _addToSet(nodeDefs, shiftedTempUID );
+          default: break;
+        }
         break;
       }
-      default:
+      case INDEXED:
+      case INDX_DISP: { // regModType in this case refers to the index
+        // Add to uses
+        _addToSet(nodeUses, shiftedTempUID );
+        isMove = false;
+        switch (arg->regModType) {
+          case REG_PRE_INCR:
+          case REG_PRE_DECR:
+          case REG_POST_INCR:
+          case REG_POST_DECR: {
+            const uint32_t shiftedTempIndexUID = Frame::shiftArgUID(arg->index, arg->isIndexTemp);
+            // Add to defs
+            _addToSet(nodeDefs, shiftedTempIndexUID );
+          }
+          default: break;
+        }
+        break;
+      }
+      default: {
         // Add to defs
         _addToSet(nodeDefs, shiftedTempUID );
         break;
+      }
     }
   }
   return isMove;
@@ -248,10 +274,14 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
 
 inline bool
 AssemFlowGraph::_argIsDefined(const int & instruction, const size_t & argNum,
-    const TypeOfArgument & argType)
+    const TypeOfArgument & argType, const ModifierOfArgument & argMod)
   const
 {
   switch(argType) {
+    case IMMED:
+    case DIRECT: {
+      return false;
+    }
     case REG: {
       switch (instruction) {
         case NOT:
@@ -273,26 +303,13 @@ AssemFlowGraph::_argIsDefined(const int & instruction, const size_t & argNum,
         case GET: {
           if (argNum == 1) return true;
         }
-        default: {
-          return false;
-        }
+        default: break;
       }
+      break;
     }
-    case REG_PRE_INCR:
-    case REG_PRE_DECR:
-    case REG_POST_INCR:
-    case REG_POST_DECR:
-    case ADDR_IN_REG_PRE_INCR:
-    case ADDR_IN_REG_PRE_DECR:
-    case ADDR_IN_REG_POST_INCR:
-    case ADDR_IN_REG_POST_DECR: {
-      return true;
-    }
-    case ADDR:
-    case ADDR_IN_REG:
-    default:
-      return false;
+    default: break;
   }
+  return (IS_PRE_POST_MOD(argMod));
 }
 
 inline void
@@ -332,7 +349,7 @@ AssemFlowGraph::_findUsesDefines()
               _addToSet( nodeUses, shiftedTempUID );
 
               // defines
-              if (_argIsDefined(i_stmt->instruction, argNum, arg->type)) {
+              if (_argIsDefined(i_stmt->instruction, argNum, arg->type, arg->regModType)) {
                 _addToSet( nodeDefs, shiftedTempUID );
               }
             }

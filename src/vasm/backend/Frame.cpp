@@ -124,14 +124,12 @@ Frame::mindCalleeSaveRegs(ListOfStmts & stmts)
           new asm_instruction_statement(firstStmt->position, MOV);
 
       asm_immediate_arg * regArg = new asm_immediate_arg(firstStmt->position);
-      regArg->relative = false;
       regArg->type = REG;
       regArg->content.val = regNum;
 
       stmt->addArg(regArg);
 
       asm_immediate_arg * tempArg = new asm_immediate_arg(firstStmt->position);
-      tempArg->relative = false;
       tempArg->type = REG;
       tempArg->content.val = tempProgr - FIRST_TEMPORARY - 1;
       tempArg->isTemp = true;
@@ -149,7 +147,6 @@ Frame::mindCalleeSaveRegs(ListOfStmts & stmts)
           new asm_instruction_statement(ret->position, MOV);
 
       asm_immediate_arg * tempArg = new asm_immediate_arg(ret->position);
-      tempArg->relative = false;
       tempArg->type = REG;
       tempArg->content.val = tempProgr - FIRST_TEMPORARY - 1;
       tempArg->isTemp = true;
@@ -157,7 +154,6 @@ Frame::mindCalleeSaveRegs(ListOfStmts & stmts)
       stmt->addArg(tempArg);
 
       asm_immediate_arg * regArg = new asm_immediate_arg(ret->position);
-      regArg->relative = false;
       regArg->type = REG;
       regArg->content.val = regNum;
 
@@ -187,15 +183,16 @@ Frame::mindReturnStmts(ListOfStmts & stmts)
             new asm_instruction_statement(ret->position, MOV);
 
         asm_immediate_arg * tempArg = new asm_immediate_arg(ret->position);
-        tempArg->relative = i_arg->relative;
         tempArg->type = i_arg->type;
         tempArg->content.val = i_arg->content.val;
         tempArg->isTemp = i_arg->isTemp;
+        tempArg->displacement = i_arg->displacement;
+        tempArg->index = i_arg->index;
+        tempArg->isIndexTemp = i_arg->isIndexTemp;
 
         stmt->addArg(tempArg);
 
         asm_immediate_arg * regArg = new asm_immediate_arg(ret->position);
-        regArg->relative = false;
         regArg->type = REG;
         regArg->content.val = 0;
 
@@ -229,10 +226,12 @@ Frame::mindParamsFCalls(ListOfStmts & stmts)
             new asm_instruction_statement(call->position, MOV);
 
         asm_immediate_arg * tempArg = new asm_immediate_arg(call->position);
-        tempArg->relative = i_arg->relative;
         tempArg->type = i_arg->type;
         tempArg->content.val = i_arg->content.val;
         tempArg->isTemp = i_arg->isTemp;
+        tempArg->displacement = i_arg->displacement;
+        tempArg->index = i_arg->index;
+        tempArg->isIndexTemp = i_arg->isIndexTemp;
 
         stmt->addArg(tempArg);
         stmt->addArg(call->parameters[numPar-1]->source);
@@ -274,8 +273,7 @@ Frame::makeInitArg(const asm_data_keyword_statement * data,
     const YYLTYPE &pos)
 {
   asm_immediate_arg * tempArg = new asm_immediate_arg(pos);
-  tempArg->relative = false;
-  tempArg->type = CONST;
+  tempArg->type = IMMED;
   switch (data->getType()) {
     case ASM_INT_KEYWORD_STATEMENT: {
       asm_int_keyword_statement * i_data = (asm_int_keyword_statement *) data;
@@ -365,12 +363,10 @@ Frame::deallocateLocalVariables(asm_function & function)
   /// ADD  $tot_vars_size  %SP
   {
     asm_immediate_arg * tempArg = new asm_immediate_arg(function.position);
-    tempArg->relative = false;
-    tempArg->type = CONST;
+    tempArg->type = IMMED;
     tempArg->content.val = stackPointerBias;
 
     asm_immediate_arg * regArg = new asm_immediate_arg(function.position);
-    regArg->relative = false;
     regArg->type = REG;
     regArg->content.regNum = STACK_POINTER;
     regArg->isTemp = false;

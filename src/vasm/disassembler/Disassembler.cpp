@@ -18,21 +18,15 @@ Disassembler::printArg(const int & typeArg, const int & arg)
   cout.width(12);
   cout << ATypeSet.getItem(typeArg & (0xF));
   cout.width(0);
-  cout << ", Relative: " << boolalpha;
-  cout.width(5);
-  cout << ((typeArg & RELATIVE_ARG) == RELATIVE_ARG);
+  cout << ", Modifier: ";;
   cout.width();
   switch (typeArg) {
     case REG:
-    case ADDR_IN_REG:
-    case REG_PRE_INCR:
-    case REG_PRE_DECR:
-    case REG_POST_INCR:
-    case REG_POST_DECR:
-    case ADDR_IN_REG_PRE_INCR:
-    case ADDR_IN_REG_PRE_DECR:
-    case ADDR_IN_REG_POST_INCR:
-    case ADDR_IN_REG_POST_DECR:
+    case REG_INDIR:
+    case MEM_INDIR:
+    case INDEXED:
+    case DISPLACED:
+    case INDX_DISP:
       cout << ", Arg: " << RTypeSet.getItem(arg) << endl;
       break;
     default:

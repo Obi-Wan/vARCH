@@ -10,69 +10,43 @@
 
 #include "IR_LowLevel_Arguments.h"
 
+#include "AST/AST_Low/AST_Low_Stmt.h"
+
 #include <cstdlib>
 #include <string.h>
 
-#define L_SHIFT_TXT_REL(yytext, offset) \
-  (yytext + ( (*(yytext+offset) == 'r') ? (offset+3) : (offset+2) ) )
-#define L_SHIFT_TXT_REL_0(yytext) L_SHIFT_TXT_REL(yytext, 0)
-#define L_SHIFT_TXT_REL_1(yytext) L_SHIFT_TXT_REL(yytext, 1)
-
-#define L_IS_REL(yytext, offset) \
-  (*(yytext+offset) == 'r')
-#define L_IS_REL_0(yytext) L_IS_REL(yytext, 0)
-#define L_IS_REL_1(yytext) L_IS_REL(yytext, 1)
-
 class ArgumentsHandler {
-  static int getRegNum(const char * str);
-  static uint32_t getTempNum(const char * str, const TypeOfArgument& type);
+  static uint32_t getRegNum(const char * str);
 
 public:
-  static void getReg(asm_arg *& arg, YYLTYPE *& loc, const char * str,
-      const TypeOfArgument& type, const int& offset, const bool rel);
-  static void getTemporary(asm_arg *& arg, YYLTYPE *& loc, const char * str,
-      const TypeOfArgument& type, const bool rel);
+  static asm_immediate_arg * getReg(const ASTL_ArgRegister * const arg);
 
-  static void getConstInt(asm_arg *& arg, YYLTYPE *& loc, const int _val);
-  static void getConstReal(asm_arg *& arg, YYLTYPE *& loc, const float _val);
+  static asm_immediate_arg * getReg(const YYLTYPE & loc, const char * str,
+      const TypeOfArgument& type, const ModifierOfArgument & rmt);
 
-  static void getSpecialReg(asm_arg *& arg, YYLTYPE *& loc,
-      const enum Registers& reg);
-  static void getSpecialAddrReg(asm_arg *& arg, YYLTYPE *& loc,
-      const enum Registers& reg, const bool rel);
+  static asm_immediate_arg * getConstInt(const YYLTYPE & loc, const int _val);
+  static asm_immediate_arg * getConstReal(const YYLTYPE & loc, const float _val);
+
+  static asm_immediate_arg * getSpecialReg(const YYLTYPE & loc,
+      const enum Registers& reg,
+      const TypeOfArgument& type, const ModifierOfArgument & rmt);
 };
 
-inline int
-ArgumentsHandler::getRegNum(const char * str)
+inline asm_immediate_arg *
+ArgumentsHandler::getReg(const ASTL_ArgRegister * const arg)
 {
-  char * tempStr = strndup(str,1);
-  int num = atoi(tempStr) -1;
-  free(tempStr);
-  return num;
+  if (arg->getClass() == ASTL_ARG_SPECIAL_REGISTER) {
+    const ASTL_ArgSpecialRegister * const sarg = (const ASTL_ArgSpecialRegister *) arg;
+    return ArgumentsHandler::getSpecialReg(sarg->pos, sarg->regNum, sarg->kind, sarg->modif);
+  } else {
+    return ArgumentsHandler::getReg(arg->pos, arg->id.c_str(), arg->kind, arg->modif);
+  }
 }
 
 inline uint32_t
-ArgumentsHandler::getTempNum(const char * str, const TypeOfArgument& type)
+ArgumentsHandler::getRegNum(const char * str)
 {
   size_t len = strlen(str);
-
-  switch (type) {
-    case REG_POST_INCR:
-    case REG_POST_DECR: {
-      len -= 1;
-      break;
-    }
-    case ADDR_POST_INCR:
-    case ADDR_POST_DECR:
-    case ADDR_IN_REG_POST_INCR:
-    case ADDR_IN_REG_POST_DECR: {
-      len -= 2;
-      break;
-    }
-    default: {
-      break;
-    }
-  }
   char * tempStr = strndup(str, len);
   uint32_t num = atoi(tempStr);
 
@@ -80,71 +54,48 @@ ArgumentsHandler::getTempNum(const char * str, const TypeOfArgument& type)
   return num;
 }
 
-inline void
-ArgumentsHandler::getReg(asm_arg *& arg, YYLTYPE *& loc, const char * str,
-    const TypeOfArgument& type, const int& offset, const bool rel)
+inline asm_immediate_arg *
+ArgumentsHandler::getReg(const YYLTYPE & loc, const char * str,
+    const TypeOfArgument& type, const ModifierOfArgument & rmt)
 {
-  asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
-  tempArg->relative = rel;
+  asm_immediate_arg * tempArg = new asm_immediate_arg(loc);
   tempArg->type = type;
-  tempArg->content.val = getRegNum(str) + offset;
-  arg = tempArg;
+  tempArg->regModType = rmt;
+  tempArg->content.val = getRegNum(str+1) + NUM_REGS * (str[0] == 'A');
+  tempArg->isTemp = (str[0] == 'T');
+  return tempArg;
 }
 
-inline void
-ArgumentsHandler::getTemporary(asm_arg *& arg, YYLTYPE *& loc,
-    const char * str, const TypeOfArgument& type, const bool rel)
+inline asm_immediate_arg *
+ArgumentsHandler::getSpecialReg(const YYLTYPE & loc, const enum Registers& reg,
+    const TypeOfArgument& type, const ModifierOfArgument & rmt)
 {
-  asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
-  tempArg->relative = rel;
+  asm_immediate_arg * tempArg = new asm_immediate_arg(loc);
   tempArg->type = type;
-  tempArg->content.tempUID = getTempNum(str, type);
-  tempArg->isTemp = true;
-  arg = tempArg;
-}
-
-inline void
-ArgumentsHandler::getSpecialReg(asm_arg *& arg, YYLTYPE *& loc,
-    const enum Registers& reg)
-{
-  asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
-  tempArg->type = REG;
+  tempArg->regModType = rmt;
   tempArg->content.regNum = reg;
-  tempArg->relative = false;
-  arg = tempArg;
+  tempArg->isTemp = false;
+  return tempArg;
 }
 
-inline void
-ArgumentsHandler::getSpecialAddrReg(asm_arg *& arg, YYLTYPE *& loc,
-    const enum Registers& reg, const bool rel)
+inline asm_immediate_arg *
+ArgumentsHandler::getConstInt(const YYLTYPE & loc, const int _val)
 {
-  asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
-  tempArg->type = ADDR_IN_REG;
-  tempArg->content.regNum = reg;
-  tempArg->relative = rel;
-  arg = tempArg;
-}
-
-inline void
-ArgumentsHandler::getConstInt(asm_arg *& arg, YYLTYPE *& loc,
-    const int _val)
-{
-  asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
-  tempArg->type = CONST;
+  asm_immediate_arg * tempArg = new asm_immediate_arg(loc);
+  tempArg->type = IMMED;
   tempArg->content.val = _val;
-  tempArg->relative = false;
-  arg = tempArg;
+  tempArg->regModType = REG_NO_ACTION;
+  return tempArg;
 }
 
-inline void
-ArgumentsHandler::getConstReal(asm_arg *& arg, YYLTYPE *& loc,
-    const float _val)
+inline asm_immediate_arg *
+ArgumentsHandler::getConstReal(const YYLTYPE & loc, const float _val)
 {
-  asm_immediate_arg * tempArg = new asm_immediate_arg(*loc);
-  tempArg->type = CONST;
+  asm_immediate_arg * tempArg = new asm_immediate_arg(loc);
+  tempArg->type = IMMED;
   tempArg->content.fval = _val;
-  tempArg->relative = false;
-  arg = tempArg;
+  tempArg->regModType = REG_NO_ACTION;
+  return tempArg;
 }
 
 #endif /* IR_LOWLEVEL_LEXERHELPERS_H_ */

@@ -37,7 +37,7 @@ asm_instruction_statement::checkArgs() const
     case COMP2:
     case LSH:
     case RSH: {
-      if (args[0]->type == CONST) {
+      if (args[0]->type == IMMED) {
         stringstream stream;
         stream  << "Expected non constant argument for unary instruction '"
                   << ISet.getInstr(instruction)
@@ -57,7 +57,7 @@ asm_instruction_statement::checkArgs() const
     case OR:
     case XOR:
     case GET: {
-      if (args[1]->type == CONST) {
+      if (args[1]->type == IMMED) {
         stringstream stream;
         stream  << "Expected non constant destination argument for binary "
                   << "instruction '" << ISet.getInstr(instruction)
@@ -81,7 +81,7 @@ asm_instruction_statement::ensureTempsUsage(const bool & used) const
     if (args[numArg]->getType() == ASM_IMMEDIATE_ARG)
     {
       const asm_immediate_arg * arg = (const asm_immediate_arg *) args[numArg];
-      if (!(arg->type == CONST || arg->type == ADDR) && (used ^ arg->isTemp))
+      if (!(arg->type == IMMED || arg->type == DIRECT) && (used ^ arg->isTemp))
       {
         stringstream stream;
         if (used) {

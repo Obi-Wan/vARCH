@@ -31,7 +31,7 @@ class AssemFlowGraph : public FlowGraph<asm_statement *> {
   bool _moveInstr(const vector<asm_arg *> & args, UIDMultiSetType & nodeUses,
       UIDMultiSetType & nodeDefs);
   bool _argIsDefined(const int & instruction, const size_t & argNum,
-      const TypeOfArgument & argType) const;
+      const TypeOfArgument & argType, const ModifierOfArgument & argMod) const;
 
 public:
   AssemFlowGraph(TempsMap & _tm) : tempsMap(_tm) { }

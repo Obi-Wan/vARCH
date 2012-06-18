@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include "asm-program.h"
 #include "IR_Low_parser.h"
+#include "AST/AST_Low/AST_Low_Tree.h"
 #include "AsmArgs.h"
 #include "disassembler/Disassembler.h"
 
@@ -45,42 +46,49 @@ main(int argc, char** argv)
   }
   const bool & usingTemps = args.getRegAutoAlloc();
   try {
-    asm_program * program = new asm_program();
-    int res = yyparse(program);
+    ASTL_Tree * ast_tree = new ASTL_Tree();
+    int res = yyparse(ast_tree);
     if (res) {
       fprintf(stderr, "An error may have occurred, code: %3d\n", res);
       throw BasicException("Error parsing\n");
     }
-    program->moveMainToTop();
-    program->checkInstructions(usingTemps);
-#ifdef DEBUG
-    printAssembler(program);
-#endif
-
-    if (usingTemps) {
-      program->assignFunctionParameters();
-      program->doRegisterAllocation(args);
+    if (args.getOnlyValidate()) {
+      ast_tree->printTree();
     } else {
-      program->ensureTempsUsage(usingTemps);
-    }
+      asm_program * program = new asm_program();
+      ast_tree->emitAsm(*program);
 
-    program->rebuildOffsets();
-    program->exposeGlobalLabels();
-    program->assignValuesToLabels();
-    program->assemble( args.getOutputName() );
-
+      program->moveMainToTop();
+      program->checkInstructions(usingTemps);
 #ifdef DEBUG
-    Disassembler().disassembleProgram(*program);
+      printAssembler(program);
 #endif
 
-    if (!args.getDebugSymbolsName().empty()) {
-      const string & symName = args.getDebugSymbolsName();
-      const size_t & symNameSize = symName.size();
-      if (symNameSize > 4 && !symName.substr(symNameSize-4,4).compare(".xml"))
-      {
-        program->emitXMLDebugSymbols(args.getDebugSymbolsName());
+      if (usingTemps) {
+        program->assignFunctionParameters();
+        program->doRegisterAllocation(args);
       } else {
-        program->emitDebugSymbols(args.getDebugSymbolsName());
+        program->ensureTempsUsage(usingTemps);
+      }
+
+      program->rebuildOffsets();
+      program->exposeGlobalLabels();
+      program->assignValuesToLabels();
+      program->assemble( args.getOutputName() );
+
+#ifdef DEBUG
+      Disassembler().disassembleProgram(*program);
+#endif
+
+      if (!args.getDebugSymbolsName().empty()) {
+        const string & symName = args.getDebugSymbolsName();
+        const size_t & symNameSize = symName.size();
+        if (symNameSize > 4 && !symName.substr(symNameSize-4,4).compare(".xml"))
+        {
+          program->emitXMLDebugSymbols(args.getDebugSymbolsName());
+        } else {
+          program->emitDebugSymbols(args.getDebugSymbolsName());
+        }
       }
     }
     cleanParser();

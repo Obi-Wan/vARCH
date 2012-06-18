@@ -4,7 +4,7 @@
 
 #include "parser_definitions.h"
 #include "IR/IR_LowLevel_ParserHelpers.h"
-#include "AST_Mid/AST_Mid_Tree.h"
+#include "AST/AST_Mid/AST_Mid_Tree.h"
 #include <string>
 
 int yyparse(ASTM_Tree * ast_tree);

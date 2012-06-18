@@ -65,6 +65,9 @@ AsmArgs::parse() throw (WrongArgumentException)
               "You didn't specify the Debug Symbols file name") );
       debugSymbolsName.assign(argv[argNum]);
 
+    } else if (!tempArg.compare("-only-validate")) {
+      onlyValidate = true;
+
     } else if (!tempArg.compare("-h")) {
       throw WrongArgumentException("");
     } else {
@@ -85,8 +88,10 @@ AsmArgs::parse() throw (WrongArgumentException)
   InfoPrintf(("Optimization Level: %u\n", optimLevel));
   InfoPrintf(("Register auto allocation: %s\n",
                 regAutoAlloc ? "Enabled" : "Disabled"));
-  InfoPrintf(("Register Coalescing: %s\n\n",
+  InfoPrintf(("Register Coalescing: %s\n",
                 regCoalesce ? "Enabled" : "Disabled"));
+  InfoPrintf(("Only Validating: %s\n\n",
+                onlyValidate ? "Enabled" : "Disabled"));
 
   CHECK_THROW( !inputName.empty(),
           WrongArgumentException("you didn't specify the input file") );
@@ -110,4 +115,6 @@ AsmArgs::printHelp() const throw()
   cout << "To enable some sort of optimizations:" << endl
         << "  -O<optimization_level> with <optimization_level> as a number "
         << "between 0 and 3" << endl;
+  cout << "To only parse, without emitting code:"
+        << endl << "  add flag -only-validate" << endl;
 }

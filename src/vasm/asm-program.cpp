@@ -318,7 +318,6 @@ asm_program::assignValuesToLabels()
                       (uint32_t)localLabel->offset,
                       localLabel->is_constant ? "true" : "false",
                       localLabel->is_shared ? "true" : "false"));
-        argument.relative = ! localLabel->isShared();
         argument.pointedPosition =
             (int32_t)(localLabel->offset
                       + localLabel->isShared() * func.functionOffset);
@@ -331,7 +330,6 @@ asm_program::assignValuesToLabels()
           DebugPrintf(("    It is global, with position: %3u\n",
                       (uint32_t)globalLabel->offset));
           argument.pointedPosition = (int32_t)globalLabel->offset;
-          argument.relative = false;
         } else {
           DebugPrintf(("      ERROR!! It is not even global!\n"));
           fprintf(stderr, "ERROR:%s at Line %4d\n%s\n"

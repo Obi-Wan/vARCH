@@ -1,6 +1,6 @@
 /**/
 %top{
-#include "IR/IR_LowLevel_LexerHelpers.h"
+/*#include "IR/IR_LowLevel_LexerHelpers.h"*/
 #include "IR_Low_parser.h"
 }
 
@@ -11,10 +11,10 @@
 
 DIGIT     [0-9]
 LETTER    [a-zA-Z]
-PUNCT     [-!"#$%&'()*+,./:;<=>?@[\\\]^_`{|}~]
+PUNCT     [\-!"#$%&'()*+,./:;<=>?@[\\\]^_`{|}~]
 LETT_DIG  ({LETTER}|{DIGIT})
 ID        {LETTER}{LETT_DIG}*
-KEYBKEYS  ([ \t]|{LETT_DIG}|[-!#$%&'()*+,./:;<=>?@[\\\]^_`{|}~])
+KEYBKEYS  ([ \t]|{LETT_DIG}|[\-!#$%&'()*+,./:;<=>?@[\\\]^_`{|}~])
 
 LABEL     \.{ID}\:
 AT_LABEL  \@{ID}
@@ -22,9 +22,6 @@ TO_LABEL  \.{ID}
 
 STK_PTR   SP
 USTK_PTR  USP
-DREG      R[1-8]
-AREG      A[1-8]
-TREG      T{DIGIT}*
 SREG      SR
 PCOUNT    PC
 
@@ -74,19 +71,14 @@ openFile(const char * filename, const char *& path);
 
 ^[ \t]*"#"[ \t]*include { BEGIN(PREPROC_STATE_INCLUDE_FILE); }
 
-^[ \t]*"#"[ \t]*pragma { return PREPROC_PRAGMA; }
-
 ^[ \t]*"#"[ \t]*define { return PREPROC_DEFINE; }
 
 <<EOF>>   { if(!closeIncludeFile(yylloc)) yyterminate(); }
 
-\${DIGIT}+ {
-            yylval->integer = atoi(yytext+1);
-            return INTEGER;
-          }
-\$({DIGIT}+\.{DIGIT}*|.{DIGIT}+) {
-            yylval->real = atof(yytext+1);
-            return REAL;
+({DIGIT}+|{DIGIT}+\.{DIGIT}*|.{DIGIT}+) {
+            yylval->str.text = yytext;
+            yylval->str.len = yyleng;
+            return NUMBER;
           }
 
 SLEEP|PUSHA|POPA|RET|RETEX|REBOOT|HALT|NOT|INCR|DECR|COMP2|LSH|RSH|STACK|PUSH|POP|JSR|JMP|IFJ|IFNJ|TCJ|TZJ|TOJ|TNJ|TSJ|MOV|ADD|MULT|SUB|DIV|QUOT|AND|OR|XOR|MMU|PUT|GET|EQ|LO|MO|LE|ME|NEQ|BPUT|BGET|IFEQJ|IFNEQJ|IFLOJ|IFMOJ|IFLEJ|IFMEJ {
@@ -94,10 +86,16 @@ SLEEP|PUSHA|POPA|RET|RETEX|REBOOT|HALT|NOT|INCR|DECR|COMP2|LSH|RSH|STACK|PUSH|PO
             return INSTRUCTION;
           }
 
-\.int       return KEYWORD_INT;
-\.long      return KEYWORD_LONG;
+BITCAST {
+            return BITCAST_OP;
+          }
+
+\.i8_t      return KEYWORD_I8;
+\.i16_t     return KEYWORD_I16;
+\.i32_t     return KEYWORD_I32;
+\.i64_t     return KEYWORD_I64;
+
 \.real      return KEYWORD_REAL;
-\.char      return KEYWORD_CHAR;
 \.string    return KEYWORD_STRING;
 
 \.const     return KEYWORD_CONST;
@@ -109,212 +107,54 @@ SLEEP|PUSHA|POPA|RET|RETEX|REBOOT|HALT|NOT|INCR|DECR|COMP2|LSH|RSH|STACK|PUSH|PO
 \.param     return KEYWORD_PARAM;
 \.end       return KEYWORD_END;
 
-\>{DIGIT}   yylval->integer = atoi(yytext+1); return CONTENT_CONST;
-{LABEL}     yytext[yyleng-1] = '\0'; yylval->label = yytext+1; return DEF_LABEL;
-{TO_LABEL}  yylval->label = yytext+1; return CONTENT_LABEL;
-{AT_LABEL}  yylval->label = yytext+1; return POSITION_LABEL;
+(","|":"|";"|"("|")"|"{"|"}"|"["|"]"|"+"|"-") {
+           return *yytext;
+}
+
+{LABEL}   {
+            yytext[yyleng-1] = '\0';
+            yylval->str.text = yytext+1;
+            yylval->str.len = yyleng-2;
+            return DEF_LABEL;
+          }
+{AT_LABEL} {
+            yylval->str.text = yytext+1;
+            yylval->str.len = yyleng-1;
+            return REF_AT_LABEL;
+          }
+{TO_LABEL} {
+            yylval->str.text = yytext+1;
+            yylval->str.len = yyleng-1;
+            return REF_TO_LABEL;
+          }
 
 \%{SREG} {
-            ArgumentsHandler::getSpecialReg(yylval->arg, yylloc,
-                STATE_REGISTER);
-            return REGISTER;
-          }
-\%{PCOUNT} {
-            ArgumentsHandler::getSpecialReg(yylval->arg, yylloc,
-                PROGRAM_COUNTER);
-            return REGISTER;
+            yylval->special_reg = STATE_REGISTER;
+            return SPECIAL_REGISTER;
           }
 \%{STK_PTR} {
-            ArgumentsHandler::getSpecialReg(yylval->arg, yylloc,
-                STACK_POINTER);
-            return REGISTER;
+            yylval->special_reg = STACK_POINTER;
+            return SPECIAL_REGISTER;
           }
 \%{USTK_PTR} {
-            ArgumentsHandler::getSpecialReg(yylval->arg, yylloc,
-                USER_STACK_POINTER);
+            yylval->special_reg = USER_STACK_POINTER;
+            return SPECIAL_REGISTER;
+          }
+\%{PCOUNT} {
+            yylval->special_reg = PROGRAM_COUNTER;
+            return SPECIAL_REGISTER;
+          }
+\%{ID} {
+            yylval->str.text = yytext+1;
+            yylval->str.len = yyleng-1;
             return REGISTER;
-          }
-\%{DREG} {
-            ArgumentsHandler::getReg(yylval->arg, yylloc, yytext+2, REG,
-                0, false);
-            return REGISTER;
-          }
-\%{AREG} {
-            ArgumentsHandler::getReg(yylval->arg, yylloc, yytext+2, REG,
-                NUM_REGS, false);
-            return REGISTER;
-          }
-\%{TREG} {
-            ArgumentsHandler::getTemporary(yylval->arg, yylloc, yytext+2,
-                REG, false);
-            return TEMPORARY;
-          }
-\+\%{DREG} {
-            ArgumentsHandler::getReg(yylval->arg, yylloc, yytext+3,
-                REG_PRE_INCR, 0, false);
-            return REGISTER;
-          }
-\+\%{AREG} {
-            ArgumentsHandler::getReg(yylval->arg, yylloc, yytext+3,
-                REG_PRE_INCR, NUM_REGS, false);
-            return REGISTER;
-          }
-\+\%{TREG} {
-            ArgumentsHandler::getTemporary(yylval->arg, yylloc, yytext+3,
-                REG_PRE_INCR, false);
-            return TEMPORARY;
-          }
-\-\%{DREG} {
-            ArgumentsHandler::getReg(yylval->arg, yylloc, yytext+3,
-                REG_PRE_DECR, 0, false);
-            return REGISTER;
-          }
-\-\%{AREG} {
-            ArgumentsHandler::getReg(yylval->arg, yylloc, yytext+3,
-                REG_PRE_DECR, NUM_REGS, false);
-            return REGISTER;
-          }
-\-\%{TREG} {
-            ArgumentsHandler::getTemporary(yylval->arg, yylloc, yytext+3,
-                REG_PRE_DECR, false);
-            return TEMPORARY;
-          }
-\%{DREG}\+ {
-            ArgumentsHandler::getReg(yylval->arg, yylloc, yytext+2,
-                REG_POST_INCR, 0, false);
-            return REGISTER;
-          }
-\%{AREG}\+ {
-            ArgumentsHandler::getReg(yylval->arg, yylloc, yytext+2,
-                REG_POST_INCR, NUM_REGS, false);
-            return REGISTER;
-          }
-\%{TREG}\+ {
-            ArgumentsHandler::getTemporary(yylval->arg, yylloc, yytext+2,
-                REG_POST_INCR, false);
-            return TEMPORARY;
-          }
-\%{DREG}\- {
-            ArgumentsHandler::getReg(yylval->arg, yylloc, yytext+2,
-                REG_POST_DECR, 0, false);
-            return REGISTER;
-          }
-\%{AREG}\- {
-            ArgumentsHandler::getReg(yylval->arg, yylloc, yytext+2,
-                REG_POST_DECR, NUM_REGS, false);
-            return REGISTER;
-          }
-\%{TREG}\- {
-            ArgumentsHandler::getTemporary(yylval->arg, yylloc, yytext+2,
-                REG_POST_DECR, false);
-            return TEMPORARY;
           }
 
-r?\({SREG}\) {
-            ArgumentsHandler::getSpecialAddrReg(yylval->arg, yylloc,
-                STATE_REGISTER, L_IS_REL_0(yytext));
-            return REGISTER;
+{ID} {
+            yylval->str.text = yytext;
+            yylval->str.len = yyleng;
+            return ID;
           }
-r?\({STK_PTR}\) {
-            ArgumentsHandler::getSpecialAddrReg(yylval->arg, yylloc,
-                STACK_POINTER, L_IS_REL_0(yytext));
-            return REGISTER;
-          }
-r?\({USTK_PTR}\) {
-            ArgumentsHandler::getSpecialAddrReg(yylval->arg, yylloc,
-                USER_STACK_POINTER, L_IS_REL_0(yytext));
-            return REGISTER;
-          }
-r?\({DREG}\) {
-            ArgumentsHandler::getReg(yylval->arg, yylloc,
-                L_SHIFT_TXT_REL_0(yytext), ADDR_IN_REG, 0, L_IS_REL_0(yytext));
-            return REGISTER;
-          }
-r?\({AREG}\) {
-            ArgumentsHandler::getReg(yylval->arg, yylloc,
-                L_SHIFT_TXT_REL_0(yytext), ADDR_IN_REG, NUM_REGS,
-                L_IS_REL_0(yytext));
-            return REGISTER;
-          }
-r?\({TREG}\) {
-            ArgumentsHandler::getTemporary(yylval->arg, yylloc,
-                L_SHIFT_TXT_REL_0(yytext), ADDR_IN_REG, L_IS_REL_0(yytext));
-            return TEMPORARY;
-          }
-\+r?\({DREG}\) {
-            ArgumentsHandler::getReg(yylval->arg, yylloc,
-                L_SHIFT_TXT_REL_1(yytext), ADDR_IN_REG_PRE_INCR, 0,
-                L_IS_REL_1(yytext));
-            return REGISTER;
-          }
-\+r?\({AREG}\) {
-            ArgumentsHandler::getReg(yylval->arg, yylloc,
-                L_SHIFT_TXT_REL_1(yytext), ADDR_IN_REG_PRE_INCR,
-                NUM_REGS, L_IS_REL_1(yytext));
-            return REGISTER;
-          }
-\+r?\({TREG}\) {
-            ArgumentsHandler::getTemporary(yylval->arg, yylloc,
-                L_SHIFT_TXT_REL_1(yytext), ADDR_IN_REG_PRE_INCR,
-                L_IS_REL_1(yytext));
-            return TEMPORARY;
-          }
-\-r?\({DREG}\) {
-            ArgumentsHandler::getReg(yylval->arg, yylloc,
-                L_SHIFT_TXT_REL_1(yytext), ADDR_IN_REG_PRE_DECR, 0,
-                L_IS_REL_1(yytext));
-            return REGISTER;
-          }
-\-r?\({AREG}\) {
-            ArgumentsHandler::getReg(yylval->arg, yylloc,
-                L_SHIFT_TXT_REL_1(yytext), ADDR_IN_REG_PRE_DECR,
-                NUM_REGS, L_IS_REL_1(yytext));
-            return REGISTER;
-          }
-\-r?\({TREG}\) {
-            ArgumentsHandler::getTemporary(yylval->arg, yylloc,
-                L_SHIFT_TXT_REL_1(yytext), ADDR_IN_REG_PRE_DECR,
-                L_IS_REL_1(yytext));
-            return TEMPORARY;
-          }
-r?\({DREG}\)\+ {
-            ArgumentsHandler::getReg(yylval->arg, yylloc,
-                L_SHIFT_TXT_REL_0(yytext), ADDR_IN_REG_POST_INCR, 0,
-                L_IS_REL_0(yytext));
-            return REGISTER;
-          }
-r?\({AREG}\)\+ {
-            ArgumentsHandler::getReg(yylval->arg, yylloc,
-                L_SHIFT_TXT_REL_0(yytext), ADDR_IN_REG_POST_INCR,
-                NUM_REGS, L_IS_REL_0(yytext));
-            return REGISTER;
-          }
-r?\({TREG}\)\+ {
-            ArgumentsHandler::getTemporary(yylval->arg, yylloc,
-                L_SHIFT_TXT_REL_0(yytext), ADDR_IN_REG_POST_INCR,
-                L_IS_REL_0(yytext));
-            return TEMPORARY;
-          }
-r?\({DREG}\)\- {
-            ArgumentsHandler::getReg(yylval->arg, yylloc,
-                L_SHIFT_TXT_REL_0(yytext), ADDR_IN_REG_POST_DECR, 0,
-                L_IS_REL_0(yytext));
-            return REGISTER;
-          }
-r?\({AREG}\)\- {
-            ArgumentsHandler::getReg(yylval->arg, yylloc,
-                L_SHIFT_TXT_REL_0(yytext), ADDR_IN_REG_POST_DECR,
-                NUM_REGS, L_IS_REL_0(yytext));
-            return REGISTER;
-          }
-r?\({TREG}\)\- {
-            ArgumentsHandler::getTemporary(yylval->arg, yylloc,
-                L_SHIFT_TXT_REL_0(yytext), ADDR_IN_REG_POST_DECR,
-                L_IS_REL_0(yytext));
-            return TEMPORARY;
-          }
-
-{ID}        yylval->id = yytext; return ID;
 
 "/*"        BEGIN(COMMENT);
 
@@ -323,7 +163,7 @@ r?\({TREG}\)\- {
             BEGIN(STRING_CONTEXT);
           }
 
-";".*\n|\n {
+("//"|";").*\n|\n {
             yylloc->first_line++;
             yylloc->first_column = 1;
             yylloc->last_line++;
@@ -339,9 +179,10 @@ r?\({TREG}\)\- {
             exit(1);
           }
 [ \t]+      /* eat up whitespace */
-,           return COMA;
 
 . {
+//            return *yytext;
+
             fprintf( stderr, "Line %4d Lexing Error, unknown symbol: '%s'\n",
                      yylloc->first_line, yytext );
             includesTree->printStderrCurrent();
@@ -404,7 +245,6 @@ r?\({TREG}\)\- {
             yylloc->first_column = 1;
             yylloc->last_line++;
             yylloc->last_column = 1;
-            return END_LINE;
           }
 "*/"        BEGIN(INITIAL);
 .           /* eat up */
@@ -439,7 +279,8 @@ r?\({TREG}\)\- {
 \" {
             BEGIN(INITIAL);
             *string_buf_ptr = '\0';
-            yylval->string = string_buf;
+            yylval->str.text = string_buf;
+            yylval->str.len = strlen(string_buf);
             return STRING;
           }
 }
