@@ -55,7 +55,7 @@ struct asm_immediate_arg : asm_arg {
 
   bool isTemp;
 
-  uint32_t displacement;
+  int32_t displacement;
   uint32_t index;
   bool isIndexTemp;
 
@@ -73,8 +73,8 @@ struct asm_immediate_arg : asm_arg {
     content.val = _val;
   }
   asm_immediate_arg(const YYLTYPE & pos, const float & _fval)
-    : asm_arg(pos, IMMED, BYTE4, REG_NO_ACTION), isTemp(false)
-    , isIndexTemp(false)
+    : asm_arg(pos, IMMED, BYTE4, REG_NO_ACTION), isTemp(false), displacement(0)
+    , index(0), isIndexTemp(false)
   {
     content.fval = _fval;
   }

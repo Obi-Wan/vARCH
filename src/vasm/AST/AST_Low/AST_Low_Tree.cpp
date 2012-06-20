@@ -12,6 +12,8 @@
 
 #include "exceptions.h"
 
+#include <sstream>
+
 list<asm_data_statement *> *
 ASTL_Tree::convertVariables(const vector<ASTL_Stmt *> & variables) const
 {
@@ -32,23 +34,31 @@ ASTL_Tree::convertVariables(const vector<ASTL_Stmt *> & variables) const
         asm_data_statement * tempDataStmt = NULL;
         switch (stmt->scale) {
           case BYTE1: {
-            uint8_t val = atoi(stmt->number->number.c_str());
+            int8_t val = atoi(stmt->number->number.c_str());
             tempDataStmt = new asm_char_keyword_statement(stmt->pos, (const char *)&val);
+            break;
           }
           case BYTE2: {
-            uint16_t val = atoi(stmt->number->number.c_str());
+            int16_t val = atoi(stmt->number->number.c_str());
             tempDataStmt = new asm_int_keyword_statement(stmt->pos, val);
+            break;
           }
           case BYTE4: {
-            uint32_t val = atoi(stmt->number->number.c_str());
+            int32_t val = atoi(stmt->number->number.c_str());
             tempDataStmt = new asm_int_keyword_statement(stmt->pos, val);
+            break;
           }
           case BYTE8: {
-            uint32_t val = atol(stmt->number->number.c_str());
-            tempDataStmt = new asm_int_keyword_statement(stmt->pos, val);
+            int64_t val = atol(stmt->number->number.c_str());
+            tempDataStmt = new asm_long_keyword_statement(stmt->pos, val);
+            break;
           }
           default: {
-            throw WrongArgumentException("Wrong Number scale!");
+            stringstream stream;
+            stream << __FUNCTION__ << ": Wrong Number scale! I was expecting "
+                  << "valid values for the enumeration 'ScaleOfArgument', but "
+                  << "got: " << stmt->scale << endl;
+            throw WrongArgumentException(stream.str());
           }
         }
         destVars->push_back(tempDataStmt);
@@ -109,15 +119,18 @@ ASTL_Tree::convertStatements(const vector<ASTL_Stmt *> & inStmts) const
               finalArg = ArgumentsHandler::getReg(arg);
 
               asm_immediate_arg * tempFinalArg = (asm_immediate_arg *) finalArg;
-              if (arg->kind | DISPLACED) {
+              if ((arg->kind & DISPLACED) == DISPLACED) {
+                DebugPrintf(("        & Displaced\n"));
                 tempFinalArg->displacement = atoi(arg->displ->number.c_str());
               }
-              if (arg->kind | INDEXED) {
+              if ((arg->kind & INDEXED) == INDEXED) {
+                DebugPrintf(("        & Indexed\n"));
                 asm_immediate_arg * tempIndex = ArgumentsHandler::getReg(arg);
                 tempFinalArg->index = tempIndex->content.tempUID;
                 tempFinalArg->isIndexTemp = tempIndex->isTemp;
                 delete tempIndex;
               }
+              break;
             }
             default: {
               delete asmStmt;
