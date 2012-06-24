@@ -296,7 +296,7 @@ public:
   { }
 
   virtual const string toString() const { return "(String Var decl : "
-      + this->getTypeString(scale) + " )"; }
+      + this->getTypeString(scale) + " -> " + text + " )"; }
   virtual const ASTL_Class getClass() const throw() { return ASTL_STMT_DECL_STRING; }
 };
 

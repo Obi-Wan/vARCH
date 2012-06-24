@@ -1,6 +1,5 @@
 /**/
 %top{
-/*#include "IR/IR_LowLevel_LexerHelpers.h"*/
 #include "IR_Low_parser.h"
 }
 
@@ -196,8 +195,8 @@ BITCAST {
 [ \t]+      /* eat up whitespace */
 
 [\"<].+[\">] {
-            char * newFileName = new char[yyleng-1];
-            if (!newFileName) {
+            string newFileName(yytext+1, yyleng-2);
+            if (!newFileName.size()) {
               fprintf( stderr,
                        "Line %4d include filename too long (%4d chars): %s\n",
                        yylloc->first_line, yyleng-2, yytext+1 );
@@ -205,16 +204,13 @@ BITCAST {
               includesTree->printStderrStackIncludes();
               exit(1);
             }
-            strncpy(newFileName, yytext+1, yyleng-2);
-            newFileName[yyleng-2] = '\0';
-            if(!openIncludeFile(newFileName, yylloc)) {
+            if(!openIncludeFile(newFileName.c_str(), yylloc)) {
               fprintf( stderr, "Line %4d inexisting include file name: %s\n",
-                       yylloc->first_line, newFileName );
+                       yylloc->first_line, newFileName.c_str() );
               includesTree->printStderrCurrent();
               includesTree->printStderrStackIncludes();
               exit(1);
             }
-            delete newFileName;
 
             yylloc->first_line = 1, yylloc->first_column = 1;
             yylloc->last_line = 1,  yylloc->last_column = 1;

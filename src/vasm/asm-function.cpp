@@ -9,6 +9,44 @@
 
 #include "exceptions.h"
 
+/**
+ * Adds locals. Needs to be ported to the new convention where the information
+ * about const and shared is stored into the label and not into the referenced
+ * object. Moreover, all the objects coming after a label will have its
+ * properties, until they meet another label or the end.
+ * @param locs
+ */
+void
+asm_function::addLocals(list<asm_data_statement *> * locs)
+{
+  bool is_constant = false;
+  bool is_shared = false;
+
+  for(list<asm_data_statement *>::iterator stmtIt = locs->begin();
+      stmtIt != locs->end(); stmtIt++)
+  {
+    asm_data_statement * stmt = *stmtIt;
+    if (stmt->getType() == ASM_LABEL_STATEMENT) {
+      is_constant = stmt->is_constant;
+      is_shared = stmt->is_shared;
+    }
+
+    if (is_constant || is_shared) {
+      uniqueLocals.push_back( stmt );
+    } else {
+      stackLocals.push_back( stmt );
+    }
+    stmt->is_constant = is_constant;
+    stmt->is_shared = is_shared;
+  }
+}
+
+void
+asm_function::addStmts(list<asm_statement *> * stmts)
+{
+  this->stmts.insert(this->stmts.end(), stmts->begin(), stmts->end());
+}
+
 void
 asm_function::finalize()
 {

@@ -47,7 +47,7 @@ struct asm_function {
   void checkAndAddLabel(asm_statement * stmt);
 
   void addStmt(asm_statement * stmt) { if (stmt) stmts.push_back(stmt); }
-  void addStmts(list<asm_statement *> * stmts) { copy(stmts->begin(), stmts->end(), this->stmts.end()); }
+  void addStmts(list<asm_statement *> * stmts);
   void addLocals(list<asm_data_statement *> * locs);
   void addParameter(asm_function_param * p) { if (p) parameters.push_back(p); }
 
@@ -58,38 +58,6 @@ struct asm_function {
 
   size_t getSize() const { return getInstrSize() + getSharedDataSize(); }
 };
-
-inline void
-asm_function::addLocals(list<asm_data_statement *> * locs)
-{
-  for(list<asm_data_statement *>::iterator inStmtIt = locs->begin();
-      inStmtIt != locs->end(); inStmtIt++)
-  {
-    asm_data_statement * stmt = *inStmtIt;
-    if (stmt->getType() == ASM_LABEL_STATEMENT) {
-      list<asm_data_statement *>::iterator nextIt = inStmtIt;
-      nextIt++;
-      if (nextIt != locs->end()
-          && (*nextIt)->getType() != ASM_LABEL_STATEMENT
-          && (*nextIt)->isShared())
-      {
-        stmt->is_constant = (*nextIt)->is_constant;
-        stmt->is_shared = (*nextIt)->is_shared;
-        uniqueLocals.push_back( stmt );
-      } else {
-        stackLocals.push_back( stmt );
-      }
-    } else {
-      if (stmt->isShared()) {
-        uniqueLocals.push_back( stmt );
-      } else {
-        stackLocals.push_back( stmt );
-      }
-    }
-  }
-//    uniqueLocals.insert(uniqueLocals.begin(), locs->begin(), locs->end());
-}
-
 
 inline size_t
 asm_function::getInstrSize() const

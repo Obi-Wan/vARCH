@@ -48,7 +48,7 @@ extern int yylex \
   int instruction;
   struct {
     const char * text;
-    int len;
+    size_t len;
   } str;
 
   enum Registers special_reg;
