@@ -223,3 +223,15 @@ ASTL_Tree::printTree()
   DebugPrintf(("-- Terminated Dumping AST_Low Code --\n\n"));
 #endif
 }
+
+ASTL_Tree::~ASTL_Tree()
+{
+  for(size_t funcNum = 0; funcNum < functionDefs.size(); funcNum++) {
+    ASTL_FunctionDef * func = functionDefs[funcNum];
+    delete func;
+  }
+  for(size_t num = 0; num < globals.size(); num++) {
+    delete globals[num];
+  }
+}
+

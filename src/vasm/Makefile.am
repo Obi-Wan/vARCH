@@ -26,6 +26,7 @@ vasm_low_SOURCES = \
 		  IR_Low_parser/IR_Low_lexer.lpp \
 		  AST/AST_Low/AST_Low_Tree.cpp \
 		  AST/AST_Low/AST_Low_Function.cpp \
+		  AST/AST_Low/AST_Low_Stmt.cpp \
 		  vAsmLow.cpp
 
 #vasm_mid_SOURCES = \

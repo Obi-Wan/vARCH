@@ -7,3 +7,14 @@
 
 #include "AST_Low_Stmt.h"
 
+ASTL_VarDeclNumber::~ASTL_VarDeclNumber()
+{
+  delete this->number;
+}
+
+ASTL_VarDeclFloat::~ASTL_VarDeclFloat()
+{
+  delete this->number;
+}
+
+

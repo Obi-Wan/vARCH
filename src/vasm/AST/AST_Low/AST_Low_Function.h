@@ -58,9 +58,7 @@ public:
     : ASTL_FunctionProto(_pos, _name)
   { }
 
-  ~ASTL_FunctionDef() {
-    for(size_t num = 0; num < stmts.size(); num++) { delete stmts[num]; }
-  }
+  ~ASTL_FunctionDef();
 
   void addStmt(ASTL_Stmt * stmt) { stmts.push_back(stmt); }
 

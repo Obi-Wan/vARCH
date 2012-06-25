@@ -22,6 +22,8 @@ public:
   vector<ASTL_Stmt *> globals;
   vector<ASTL_FunctionDef *> functionDefs;
 
+  ~ASTL_Tree();
+
   void addFunctionDef(ASTL_FunctionDef * func_def) {
     functionDefs.push_back(func_def);
   }

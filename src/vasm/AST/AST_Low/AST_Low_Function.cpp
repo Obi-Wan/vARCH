@@ -7,6 +7,12 @@
 
 #include "AST_Low_Function.h"
 
+ASTL_FunctionDef::~ASTL_FunctionDef()
+{
+  for(size_t num = 0; num < stmts.size(); num++) { delete stmts[num]; }
+  for(size_t num = 0; num < locals.size(); num++) { delete locals[num]; }
+}
+
 void
 ASTL_FunctionDef::finalize()
 {

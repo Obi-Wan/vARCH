@@ -92,6 +92,7 @@ main(int argc, char** argv)
       }
     }
     cleanParser();
+    delete ast_tree;
 
   } catch (const BasicException & e) {
     fprintf(stderr, "Error: %s\n", e.what());

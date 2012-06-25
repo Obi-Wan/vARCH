@@ -268,6 +268,7 @@ public:
       const ASTL_ArgNumber * num)
     : ASTL_VarDecl(_pos, _type), number(num)
   { }
+  ~ASTL_VarDeclNumber();
 
   virtual const string toString() const { return "(Numberic Var decl : "
       + this->getTypeString(scale) + " )"; }
@@ -281,6 +282,7 @@ public:
   ASTL_VarDeclFloat(const YYLTYPE & _pos, const ASTL_ArgNumber * num)
     : ASTL_VarDecl(_pos, BYTE4), number(num)
   { }
+  ~ASTL_VarDeclFloat();
 
   virtual const string toString() const { return "(Float Var decl : "
       + this->getTypeString(scale) + " )"; }

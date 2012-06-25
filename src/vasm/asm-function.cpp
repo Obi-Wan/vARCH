@@ -75,6 +75,7 @@ asm_function::finalize()
       checkAndAddLabel(stmt);
     }
   }
+
   for(size_t index = 0; index < uniqueLocals.size(); index++) {
     asm_data_statement * stmt = uniqueLocals[index];
 
