@@ -33,13 +33,12 @@ ADDR_REG  r?\(([RA][1-8]|[U]?SP)\)
 #include "IncludesTree.h"
 
 #include <stack>
+#include <sstream>
 
 using namespace std;
 
-#define MAX_STR_CONST 256
-
-char string_buf[MAX_STR_CONST];
-char *string_buf_ptr;
+stringstream string_buff;
+string readString;
 
 #define YY_USER_ACTION \
    do {\
@@ -158,7 +157,7 @@ BITCAST {
 "/*"        BEGIN(COMMENT);
 
 \" {
-            string_buf_ptr = string_buf;
+            string_buff.str("");
             BEGIN(STRING_CONTEXT);
           }
 
@@ -180,8 +179,6 @@ BITCAST {
 [ \t]+      /* eat up whitespace */
 
 . {
-//            return *yytext;
-
             fprintf( stderr, "Line %4d Lexing Error, unknown symbol: '%s'\n",
                      yylloc->first_line, yytext );
             includesTree->printStderrCurrent();
@@ -255,28 +252,25 @@ BITCAST {
             exit(1);
           }
 
-\\n         *string_buf_ptr++ = '\n';
-\\t         *string_buf_ptr++ = '\t';
-\\r         *string_buf_ptr++ = '\r';
-\\b         *string_buf_ptr++ = '\b';
-\\f         *string_buf_ptr++ = '\f';
+\\n         string_buff << '\n';
+\\t         string_buff << '\t';
+\\r         string_buff << '\r';
+\\b         string_buff << '\b';
+\\f         string_buff << '\f';
 
 \\(.|\n) {
-            *string_buf_ptr++ = yytext[0];
-            *string_buf_ptr++ = yytext[1];
+            string_buff << yytext[0] << yytext[1];
           }
 
 [^\\\n\"]+ {
-            char *yptr = yytext;
-            while ( *yptr )
-              *string_buf_ptr++ = *yptr++;
+            string_buff << yytext;
           }
 
 \" {
             BEGIN(INITIAL);
-            *string_buf_ptr = '\0';
-            yylval->str.text = string_buf;
-            yylval->str.len = strlen(string_buf);
+            readString = string_buff.str();
+            yylval->str.text = readString.c_str();
+            yylval->str.len = readString.size();
             return STRING;
           }
 }
