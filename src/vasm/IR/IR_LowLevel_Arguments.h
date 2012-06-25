@@ -32,7 +32,10 @@ struct asm_arg {
           const ModifierOfArgument & _rmt)
     : type(_type), scale(_scale), regModType(_rmt), relOffset(0), position(pos)
   { }
-  asm_arg(const YYLTYPE& pos) : relOffset(0), position(pos) { }
+  asm_arg(const YYLTYPE& pos)
+    : type(IMMED), scale(BYTE4), regModType(REG_NO_ACTION), relOffset(0)
+    , position(pos)
+  { }
 
   virtual ~asm_arg() { }
 
@@ -127,9 +130,11 @@ struct asm_label_arg : asm_arg {
   uint32_t pointedPosition;
 
   asm_label_arg(const YYLTYPE& pos, const string& _lab, const TypeOfArgument& _type)
-    : asm_arg(pos, _type, BYTE4, REG_NO_ACTION), label(_lab) { }
+    : asm_arg(pos, _type, BYTE4, REG_NO_ACTION), label(_lab), pointedPosition(0)
+  { }
   asm_label_arg(const YYLTYPE& pos, const char * _lab, const TypeOfArgument& _type)
-    : asm_arg(pos, _type, BYTE4, REG_NO_ACTION), label(_lab) { }
+    : asm_arg(pos, _type, BYTE4, REG_NO_ACTION), label(_lab), pointedPosition(0)
+  { }
 
   const string toString() const { return string("(label: '") + label + "')"; }
   const uint32_t getCode() const { return pointedPosition; }
