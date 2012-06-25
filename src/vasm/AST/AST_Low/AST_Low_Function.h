@@ -68,7 +68,8 @@ public:
     locals.insert(stmts.end(), stmtsList->begin(), stmtsList->end());
   }
 
-  void finalize() { }
+  void finalize();
+  void printFunction();
 };
 
 #endif /* AST_LOW_FUNCTION_H_ */

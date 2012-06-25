@@ -289,14 +289,14 @@ public:
 
 class ASTL_VarDeclString : public ASTL_VarDecl {
 public:
-  const string & text;
+  const string text;
 
   ASTL_VarDeclString(const YYLTYPE & _pos, const string & _text)
     : ASTL_VarDecl(_pos, BYTE1), text(_text)
   { }
 
   virtual const string toString() const { return "(String Var decl : "
-      + this->getTypeString(scale) + " -> " + text + " )"; }
+      + this->getTypeString(scale) + " -> \"" + this->text + "\" )"; }
   virtual const ASTL_Class getClass() const throw() { return ASTL_STMT_DECL_STRING; }
 };
 

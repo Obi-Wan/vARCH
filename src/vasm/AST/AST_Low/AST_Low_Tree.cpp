@@ -213,20 +213,7 @@ ASTL_Tree::printTree()
   DebugPrintf(("-- Dumping AST_Low --\n"));
   for(size_t funcNum = 0; funcNum < functionDefs.size(); funcNum++) {
     ASTL_FunctionDef & func = *functionDefs[funcNum];
-    DebugPrintf(("Line: %03d Function: %s\n", func.pos.first_line,
-                  func.name.c_str()));
-    for(vector<ASTL_Stmt *>::const_iterator stmt_it = func.stmts.begin();
-        stmt_it != func.stmts.end(); stmt_it++)
-    {
-      const ASTL_Stmt * stmt = *stmt_it;
-      DebugPrintf((" Line: %03d %s\n", stmt->pos.first_line,
-                    stmt->toString().c_str()));
-    }
-    for(size_t localNum = 0; localNum < func.locals.size(); localNum++) {
-      DebugPrintf((" Line: %03d Local: %s\n",
-                    func.locals[localNum]->pos.first_line,
-                    func.locals[localNum]->toString().c_str()));
-    }
+    func.printFunction();
   }
   for(size_t num = 0; num < globals.size(); num++) {
     DebugPrintf(("Line: %03d Global: %s\n",
