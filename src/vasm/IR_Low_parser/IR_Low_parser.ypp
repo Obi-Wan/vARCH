@@ -128,7 +128,7 @@ program
 
 block
       : function      { ast_tree->addFunctionDef( $1 ); }
-      | globals       { ast_tree->addGlobalVars( $1 ); }
+      | globals       { ast_tree->addGlobalVars( $1 ); delete $1; }
       | define
       | blank_lines
       ;
@@ -187,12 +187,12 @@ function_init_params
 
 function_init
       : KEYWORD_FUNCTION STRING blank_lines
-                  { $$ = new ASTL_FunctionDef( yylloc, $2.text ); }
+                  { $$ = new ASTL_FunctionDef( yylloc, string($2.text, $2.len) ); }
       ;
 
 function_parameter
       : KEYWORD_PARAM REGISTER REGISTER blank_lines
-                  { $$ = new ASTL_Param( yylloc, $2.text, $3.text ); }
+                  { $$ = new ASTL_Param( yylloc, string($2.text, $2.len), string($3.text, $3.len) ); }
       ;
 
 
@@ -275,7 +275,7 @@ register_addressing
       ;
 
 register
-      : REGISTER  { $$ = new ASTL_ArgRegister( yylloc, $1.text ); }
+      : REGISTER  { $$ = new ASTL_ArgRegister( yylloc, string($1.text, $1.len) ); }
       | SPECIAL_REGISTER
                   { $$ = new ASTL_ArgSpecialRegister( yylloc, $1 ); }
       ;
