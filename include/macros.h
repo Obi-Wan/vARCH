@@ -130,5 +130,7 @@ using namespace std;
 # include <stdint.h>
 #endif
 
+#define ROUND_DOWN(x, s) ((x) & ~((s)-1))
+
 #endif	/* _MACROS_H */
 

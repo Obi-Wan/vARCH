@@ -40,7 +40,8 @@ struct asm_arg {
   virtual ~asm_arg() { }
 
   virtual const string toString() const { return ""; }
-  virtual const uint32_t getCode() const { return 0; }
+  virtual const size_t getSize() const { return (1 << ((size_t)this->scale)); }
+  virtual const int32_t getCode() const { return 0; }
   virtual const ObjType getType() const throw() { return ASM_ARG; }
 
   virtual bool isTemporary() const throw() { return false; }
@@ -82,7 +83,7 @@ struct asm_immediate_arg : asm_arg {
     content.fval = _fval;
   }
 
-  const uint32_t getCode() const {
+  const int32_t getCode() const {
     switch (type) {
       case IMMED:
       case DIRECT:
@@ -137,7 +138,7 @@ struct asm_label_arg : asm_arg {
   { }
 
   const string toString() const { return string("(label: '") + label + "')"; }
-  const uint32_t getCode() const { return pointedPosition; }
+  const int32_t getCode() const { return pointedPosition; }
   const ObjType getType() const throw() { return ASM_LABEL_ARG; }
 };
 

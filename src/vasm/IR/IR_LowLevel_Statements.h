@@ -70,15 +70,26 @@ struct asm_instruction_statement : asm_statement {
       const asm_arg & arg = *args[argNum];
       op += ARG(argNum, BUILD_ARG(arg.scale, arg.type) );
     }
-    *(position++) = op;
-
-    for (size_t argNum = 0; argNum < args.size(); argNum++) {
-      *(position++) = args[argNum]->getCode();
+    const int8_t chunks[4] = DEAL_SWORDS_FROM_QWORD(op);
+    for(size_t count = 0; count < 4; count++) {
+      *(position++) = chunks[count];
     }
+
+    this->emitArgs(position);
   }
 
-  size_t getSize() const throw() { return 1 + args.size(); }
+  size_t getSize() const throw() {
+    size_t totalSize = 4;
+    for(size_t argNum = 0; argNum < args.size(); argNum++) {
+      totalSize += args[argNum]->getSize();
+    }
+    return totalSize;
+  }
   const ObjType getType() const throw() { return ASM_INSTRUCTION_STATEMENT; }
+
+protected:
+  void emitArgs(Bloat::iterator & position);
+  void emitArg(const asm_arg * const arg, Bloat::iterator & position);
 };
 
 /**
@@ -102,12 +113,17 @@ struct asm_function_call : asm_instruction_statement {
 
   void emitCode(Bloat::iterator & position) {
     const asm_arg * arg = args[0];
+    const int32_t tempInstr = instruction + ARG_1( BUILD_ARG(arg->scale, arg->type) );
 
-    *(position++) = instruction + ARG_1( BUILD_ARG(arg->scale, arg->type) );
-    *(position++) = arg->getCode();
+    const int8_t chunks[4] = DEAL_SWORDS_FROM_QWORD(tempInstr);
+    for(size_t count = 0; count < 4; count++) {
+      *(position++) = chunks[count];
+    }
+
+    this->emitArg(arg, position);
   }
 
-  size_t getSize() const throw() { return 2; }
+  size_t getSize() const throw() { return 8; }
   const ObjType getType() const throw() { return ASM_FUNCTION_CALL; }
 };
 
@@ -124,9 +140,14 @@ struct asm_return_statement : asm_instruction_statement {
 
   virtual void checkArgs() const;
 
-  void emitCode(Bloat::iterator & position) { *(position++) = instruction; }
+  void emitCode(Bloat::iterator & position) {
+    const int8_t chunks[4] = DEAL_SWORDS_FROM_QWORD(instruction);
+    for(size_t count = 0; count < 4; count++) {
+      *(position++) = chunks[count];
+    }
+  }
 
-  size_t getSize() const throw() { return 1; }
+  size_t getSize() const throw() { return 4; }
   const ObjType getType() const throw() { return ASM_RETURN_STATEMENT; }
 };
 
@@ -173,11 +194,14 @@ struct asm_int_keyword_statement : asm_data_keyword_statement {
     : asm_data_keyword_statement(pos), integer(_integer) { }
 
   const string toString() const { return "(integer_keyword_statement)"; }
-  size_t getSize() const throw() { return 1; }
+  size_t getSize() const throw() { return 4; }
   const ObjType getType() const throw() { return ASM_INT_KEYWORD_STATEMENT; }
 
   void emitCode(Bloat::iterator & position) {
-    *(position++) = integer;
+    const int8_t number[4] = DEAL_SWORDS_FROM_QWORD(integer);
+    for(size_t count = 0; count < 4; count++) {
+      *(position++) = number[count];
+    }
   }
 };
 
@@ -188,12 +212,14 @@ struct asm_long_keyword_statement : asm_data_keyword_statement {
     : asm_data_keyword_statement(pos), longInteger(_long) { }
 
   const string toString() const { return "(long_integer_keyword_statement)"; }
-  size_t getSize() const throw() { return 2; }
+  size_t getSize() const throw() { return 8; }
   const ObjType getType() const throw() { return ASM_LONG_KEYWORD_STATEMENT; }
 
   void emitCode(Bloat::iterator & position) {
-    *(position++) = EXTRACT_HIGHER_SWORD_FROM_DWORD(longInteger);
-    *(position++) = EXTRACT_LOWER__SWORD_FROM_DWORD(longInteger);
+    const int8_t number[8] = DEAL_SWORDS_FROM_OWORD(longInteger);
+    for(size_t count = 0; count < 8; count++) {
+      *(position++) = number[count];
+    }
   }
 };
 
@@ -208,7 +234,7 @@ struct asm_char_keyword_statement : asm_data_keyword_statement {
   const ObjType getType() const throw() { return ASM_CHAR_KEYWORD_STATEMENT; }
 
   void emitCode(Bloat::iterator & position) {
-    *(position++) = (character & 0xff );
+    *(position++) = (character & SWORD);
   }
 };
 
@@ -226,7 +252,7 @@ struct asm_string_keyword_statement : asm_data_keyword_statement {
 
   void emitCode(Bloat::iterator & position) {
     for (size_t i = 0; i < str.size(); i++) {
-      *(position++) = (str[i] & 0xff );
+      *(position++) = (str[i] & SWORD);
     }
   }
 };
@@ -238,10 +264,14 @@ struct asm_real_keyword_statement : asm_data_keyword_statement {
     : asm_data_keyword_statement(pos), real(_real) { }
 
   const string toString() const { return  "(real_keyword_statement: )"; }
-  size_t getSize() const throw() { return 1; }
+  size_t getSize() const throw() { return 4; }
   const ObjType getType() const throw() { return ASM_REAL_KEYWORD_STATEMENT; }
   void emitCode(Bloat::iterator & position) {
-    *(position++) = static_cast<int>(real);
+    const int32_t tempInt = static_cast<int32_t>(real);
+    const int8_t number[4] = DEAL_SWORDS_FROM_QWORD(tempInt);
+    for(size_t count = 0; count < 4; count++) {
+      *(position++) = number[count];
+    }
   }
 };
 

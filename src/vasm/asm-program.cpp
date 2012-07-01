@@ -372,13 +372,22 @@ asm_program::assemble(const string & outputName)
     globals[index]->emitCode(pos);
   }
 
-  InfoPrintf(("Size of the generated file: %5u bytes in %4u cells\n",
-              (uint32_t)bytecode.size()*4, (uint32_t)bytecode.size() ));
+  InfoPrintf(("Size of the generated file: %5u bytes\n",
+              (uint32_t)bytecode.size() ));
 #ifdef DEBUG
   DebugPrintf(("-- Dumping generated binary code --\n"));
-  for (size_t i = 0; i < bytecode.size(); i++) {
-    DebugPrintf(("Mem %03lu: %12d\n", (uint64_t)i, bytecode[i]));
+  const size_t sizeQuadrupoles = ROUND_DOWN(bytecode.size(), 4);
+  size_t i = 0;
+  for (i = 0; i < sizeQuadrupoles; i += 4) {
+    DebugPrintf(("Mem %03lu: %4d Mem %03lu: %4d Mem %03lu: %4d Mem %03lu: %4d\n",
+                (uint64_t)i, bytecode[i], (uint64_t)i+1, bytecode[i+1],
+                (uint64_t)i+2, bytecode[i+2], (uint64_t)i+3, bytecode[i+3]));
   }
+  DebugPrintf((""));
+  for (; i < bytecode.size(); i++) {
+    DebugPrintf(("\b\b\b\b\b\b\bMem %03lu: %4d ", (uint64_t)i, bytecode[i]));
+  }
+  DebugPrintf(("\b\b\b\b\b\b\b       \n"));
 
 //  DebugPrintf(("-- Dumping Partially Disassembled code --\n"));
 //  Disassembler().disassembleAndPrint(bytecode);
