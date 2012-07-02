@@ -11,7 +11,9 @@
 #include "../asm-program.h"
 
 class Disassembler {
-  void printArg(const int & typeArg, const int & arg);
+  void printArg(const int32_t & typeArg, const int64_t & arg);
+  const int64_t fetchArg(const int32_t & typeArg, Bloat::const_iterator & codeIt,
+      const Bloat::const_iterator & endIt);
 public:
 //  Disassembler();
 

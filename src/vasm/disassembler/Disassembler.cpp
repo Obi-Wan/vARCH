@@ -10,9 +10,10 @@
 #include "parser_definitions.h"
 
 #include <iostream>
+#include <iterator>
 
 void
-Disassembler::printArg(const int & typeArg, const int & arg)
+Disassembler::printArg(const int32_t & typeArg, const int64_t & arg)
 {
   cout << "       Type Arg: ";
   cout.width(12);
@@ -64,52 +65,85 @@ Disassembler::disassembleProgram(asm_program & prog)
   }
 }
 
+const int64_t
+Disassembler::fetchArg(const int32_t & typeArg, Bloat::const_iterator & codeIt,
+    const Bloat::const_iterator & endIt)
+{
+  size_t numOfBytes = (1 << (GET_ARG_SCALE(typeArg)));
+  if (codeIt >= (endIt - numOfBytes)) {
+    throw WrongArgumentException(string(__PRETTY_FUNCTION__) + ": Overcame bytecode limit");
+  }
+  switch (GET_ARG_SCALE(typeArg)) {
+    case BYTE1: {
+      return (int64_t) *codeIt++;
+    }
+    case BYTE2: {
+      return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8));
+    }
+    case BYTE4: {
+      return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8)
+          + (((int64_t) *codeIt++) << 16) + (((int64_t) *codeIt++) << 24));
+    }
+    case BYTE8: {
+      return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8)
+          + (((int64_t) *codeIt++) << 16) + (((int64_t) *codeIt++) << 24)
+          + (((int64_t) *codeIt++) << 32) + (((int64_t) *codeIt++) << 40)
+          + (((int64_t) *codeIt++) << 48) + (((int64_t) *codeIt++) << 56));
+    }
+    default:
+      throw WrongArgumentException(string(__PRETTY_FUNCTION__) + ": Unknown byte scale");
+  }
+}
+
 void
 Disassembler::disassembleAndPrint(const Bloat & bytecode)
 {
-  for(Bloat::const_iterator codeIt = bytecode.begin();codeIt != bytecode.end();)
+  const Bloat::const_iterator & endIt = bytecode.end();
+  for(Bloat::const_iterator codeIt = bytecode.begin(); codeIt < (endIt - 4);)
   {
-    const int32_t & instr = *(codeIt++);
+    const int32_t instr = DEAL_QWORD_FROM_SWORDS(&*codeIt);
+    DebugPrintf(("%d\n", instr));
+    codeIt += 4;
     try {
-    if (instr) {
-      switch ((instr >> 30 ) & 3) {
-        case 0:
-          cout << "  " << ISet.getInstr(instr) << endl;
-          break;
-        case 1: {
-          const int typeArg1 = GET_ARG_1(instr);
-          const int polishedInstr = instr - ARG_1(typeArg1);
-          cout << "  " << ISet.getInstr(polishedInstr) << endl;
-          printArg(typeArg1, *codeIt++);
-          break;
+      if (instr) {
+        switch ((instr >> 30 ) & 3) {
+          case 0:
+            cout << "  " << ISet.getInstr(instr) << endl;
+            break;
+          case 1: {
+            const int32_t typeArg1 = GET_ARG_1(instr);
+            const int32_t polishedInstr = instr - ARG_1(typeArg1);
+            cout << "  " << ISet.getInstr(polishedInstr) << endl;
+            printArg(typeArg1, this->fetchArg(typeArg1, codeIt, endIt));
+            break;
+          }
+          case 2: {
+            const int32_t typeArg1 = GET_ARG_1(instr);
+            const int32_t typeArg2 = GET_ARG_2(instr);
+            const int32_t polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2);
+            cout << "  " << ISet.getInstr(polishedInstr) << endl;
+            printArg(typeArg1, this->fetchArg(typeArg1, codeIt, endIt));
+            printArg(typeArg2, this->fetchArg(typeArg2, codeIt, endIt));
+            break;
+          }
+          case 3: {
+            const int32_t typeArg1 = GET_ARG_1(instr);
+            const int32_t typeArg2 = GET_ARG_2(instr);
+            const int32_t typeArg3 = GET_ARG_3(instr);
+            const int32_t polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2)
+                                            - ARG_3(typeArg3);
+            cout << "  " << ISet.getInstr(polishedInstr) << endl;
+            printArg(typeArg1, this->fetchArg(typeArg1, codeIt, endIt));
+            printArg(typeArg2, this->fetchArg(typeArg2, codeIt, endIt));
+            printArg(typeArg3, this->fetchArg(typeArg3, codeIt, endIt));
+            break;
+          }
+          default:
+            break;
         }
-        case 2: {
-          const int typeArg1 = GET_ARG_1(instr);
-          const int typeArg2 = GET_ARG_2(instr);
-          const int polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2);
-          cout << "  " << ISet.getInstr(polishedInstr) << endl;
-          printArg(typeArg1, *codeIt++);
-          printArg(typeArg2, *codeIt++);
-          break;
-        }
-        case 3: {
-          const int typeArg1 = GET_ARG_1(instr);
-          const int typeArg2 = GET_ARG_2(instr);
-          const int typeArg3 = GET_ARG_3(instr);
-          const int polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2)
-                                          - ARG_3(typeArg3);
-          cout << "  " << ISet.getInstr(polishedInstr) << endl;
-          printArg(typeArg1, *codeIt++);
-          printArg(typeArg2, *codeIt++);
-          printArg(typeArg3, *codeIt++);
-          break;
-        }
-        default:
-          break;
       }
-    }
     } catch (const WrongInstructionException & e) {
-      cout << "Skip instr" << endl;
+      cout << "Skip instr: " << e.what() << endl;
     }
   }
 }
