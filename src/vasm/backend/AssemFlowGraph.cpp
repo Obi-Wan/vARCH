@@ -211,7 +211,7 @@ AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
       case REG_PRE_DECR:
       case REG_POST_INCR:
       case REG_POST_DECR: {
-        if (arg->type | INDEXED) {
+        if ((arg->type & INDEXED) == INDEXED) {
           const uint32_t shiftedTempIndexUID = Frame::shiftArgUID(arg->index, arg->isIndexTemp);
           _addToSet(nodeDefs, shiftedTempIndexUID );
         } else {
