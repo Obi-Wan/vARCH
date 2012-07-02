@@ -39,6 +39,7 @@ struct asm_function {
   asm_function(const YYLTYPE& pos, const char * _name)
     : name(_name), functionOffset(0), position(pos)
   { }
+  ~asm_function();
 
   void finalize();
   void rebuildOffsets();

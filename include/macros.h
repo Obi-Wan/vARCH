@@ -132,5 +132,31 @@ using namespace std;
 
 #define ROUND_DOWN(x, s) ((x) & ~((s)-1))
 
+///////////////////////////////////////////////////////////////////////////////
+// Memory Management - XXX NOT THREADSAFE
+
+#define DEALLOC(target) do {\
+  if (target != NULL) {\
+    delete (target);\
+    target = NULL;\
+  }\
+} while (0)
+
+#define DEALLOC_C_ARRAY(target) do {\
+  if (target != NULL) {\
+    delete [](target);\
+    target = NULL;\
+  }\
+} while (0)
+
+#define DEALLOC_ELEMS_VECTOR(target, type) do {\
+  const type::iterator & endIt = target.end();\
+  for(type::iterator targetId = target.begin(); targetId != endIt; targetId++) {\
+    if (*targetId != NULL) {\
+      delete (*targetId);\
+    }\
+  }\
+} while (0)
+
 #endif	/* _MACROS_H */
 

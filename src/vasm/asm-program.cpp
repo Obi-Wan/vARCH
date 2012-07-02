@@ -18,6 +18,12 @@
 #include <sstream>
 using namespace std;
 
+asm_program::~asm_program()
+{
+  DEALLOC_ELEMS_VECTOR(this->functions, deque<asm_function *>);
+  DEALLOC_ELEMS_VECTOR(this->globals, vector<asm_data_statement *>);
+}
+
 void
 asm_program::checkInstructions(const bool & usingTemps) const
 {

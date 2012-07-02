@@ -122,6 +122,8 @@ public:
     : ASTL_Arg(_pos), id(_id), kind(REG), modif(REG_NO_ACTION)
     , displ(NULL), index(NULL)
   { }
+  ~ASTL_ArgRegister();
+
   virtual const string toString() const {
     return string("(Register Arg: ") + id + ")";
   }

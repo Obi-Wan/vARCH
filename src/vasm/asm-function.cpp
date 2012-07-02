@@ -9,6 +9,14 @@
 
 #include "exceptions.h"
 
+asm_function::~asm_function()
+{
+  DEALLOC_ELEMS_VECTOR(this->parameters, ListOfParams);
+  DEALLOC_ELEMS_VECTOR(this->stackLocals, ListOfDataStmts);
+  DEALLOC_ELEMS_VECTOR(this->uniqueLocals, ListOfDataStmts);
+  DEALLOC_ELEMS_VECTOR(this->stmts, ListOfStmts);
+}
+
 /**
  * Adds locals. Needs to be ported to the new convention where the information
  * about const and shared is stored into the label and not into the referenced

@@ -7,6 +7,16 @@
 
 #include "AST_Low_Stmt.h"
 
+ASTL_ArgRegister::~ASTL_ArgRegister()
+{
+  if ((this->kind & INDEXED) == INDEXED) {
+    delete this->index;
+  }
+  if ((this->kind & DISPLACED) == DISPLACED) {
+    delete this->displ;
+  }
+}
+
 ASTL_VarDeclNumber::~ASTL_VarDeclNumber()
 {
   delete this->number;

@@ -90,6 +90,7 @@ main(int argc, char** argv)
           program->emitDebugSymbols(args.getDebugSymbolsName());
         }
       }
+      delete program;
     }
     cleanParser();
     delete ast_tree;
