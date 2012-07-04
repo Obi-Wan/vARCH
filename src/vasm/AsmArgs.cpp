@@ -68,6 +68,9 @@ AsmArgs::parse() throw (WrongArgumentException)
     } else if (!tempArg.compare("-only-validate")) {
       onlyValidate = true;
 
+    } else if (!tempArg.compare("-disassemble-result")) {
+      disassembleResult = true;
+
     } else if (!tempArg.compare("-h")) {
       throw WrongArgumentException("");
     } else {

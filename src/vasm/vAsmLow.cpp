@@ -76,9 +76,9 @@ main(int argc, char** argv)
       program->assignValuesToLabels();
       program->assemble( args.getOutputName() );
 
-#ifdef DEBUG
-      Disassembler().disassembleProgram(*program);
-#endif
+      if (args.getDisassembleResult()) {
+        Disassembler().disassembleProgram(*program);
+      }
 
       if (!args.getDebugSymbolsName().empty()) {
         const string & symName = args.getDebugSymbolsName();

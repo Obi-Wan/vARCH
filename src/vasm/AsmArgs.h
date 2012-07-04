@@ -29,10 +29,11 @@ class AsmArgs {
   bool regCoalesce;
 
   bool onlyValidate;
+  bool disassembleResult;
 public:
   AsmArgs(int _argc, char** _argv)
     : argc(_argc), argv(_argv), optimLevel(2), regAutoAlloc(false)
-    , regCoalesce(false), onlyValidate(false)
+    , regCoalesce(false), onlyValidate(false), disassembleResult(false)
   { }
 
   void parse() throw(WrongArgumentException);
@@ -47,6 +48,7 @@ public:
   const bool &getRegAutoAlloc() const throw() { return regAutoAlloc; }
   const bool &getRegCoalesce() const throw() { return regCoalesce; }
   const bool &getOnlyValidate() const throw() { return onlyValidate; }
+  const bool &getDisassembleResult() const throw() { return disassembleResult; }
 };
 
 #endif /* ASMARGS_H_ */
