@@ -10,6 +10,7 @@
 #include "parser_definitions.h"
 
 #include <iostream>
+#include <sstream>
 #include <iterator>
 
 void
@@ -19,7 +20,33 @@ Disassembler::printArg(const int32_t & typeArg, const int64_t & arg)
   cout.width(12);
   cout << ATypeSet.getItem(typeArg & (0xF));
   cout.width(0);
-  cout << ", Modifier: ";;
+  cout << ", Modifier: ";
+  switch (GET_ARG_MOD(typeArg)) {
+    case REG_NO_ACTION: {
+      cout << "REG_NO_ACTION";
+      break;
+    }
+    case REG_PRE_INCR: {
+      cout << "REG_PRE_INCR";
+      break;
+    }
+    case REG_PRE_DECR: {
+      cout << "REG_PRE_DECR";
+      break;
+    }
+    case REG_POST_INCR: {
+      cout << "REG_POST_INCR";
+      break;
+    }
+    case REG_POST_DECR: {
+      cout << "REG_POST_DECR";
+      break;
+    }
+    default: {
+      cout << "unknown!";
+      break;
+    }
+  }
   cout.width();
   switch (typeArg) {
     case REG:
@@ -56,6 +83,7 @@ Disassembler::disassembleProgram(asm_program & prog)
               << l_stmt->offset + func.functionOffset << ")"  << endl;
       } else {
         bytecode.resize(stmt->getSize());
+        cout << "Stmt size: " << stmt->getSize() << endl;
         Bloat::iterator it = bytecode.begin();
         stmt->emitCode(it);
         disassembleAndPrint(bytecode);
@@ -70,21 +98,28 @@ Disassembler::fetchArg(const int32_t & typeArg, Bloat::const_iterator & codeIt,
     const Bloat::const_iterator & endIt)
 {
   size_t numOfBytes = (1 << (GET_ARG_SCALE(typeArg)));
-  if (codeIt >= (endIt - numOfBytes)) {
-    throw WrongArgumentException(string(__PRETTY_FUNCTION__) + ": Overcame bytecode limit");
+  if (codeIt > (endIt - numOfBytes)) {
+    stringstream stream;
+    stream << __PRETTY_FUNCTION__ << ": Overcame bytecode limit by "
+            << codeIt - (endIt - numOfBytes) << " bytes." << endl;
+    stream << "Pointer position: " << hex << reinterpret_cast<uint64_t>(&*codeIt)
+            << " Ending position: " << hex << reinterpret_cast<uint64_t>(&*endIt)
+            << " Number of bytes to read: " << numOfBytes << endl;
+    throw WrongArgumentException(stream.str());
   }
-  switch (GET_ARG_SCALE(typeArg)) {
-    case BYTE1: {
+  switch (numOfBytes) {
+    case 1: {
       return (int64_t) *codeIt++;
     }
-    case BYTE2: {
+    case 2: {
       return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8));
     }
-    case BYTE4: {
-      return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8)
-          + (((int64_t) *codeIt++) << 16) + (((int64_t) *codeIt++) << 24));
+    case 4: {
+      return DEAL_QWORD_FROM_SWORDS(codeIt);
+//      return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8)
+//          + (((int64_t) *codeIt++) << 16) + (((int64_t) *codeIt++) << 24));
     }
-    case BYTE8: {
+    case 8: {
       return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8)
           + (((int64_t) *codeIt++) << 16) + (((int64_t) *codeIt++) << 24)
           + (((int64_t) *codeIt++) << 32) + (((int64_t) *codeIt++) << 40)
@@ -101,9 +136,7 @@ Disassembler::disassembleAndPrint(const Bloat & bytecode)
   const Bloat::const_iterator & endIt = bytecode.end();
   for(Bloat::const_iterator codeIt = bytecode.begin(); codeIt < (endIt - 4);)
   {
-    const int32_t instr = DEAL_QWORD_FROM_SWORDS(&*codeIt);
-    DebugPrintf(("%d\n", instr));
-    codeIt += 4;
+    const int32_t instr = DEAL_QWORD_FROM_SWORDS(codeIt);
     try {
       if (instr) {
         switch ((instr >> 30 ) & 3) {

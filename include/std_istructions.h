@@ -135,6 +135,8 @@ enum ModifierOfArgument {
 #define IS_POST(x)          (((x) & (1 << 6)) && true)
 #define IS_DECR(x)          (((x) & (1 << 5)) && true)
 
+#define GET_ARG_MOD(x)      ((x & MASK_PRE_POST) >> 5)
+
 #define BUILD_PRE_POST_MOD(mod) (((mod) & 7) << 5)
 #define FILTER_PRE_POST(x)  ((x) & 31)
 

@@ -30,8 +30,8 @@
 #define DEAL_SWORDS_FROM_QWORD(x) \
   {(x & SWORD), ((x >>  8) & SWORD), ((x >> 16) & SWORD), ((x >> 24) & SWORD)}
 #define DEAL_QWORD_FROM_SWORDS(x) \
-    (((int32_t)(*x) & SWORD) + (((int32_t)(*x) & SWORD) << 8) \
-    + (((int32_t)(*x) & SWORD) << 16) + (((int32_t)(*x) & SWORD) << 24))
+    (((int32_t)(*x++) & SWORD) + (((int32_t)(*x++) & SWORD) << 8) \
+    + (((int32_t)(*x++) & SWORD) << 16) + (((int32_t)(*x++) & SWORD) << 24))
 
 /* Operations on OWORDS */
 #define EXTRACT_HIGHER_QWORD_FROM_OWORD(x) ((x >> 32) & QWORD)
