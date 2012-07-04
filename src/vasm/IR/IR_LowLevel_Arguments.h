@@ -121,6 +121,11 @@ struct asm_function_param : asm_arg {
     : asm_arg(pos, REG, BYTE4, REG_NO_ACTION)
     , source(_source), destination(_dest)
   { }
+
+  ~asm_function_param() {
+    DEALLOC(this->source);
+    DEALLOC(this->destination);
+  }
 };
 
 typedef vector<asm_function_param *>        ListOfParams;

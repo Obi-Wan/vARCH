@@ -44,6 +44,10 @@ struct asm_instruction_statement : asm_statement {
   asm_instruction_statement(const YYLTYPE& pos, const int _instr)
     : asm_statement(pos), instruction(_instr) { }
 
+  ~asm_instruction_statement() {
+    DEALLOC_ELEMS_VECTOR(args, vector<asm_arg *>);
+  }
+
   virtual bool isInstruction() const throw() { return true; }
 
   asm_instruction_statement * addArg(asm_arg * newArg) {
