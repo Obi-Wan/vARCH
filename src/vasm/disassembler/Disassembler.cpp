@@ -18,44 +18,18 @@ Disassembler::printArg(const int32_t & typeArg, const int64_t & arg)
 {
   cout << "       Type Arg: ";
   cout.width(12);
-  cout << ATypeSet.getItem(typeArg & (0xF));
-  cout.width(0);
-  cout << ", Modifier: ";
-  switch (GET_ARG_MOD(typeArg)) {
-    case REG_NO_ACTION: {
-      cout << "REG_NO_ACTION";
-      break;
-    }
-    case REG_PRE_INCR: {
-      cout << "REG_PRE_INCR";
-      break;
-    }
-    case REG_PRE_DECR: {
-      cout << "REG_PRE_DECR";
-      break;
-    }
-    case REG_POST_INCR: {
-      cout << "REG_POST_INCR";
-      break;
-    }
-    case REG_POST_DECR: {
-      cout << "REG_POST_DECR";
-      break;
-    }
-    default: {
-      cout << "unknown!";
-      break;
-    }
-  }
+  cout << ATypeSet.getItem(GET_ARG_TYPE(typeArg));
   cout.width();
-  switch (typeArg) {
+  switch (GET_ARG_TYPE(typeArg)) {
     case REG:
     case REG_INDIR:
+      cout.width(0);
+      cout << ", Modifier: " << MTypeSet.getItem(GET_ARG_MOD(arg));
     case MEM_INDIR:
     case INDEXED:
     case DISPLACED:
     case INDX_DISP:
-      cout << ", Arg: " << RTypeSet.getItem(arg) << endl;
+      cout << ", Arg: " << RTypeSet.getItem(FILTER_PRE_POST(arg)) << endl;
       break;
     default:
       cout << ", Arg: " << arg << endl;
@@ -83,7 +57,6 @@ Disassembler::disassembleProgram(asm_program & prog)
               << l_stmt->offset + func.functionOffset << ")"  << endl;
       } else {
         bytecode.resize(stmt->getSize());
-        cout << "Stmt size: " << stmt->getSize() << endl;
         Bloat::iterator it = bytecode.begin();
         stmt->emitCode(it);
         disassembleAndPrint(bytecode);
@@ -139,7 +112,7 @@ Disassembler::disassembleAndPrint(const Bloat & bytecode)
     const int32_t instr = DEAL_QWORD_FROM_SWORDS(codeIt);
     try {
       if (instr) {
-        switch ((instr >> 30 ) & 3) {
+        switch (GET_NUM_ARGS(instr)) {
           case 0:
             cout << "  " << ISet.getInstr(instr) << endl;
             break;

@@ -93,6 +93,8 @@ AsmArgs::parse() throw (WrongArgumentException)
                 regAutoAlloc ? "Enabled" : "Disabled"));
   InfoPrintf(("Register Coalescing: %s\n",
                 regCoalesce ? "Enabled" : "Disabled"));
+  InfoPrintf(("Disassembling result: %s\n",
+                disassembleResult ? "Enabled" : "Disabled"));
   InfoPrintf(("Only Validating: %s\n\n",
                 onlyValidate ? "Enabled" : "Disabled"));
 
@@ -115,6 +117,8 @@ AsmArgs::printHelp() const throw()
         << "  add flag -reg-auto-alloc" << endl;
   cout << "To let the assembler coalesce registers (when auto allocating):"
         << endl << "  add flag -reg-coalesce" << endl;
+  cout << "To disassemble the generated code, and see the nice output:"
+        << endl << "  add flag -disassemble-result" << endl;
   cout << "To enable some sort of optimizations:" << endl
         << "  -O<optimization_level> with <optimization_level> as a number "
         << "between 0 and 3" << endl;

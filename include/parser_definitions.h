@@ -166,31 +166,39 @@ public:
   ArgsTypeSet()
     : DoubleCorrelationMap(0, "No such type", "No such enum type arg")
   {
-    assignNew("COST");
-    assignNew("REG");
-    assignNew("ADDR");
-    assignNew("ADDR_IN_REG");
-
-    /* Here the (1 << 1) bit stays for INCR/DECR, and the (1 << 0) for PRE/POST */
-    assignNew("REG_PRE_INCR");
-    assignNew("REG_PRE_DECR");
-    assignNew("REG_POST_INCR");
-    assignNew("REG_POST_DECR");
-
-    /* Here the (1 << 1) bit stays for INCR/DECR, and the (1 << 0) for PRE/POST */
-    assignNew("ADDR_PRE_INCR");
-    assignNew("ADDR_PRE_DECR");
-    assignNew("ADDR_POST_INCR");
-    assignNew("ADDR_POST_DECR");
-
-    /* Here the (1 << 1) bit stays for INCR/DECR, and the (1 << 0) for PRE/POST */
-    assignNew("ADDR_IN_REG_PRE_INCR");
-    assignNew("ADDR_IN_REG_PRE_DECR");
-    assignNew("ADDR_IN_REG_POST_INCR");
-    assignNew("ADDR_IN_REG_POST_DECR");
+    /* Immediate */
+    assignNew("IMMED", 0);               // 000
+    /* Register */
+    assignNew("REG");                    // 001
+    /* Direct addressing */
+    assignNew("DIRECT");                 // 010
+    /* Indirect addressing, with address in register */
+    assignNew("REG_INDIR");              // 011
+    /* Indirect addressing, with address in memory, reached from address */
+    assignNew("MEM_INDIR");              // 100
+    /* Displaced addressing (offset in register) */
+    assignNew("DISPLACED");              // 101
+    /* Indexed addressing (fixed offset) */
+    assignNew("INDEXED");                // 110
+    /* Indexed + Displaced addressing */
+    assignNew("INDX_DISP");              // 111
 
   }
 } ATypeSet;
+
+static class ModsTypeSet : public DoubleCorrelationMap {
+public:
+  ModsTypeSet()
+    : DoubleCorrelationMap(0, "No such modifier", "No such enum modifier arg")
+  {
+    assignNew("REG_NO_ACTION", 0);       // 000
+    assignNew("REG_PRE_INCR", (1 << 2)); // 100
+    assignNew("REG_PRE_DECR");           // 101
+    assignNew("REG_POST_INCR");          // 110
+    assignNew("REG_POST_DECR");          // 111
+
+  }
+} MTypeSet;
 
 static class RegsTypeSet : public DoubleCorrelationMap {
 public:

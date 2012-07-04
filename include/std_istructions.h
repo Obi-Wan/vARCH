@@ -37,44 +37,6 @@
 #define GET_ARG_3( x ) (((x) >> 11) & 0x1f)
 /* End ASM Helpers */
 
-// ARGS SECTION
-//#define RELATIVE_ARG  (1 << 4)
-//#define IS_RELATIVE( x ) ((x & RELATIVE_ARG) == RELATIVE_ARG)
-
-/* These bits occupy variably the positions from (1 << 25) to
- *    (1 << 23)
- *    (1 << 20)
- *    (1 << 17)
- * Varying on the number of arguments (on istructions non using them for args
- * type, they may be recycled.)
- */
-//enum TypeOfArgument {
-//
-//  /* Here the (1 << 1) bit stays for DIRECT, and the (1 << 0) for REG */
-//  IMMED = 0,              // 0000
-//  REG,                    // 0001
-//  DIRECT,                 // 0010
-//  REG_INDIR,              // 0011
-//
-//  /* Here the (1 << 1) bit stays for INCR/DECR, and the (1 << 0) for PRE/POST */
-//  REG_PRE_INCR,           // 0100
-//  REG_PRE_DECR,           // 0101
-//  REG_POST_INCR,          // 0110
-//  REG_POST_DECR,          // 0111
-//
-//  /* Here the (1 << 1) bit stays for INCR/DECR, and the (1 << 0) for PRE/POST */
-//  ADDR_PRE_INCR,          // 1000
-//  ADDR_PRE_DECR,          // 1001
-//  ADDR_POST_INCR,         // 1010
-//  ADDR_POST_DECR,         // 1011
-//
-//  /* Here the (1 << 1) bit stays for INCR/DECR, and the (1 << 0) for PRE/POST */
-//  ADDR_IN_REG_PRE_INCR,   // 1100
-//  ADDR_IN_REG_PRE_DECR,   // 1101
-//  ADDR_IN_REG_POST_INCR,  // 1110
-//  ADDR_IN_REG_POST_DECR,  // 1111
-//};
-
 enum TypeOfArgument {
   /* Immediate */
   IMMED = 0,              // 000
