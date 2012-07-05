@@ -205,29 +205,29 @@ public:
   RegsTypeSet()
     : DoubleCorrelationMap(0, "No such type", "No such enum type arg")
   {
-    assignNew("REG_DATA_1", NUM_REGS * DATA_REGS);
-    assignNew("REG_DATA_2");
-    assignNew("REG_DATA_3");
-    assignNew("REG_DATA_4");
-    assignNew("REG_DATA_5");
-    assignNew("REG_DATA_6");
-    assignNew("REG_DATA_7");
-    assignNew("REG_DATA_8");
+    assignNew("R0", NUM_REGS * DATA_REGS);
+    assignNew("R1");
+    assignNew("R2");
+    assignNew("R3");
+    assignNew("R4");
+    assignNew("R5");
+    assignNew("R6");
+    assignNew("R7");
 
-    assignNew("REG_ADDR_1", NUM_REGS * ADDR_REGS);
-    assignNew("REG_ADDR_2");
-    assignNew("REG_ADDR_3");
-    assignNew("REG_ADDR_4");
-    assignNew("REG_ADDR_5");
-    assignNew("REG_ADDR_6");
-    assignNew("REG_ADDR_7");
-    assignNew("REG_ADDR_8");
+    assignNew("A0", NUM_REGS * ADDR_REGS);
+    assignNew("A1");
+    assignNew("A2");
+    assignNew("A3");
+    assignNew("A4");
+    assignNew("A5");
+    assignNew("A6");
+    assignNew("A7");
 
-    assignNew("STACK_POINTER", NUM_REGS * SPECIAL_REGS);
-    assignNew("USER_STACK_POINTER");
+    assignNew("SP", NUM_REGS * SPECIAL_REGS);
+    assignNew("USP");
 
-    assignNew("STATE_REGISTER");
-    assignNew("PROGRAM_COUNTER");
+    assignNew("SR");
+    assignNew("PC");
   }
 } RTypeSet;
 

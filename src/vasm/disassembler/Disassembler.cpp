@@ -19,21 +19,55 @@ Disassembler::printArg(const int32_t & typeArg, const int64_t & arg)
   cout << "       Type Arg: ";
   cout.width(12);
   cout << ATypeSet.getItem(GET_ARG_TYPE(typeArg));
-  cout.width();
+  cout.width(0);
+  stringstream argString;
+  switch (GET_ARG_TYPE(typeArg)) {
+    case REG: {
+      argString << "%" << RTypeSet.getItem(FILTER_PRE_POST(arg));
+      break;
+    }
+    case REG_INDIR: {
+      argString << "(%" << RTypeSet.getItem(FILTER_PRE_POST(arg)) << ")";
+      break;
+    }
+    case MEM_INDIR: {
+      argString << "( (%" << RTypeSet.getItem(FILTER_PRE_POST(arg)) << ") )";
+      break;
+    }
+    case INDEXED: {
+      argString << "(%" << RTypeSet.getItem(FILTER_PRE_POST(arg)) << ")["
+            << RTypeSet.getItem(FILTER_PRE_POST(GET_INDEX_REG(arg))) <<"]";
+      break;
+    }
+    case DISPLACED: {
+      argString << RTypeSet.getItem(FILTER_PRE_POST(GET_BIG_DISPL(arg)))
+            << "(%" << RTypeSet.getItem(FILTER_PRE_POST(arg)) << ")";
+      break;
+    }
+    case INDX_DISP: {
+      argString << RTypeSet.getItem(FILTER_PRE_POST(GET_BIG_DISPL(arg)))
+            << "(%" << RTypeSet.getItem(FILTER_PRE_POST(arg)) << ")[%"
+            << RTypeSet.getItem(FILTER_PRE_POST(GET_INDEX_DISPL(arg))) <<"]";
+      break;
+    }
+    default: {
+      argString << arg;
+      break;
+    }
+  }
+  cout << ", Arg: ";
+  cout.width(10);
+  cout << argString.str();
+  cout.width(0);
   switch (GET_ARG_TYPE(typeArg)) {
     case REG:
-    case REG_INDIR:
-      cout.width(0);
-      cout << ", Modifier: " << MTypeSet.getItem(GET_ARG_MOD(arg));
-    case MEM_INDIR:
-    case INDEXED:
-    case DISPLACED:
-    case INDX_DISP:
-      cout << ", Arg: " << RTypeSet.getItem(FILTER_PRE_POST(arg)) << endl;
+    case REG_INDIR...INDX_DISP: {
+      cout << ", Modifier: " << MTypeSet.getItem(GET_ARG_MOD(arg)) << endl;
       break;
-    default:
-      cout << ", Arg: " << arg << endl;
-      break;
+    }
+    default: {
+      cout << endl;
+    }
   }
 }
 
