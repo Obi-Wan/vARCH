@@ -260,7 +260,7 @@ asm_program::exposeGlobalLabels()
     asm_function * func = functions[index];
 
     asm_label_statement * tempLabel =
-        new asm_label_statement(func->position, func->name);
+        new asm_label_statement(func->position, func->name, true);
     tempLabel->offset = func->functionOffset;
     func->stmts.push_front(tempLabel);
 

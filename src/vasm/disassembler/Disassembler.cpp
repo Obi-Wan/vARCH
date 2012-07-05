@@ -86,9 +86,15 @@ Disassembler::disassembleProgram(asm_program & prog)
       asm_statement * stmt = *stmtIt;
       if (stmt->getType() == ASM_LABEL_STATEMENT) {
         asm_label_statement * l_stmt = (asm_label_statement *) stmt;
-        cout << "." << l_stmt->label << ": (position: internal "
-              << l_stmt->offset << ", total "
-              << l_stmt->offset + func.functionOffset << ")"  << endl;
+        cout << "." << l_stmt->label << ": (position: ";
+        if (l_stmt->isGlobal()) {
+          cout << "global " << l_stmt->offset;
+        } else {
+          cout << "internal "
+                << l_stmt->offset << ", total "
+                << l_stmt->offset + func.functionOffset;
+        }
+        cout << ")" << endl;
       } else {
         bytecode.resize(stmt->getSize());
         Bloat::iterator it = bytecode.begin();

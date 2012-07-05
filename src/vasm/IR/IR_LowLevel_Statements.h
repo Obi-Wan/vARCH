@@ -175,14 +175,19 @@ struct asm_data_statement : asm_statement {
 
 struct asm_label_statement : asm_data_statement {
   string label;
+  bool is_global;
 
-  asm_label_statement(const YYLTYPE& pos, const char * _label)
-    : asm_data_statement(pos), label(_label) { }
-  asm_label_statement(const YYLTYPE& pos, const string& _label)
-    : asm_data_statement(pos), label(_label) { }
+  asm_label_statement(const YYLTYPE& pos, const char * _label, const bool & _glob = false)
+    : asm_data_statement(pos), label(_label), is_global(_glob)
+  { }
+  asm_label_statement(const YYLTYPE& pos, const string& _label, const bool & _glob = false)
+    : asm_data_statement(pos), label(_label), is_global(_glob)
+  { }
 
   const string toString() const { return string("(label: '") + label + "')"; }
   const ObjType getType() const throw() { return ASM_LABEL_STATEMENT; }
+
+  const bool & isGlobal() const { return this->is_global; }
 };
 
 struct asm_data_keyword_statement : asm_data_statement {
