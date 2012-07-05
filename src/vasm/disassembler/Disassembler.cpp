@@ -67,6 +67,7 @@ Disassembler::printArg(const int32_t & typeArg, const int64_t & arg)
     }
     default: {
       cout << endl;
+      break;
     }
   }
 }
