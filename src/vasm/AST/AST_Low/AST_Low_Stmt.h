@@ -98,9 +98,11 @@ public:
 class ASTL_ArgNumber : public ASTL_Arg {
 public:
   const string number;
+  const TypeOfArgument type;
 
-  ASTL_ArgNumber(const YYLTYPE & _pos, const string & _num)
-    : ASTL_Arg(_pos), number(_num)
+  ASTL_ArgNumber( const YYLTYPE & _pos, const string & _num,
+                  const TypeOfArgument & _type = IMMED)
+    : ASTL_Arg(_pos), number(_num), type(_type)
   { }
   virtual const string toString() const {
     return "(Number Arg: " + number + ")";

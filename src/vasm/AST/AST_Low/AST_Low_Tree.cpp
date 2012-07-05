@@ -110,7 +110,7 @@ ASTL_Tree::convertStatements(const vector<ASTL_Stmt *> & inStmts) const
             case ASTL_ARG_NUMBER: {
               ASTL_ArgNumber * arg = (ASTL_ArgNumber *) t_arg;
               finalArg = new asm_immediate_arg(arg->pos,
-                  atoi(arg->number.c_str()), IMMED, stmt->scale, REG_NO_ACTION);
+                  atoi(arg->number.c_str()), arg->type, stmt->scale, REG_NO_ACTION);
               break;
             }
             case ASTL_ARG_SPECIAL_REGISTER:

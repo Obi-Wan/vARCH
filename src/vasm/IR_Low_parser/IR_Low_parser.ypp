@@ -240,6 +240,8 @@ type
 
 arg
       : NUMBER    { $$ = new ASTL_ArgNumber( yylloc, string($1.text, $1.len) ); }
+      | '(' NUMBER ')'
+                  { $$ = new ASTL_ArgNumber( yylloc, string($2.text, $2.len), DIRECT ); }
       | REF_AT_LABEL
                   { $$ = new ASTL_ArgLabel( yylloc, string($1.text, $1.len), IMMED ); }
       | REF_TO_LABEL
