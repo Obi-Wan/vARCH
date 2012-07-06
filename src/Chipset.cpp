@@ -41,23 +41,28 @@ Chipset::loadBiosFromFile(const char * file) {
 
 inline void
 Chipset::initMem() {
-  uint32_t i = 0;
+  uint32_t block = 0;
+  for (; block < maxMem / 4; block++) {
+    mainMem[block].u32 = 0;
+  }
   try {
     Bloat biosLoad = loadBiosFromFile("bios.bin");
 
     CHECK_THROW(biosLoad.size() < maxMem,
         WrongFileException("Bios Too Big! It doesn't fit in memory!"));
 
-    for (i = 0; i < biosLoad.size(); i++) {
-      mainMem[i].u32 = biosLoad[i];
+    const size_t blocksNum = biosLoad.size() / 4;
+    for (block = 0; block < blocksNum; block++) {
+      mainMem[block].u32 = *((int32_t *)&biosLoad[block*4]);
+    }
+    const size_t remaining = biosLoad.size() - blocksNum * 4;
+    for (size_t count; count < remaining; count++) {
+      mainMem[block].u8[count] = biosLoad[block*4 + count];
     }
   } catch (const WrongFileException & e) {
     printf("Failed to load bios from file:\n%s\n", e.what());
     printf("Exiting.\n");
     throw e;
-  }
-  for (; i < maxMem; i++) {
-    mainMem[i].u32 = 0;
   }
 }
 

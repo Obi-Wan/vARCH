@@ -15,11 +15,10 @@
 Bloat
 BinLoader::getBinFileContent() {
   Bloat bloat;
-  int temp = 0;
+  Bloat::value_type temp = 0;
   
-  while ( file.read((char *)&temp, sizeof(int)) ) {
+  while ( file.read((char *)&temp, sizeof(Bloat::value_type)) ) {
     bloat.push_back(temp);
-//    DebugPrintf(("int: %d\n",temp));
   }
 
   return bloat;
