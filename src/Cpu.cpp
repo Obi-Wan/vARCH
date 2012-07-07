@@ -180,7 +180,7 @@ Cpu::coreStep()
 inline int
 Cpu::instructsZeroArg(const int& instr, int& newFlags)
 {
-  DebugPrintf(("  Instruction %s\n", ISet.getInstr(instr).c_str()));
+  DebugPrintf(("Instruction %s\n", ISet.getInstr(instr).c_str()));
   switch (instr) {
     case SLEEP:
       return instr;
@@ -214,6 +214,7 @@ Cpu::instructsOneArg(const int32_t& instr, int32_t& newFlags)
 {
   const int32_t typeArg = GET_ARG_1(instr);
   const int32_t polishedInstr = instr - ARG_1(typeArg);
+  DebugPrintf(("Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
 
   DoubleWord rawArg;
   timeDelay += memoryController.loadFromMem(rawArg, progCounter, GET_ARG_SCALE(typeArg));
@@ -224,7 +225,6 @@ Cpu::instructsOneArg(const int32_t& instr, int32_t& newFlags)
   int32_t temp = 0;
   timeDelay += loadArg(temp, argRecord);
 
-  DebugPrintf(("  Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
   switch (polishedInstr) {
     case NOT: {
       temp = ~temp;
@@ -312,6 +312,7 @@ Cpu::instructsTwoArg(const int32_t& instr, int32_t& newFlags)
   const int32_t typeArg1 = GET_ARG_1(instr);
   const int32_t typeArg2 = GET_ARG_2(instr);
   const int32_t polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2);
+  DebugPrintf(("Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
 
   DoubleWord rawArg1, rawArg2;
   timeDelay += memoryController.loadFromMem(rawArg1, progCounter, GET_ARG_SCALE(typeArg1));
@@ -326,7 +327,6 @@ Cpu::instructsTwoArg(const int32_t& instr, int32_t& newFlags)
   timeDelay += loadArg(temp1, argRecord1);
   timeDelay += loadArg(temp2, argRecord2);
 
-  DebugPrintf(("  Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
   switch (polishedInstr) {
     case MOV:
       temp2 = temp1;
@@ -423,6 +423,7 @@ Cpu::instructsThreeArg(const int32_t& instr, int32_t& newFlags)
   const int32_t typeArg3 = GET_ARG_3(instr);
   const int32_t polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2)
                                       - ARG_3(typeArg3);
+  DebugPrintf(("Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
 
   DoubleWord rawArg1, rawArg2, rawArg3;
   timeDelay += memoryController.loadFromMem(rawArg1, progCounter, GET_ARG_SCALE(typeArg1));
@@ -441,7 +442,6 @@ Cpu::instructsThreeArg(const int32_t& instr, int32_t& newFlags)
   timeDelay += loadArg(temp2, argRecord2);
   timeDelay += loadArg(temp3, argRecord3);
 
-  DebugPrintf(("  Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
   switch (polishedInstr) {
     case BPUT:
       break;
@@ -490,8 +490,8 @@ Cpu::instructsThreeArg(const int32_t& instr, int32_t& newFlags)
 inline uint32_t
 Cpu::loadArg(int32_t & temp, const ArgRecord & arg)
 {
-  DebugPrintf(("Type arg 1: 0x%X scale: 0x%X arg: 0x%X\n", arg.type, arg.scale,
-      arg.raw_data));
+  DebugPrintf(("- LOAD:  Type: % 8s, scale (Num bytes): %u, code: 0x%04X\n",
+      ATypeSet.getItem(arg.type).c_str(), (1 << arg.scale), arg.raw_data));
   switch (arg.type) {
     case IMMED:
       DebugPrintf(("  CONST: %d\n", arg.raw_data));
@@ -505,15 +505,8 @@ Cpu::loadArg(int32_t & temp, const ArgRecord & arg)
                           * (1 - (2 * IS_DECR(reg_raw_data)) );
       temp = getReg(reg_pos) + pre;
 #ifdef DEBUG
-      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
-        if (IS_DECR(arg.raw_data)) {
-          DebugPrintf(("  REG_PRE_DECR: %d\n", reg_pos));
-        } else {
-          DebugPrintf(("  REG_PRE_INCR: %d\n", reg_pos));
-        }
-      } else {
-        DebugPrintf(("  REG / REG_POST_*: %d\n", reg_pos));
-      }
+      DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
+                    MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
 #endif
       return 0;
     }
@@ -653,28 +646,22 @@ Cpu::loadArg(int32_t & temp, const ArgRecord & arg)
 inline uint32_t
 Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
 {
-  DebugPrintf(("Type arg 1: 0x%X scale: 0x%X arg: 0x%X\n", arg.type, arg.scale,
-      arg.raw_data));
+  DebugPrintf(("- STORE: Type: % 8s, scale (Num bytes): %u, code: 0x%04X\n",
+      ATypeSet.getItem(arg.type).c_str(), (1 << arg.scale), arg.raw_data));
   switch (arg.type) {
     case IMMED: {
       throw WrongArgumentException("Can't store an immediate!");
     }
     case REG: {
-      const uint32_t reg_pos = FILTER_PRE_POST(arg.raw_data);
+      const uint32_t reg_raw_data = GET_FIRST_REG(arg.raw_data);
+      const uint32_t reg_pos = FILTER_PRE_POST(reg_raw_data);
       const int32_t post = IS_PRE_POST_MOD(arg.raw_data)
                            * (IS_POST(arg.raw_data))
                            * (1 - (2 * IS_DECR(arg.raw_data)) );
       setReg(reg_pos, temp + post);
 #ifdef DEBUG
-      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
-        if (IS_DECR(arg.raw_data)) {
-          DebugPrintf(("  REG_POST_DECR: %d\n", reg_pos));
-        } else {
-          DebugPrintf(("  REG_POST_INCR: %d\n", reg_pos));
-        }
-      } else {
-        DebugPrintf(("  REG / REG_PRE_*: %d\n", reg_pos));
-      }
+      DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
+                    MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
 #endif
       return 0;
     }
@@ -836,15 +823,13 @@ Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
 
 
 inline int
-Cpu::getReg(const int& arg)
+Cpu::getReg(const int& regPos)
 {
-  DebugPrintf( ("arg: %d type: %d, spec: %d\n", arg, arg / NUM_REGS,
-                arg % NUM_REGS) );
-  switch (arg) {
+  switch (regPos) {
     case REG_DATA_1 ... REG_DATA_8:
-      return regsData[ arg % NUM_REGS ];
+      return regsData[ regPos % NUM_REGS ];
     case REG_ADDR_1 ... REG_ADDR_8:
-      return regsAddr[ arg % NUM_REGS ];
+      return regsAddr[ regPos % NUM_REGS ];
     case USER_STACK_POINTER:
       return (flags & F_SVISOR) ? sP.getUStackPointer() : sP.getStackPointer();
     case STACK_POINTER:
@@ -855,23 +840,21 @@ Cpu::getReg(const int& arg)
       return progCounter;
     default: {
       stringstream stream;
-      stream << "No such register: " << arg << ". Couldn't load it.";
+      stream << "No such register: " << regPos << ". Couldn't load it.";
       throw WrongArgumentException(stream.str());
     }
   }
 }
 
 inline void
-Cpu::setReg(const int& arg, const int& value)
+Cpu::setReg(const int& regPos, const int& value)
 {
-  DebugPrintf( ("arg: %d type: %d, spec: %d\n", arg, arg / NUM_REGS,
-                arg % NUM_REGS) );
-  switch (arg) {
+  switch (regPos) {
     case REG_DATA_1 ... REG_DATA_8:
-      regsData[ arg % NUM_REGS ] = value;
+      regsData[ regPos % NUM_REGS ] = value;
       break;
     case REG_ADDR_1 ... REG_ADDR_8:
-      regsAddr[ arg % NUM_REGS ] = value;
+      regsAddr[ regPos % NUM_REGS ] = value;
       break;
     case USER_STACK_POINTER:
       if (flags & F_SVISOR) {
@@ -895,7 +878,7 @@ Cpu::setReg(const int& arg, const int& value)
       break;
     default: {
       stringstream stream;
-      stream << "No such register: " << arg << ". Couldn't set it.";
+      stream << "No such register: " << regPos << ". Couldn't set it.";
       throw WrongArgumentException(stream.str());
     }
   }
