@@ -90,7 +90,7 @@ Cpu::dumpRegistersAndMemory() const
   }
   
   printf("\nAddress Registers:");
-  for (size_t i = 0; i < 8; i++) {
+  for (size_t i = 0; i < NUM_REGS; i++) {
     printf(" %d", regsAddr[i]);
   }
 
@@ -216,8 +216,8 @@ Cpu::instructsOneArg(const int32_t& instr, int32_t& newFlags)
   const int32_t polishedInstr = instr - ARG_1(typeArg);
 
   DoubleWord rawArg;
-  timeDelay += memoryController.loadFromMem(rawArg, progCounter, BYTE4);
-  SCALE_ADDR_INCREM(progCounter, BYTE4);
+  timeDelay += memoryController.loadFromMem(rawArg, progCounter, GET_ARG_SCALE(typeArg));
+  SCALE_ADDR_INCREM(progCounter, GET_ARG_SCALE(typeArg));
 
   ArgRecord argRecord(typeArg, rawArg.u32);
 
@@ -314,10 +314,10 @@ Cpu::instructsTwoArg(const int32_t& instr, int32_t& newFlags)
   const int32_t polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2);
 
   DoubleWord rawArg1, rawArg2;
-  timeDelay += memoryController.loadFromMem(rawArg1, progCounter, BYTE4);
-  SCALE_ADDR_INCREM(progCounter, BYTE4);
-  timeDelay += memoryController.loadFromMem(rawArg2, progCounter, BYTE4);
-  SCALE_ADDR_INCREM(progCounter, BYTE4);
+  timeDelay += memoryController.loadFromMem(rawArg1, progCounter, GET_ARG_SCALE(typeArg1));
+  SCALE_ADDR_INCREM(progCounter, GET_ARG_SCALE(typeArg1));
+  timeDelay += memoryController.loadFromMem(rawArg2, progCounter, GET_ARG_SCALE(typeArg2));
+  SCALE_ADDR_INCREM(progCounter, GET_ARG_SCALE(typeArg2));
 
   ArgRecord argRecord1(typeArg1, rawArg1.u32);
   ArgRecord argRecord2(typeArg2, rawArg2.u32);
@@ -425,12 +425,12 @@ Cpu::instructsThreeArg(const int32_t& instr, int32_t& newFlags)
                                       - ARG_3(typeArg3);
 
   DoubleWord rawArg1, rawArg2, rawArg3;
-  timeDelay += memoryController.loadFromMem(rawArg1, progCounter, BYTE4);
-  SCALE_ADDR_INCREM(progCounter, BYTE4);
-  timeDelay += memoryController.loadFromMem(rawArg2, progCounter, BYTE4);
-  SCALE_ADDR_INCREM(progCounter, BYTE4);
-  timeDelay += memoryController.loadFromMem(rawArg3, progCounter, BYTE4);
-  SCALE_ADDR_INCREM(progCounter, BYTE4);
+  timeDelay += memoryController.loadFromMem(rawArg1, progCounter, GET_ARG_SCALE(typeArg1));
+  SCALE_ADDR_INCREM(progCounter, GET_ARG_SCALE(typeArg1));
+  timeDelay += memoryController.loadFromMem(rawArg2, progCounter, GET_ARG_SCALE(typeArg2));
+  SCALE_ADDR_INCREM(progCounter, GET_ARG_SCALE(typeArg2));
+  timeDelay += memoryController.loadFromMem(rawArg3, progCounter, GET_ARG_SCALE(typeArg3));
+  SCALE_ADDR_INCREM(progCounter, GET_ARG_SCALE(typeArg3));
 
   ArgRecord argRecord1(typeArg1, rawArg1.u32);
   ArgRecord argRecord2(typeArg2, rawArg2.u32);
@@ -440,7 +440,6 @@ Cpu::instructsThreeArg(const int32_t& instr, int32_t& newFlags)
   timeDelay += loadArg(temp1, argRecord1);
   timeDelay += loadArg(temp2, argRecord2);
   timeDelay += loadArg(temp3, argRecord3);
-
 
   DebugPrintf(("  Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
   switch (polishedInstr) {

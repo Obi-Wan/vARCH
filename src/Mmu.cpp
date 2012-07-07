@@ -127,7 +127,7 @@ uint32_t
 Mmu::loadFromMem(DoubleWord & data, const uint32_t & addr, const uint8_t & size)
   const
 {
-  if ((addr + (1 << size)) >= limit) {
+  if ((addr + (1 << size) ) > limit) {
     stringstream errorMess(string(""));
     errorMess << "LoadFromMem Failed, wrong addr: " << addr
               << ", size: " << (1 << size)
