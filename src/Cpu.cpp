@@ -504,10 +504,9 @@ Cpu::loadArg(int32_t & temp, const ArgRecord & arg)
                           * (!IS_POST(reg_raw_data))
                           * (1 - (2 * IS_DECR(reg_raw_data)) );
       temp = getReg(reg_pos) + pre;
-#ifdef DEBUG
+
       DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
                     MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
-#endif
       return 0;
     }
     case DIRECT: {
@@ -527,17 +526,10 @@ Cpu::loadArg(int32_t & temp, const ArgRecord & arg)
       const uint32_t addr = getReg(reg_pos) + pre;
       const uint32_t delay = memoryController.loadFromMem(data, addr, arg.scale);
       temp = fromMemorySpace(data, arg.scale);
-#ifdef DEBUG
-      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
-        if (IS_DECR(arg.raw_data)) {
-          DebugPrintf(("  ADDR_IN_REG_PRE_DECR: %d\n", reg_pos));
-        } else {
-          DebugPrintf(("  ADDR_IN_REG_PRE_INCR: %d\n", reg_pos));
-        }
-      } else {
-        DebugPrintf(("  ADDR_IN_REG / ADDR_IN_REG_POST_*: %d\n", reg_pos));
-      }
-#endif
+
+      DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
+                    MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
+
       return delay;
     }
     case MEM_INDIR: {
@@ -552,15 +544,8 @@ Cpu::loadArg(int32_t & temp, const ArgRecord & arg)
       delay += memoryController.loadFromMem(data, data.u32, arg.scale);
       temp = fromMemorySpace(data, arg.scale);
 #ifdef DEBUG
-      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
-        if (IS_DECR(arg.raw_data)) {
-          DebugPrintf(("  ADDR_IN_MEM_PRE_DECR: %d\n", reg_pos));
-        } else {
-          DebugPrintf(("  ADDR_IN_MEM_PRE_INCR: %d\n", reg_pos));
-        }
-      } else {
-        DebugPrintf(("  ADDR_IN_MEM / ADDR_IN_MEM_POST_*: %d\n", reg_pos));
-      }
+      DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
+                    MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
 #endif
       return delay;
     }
@@ -575,41 +560,29 @@ Cpu::loadArg(int32_t & temp, const ArgRecord & arg)
       const uint32_t addr = getReg(reg_pos) + pre + displ;
       const uint32_t delay = memoryController.loadFromMem(data, addr, arg.scale);
       temp = fromMemorySpace(data, arg.scale);
-#ifdef DEBUG
-      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
-        if (IS_DECR(arg.raw_data)) {
-          DebugPrintf(("  DISPLACED_PRE_DECR: %d\n", reg_pos));
-        } else {
-          DebugPrintf(("  DISPLACED_PRE_INCR: %d\n", reg_pos));
-        }
-      } else {
-        DebugPrintf(("  DISPLACED / DISPLACED_POST_*: %d\n", reg_pos));
-      }
-#endif
+
+      DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
+                    MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
+      DebugPrintf(("  DISPL: %d\n", displ ));
       return delay;
     }
     case INDEXED: {
       DoubleWord data;
       const uint32_t index_raw = GET_INDEX_REG(arg.raw_data);
       const uint32_t index = FILTER_PRE_POST(index_raw);
-      const uint32_t reg_pos = FILTER_PRE_POST(GET_FIRST_REG(arg.raw_data));
+      const uint32_t reg_raw_data = GET_FIRST_REG(arg.raw_data);
+      const uint32_t reg_pos = FILTER_PRE_POST(reg_raw_data);
       const int32_t pre = IS_PRE_POST_MOD(index_raw)
                           * (!IS_POST(index_raw))
                           * (1 - (2 * IS_DECR(index_raw)) );
       const uint32_t addr = getReg(reg_pos) + (pre + getReg(index)) * (1 << arg.scale);
       const uint32_t delay = memoryController.loadFromMem(data, addr, arg.scale);
       temp = fromMemorySpace(data, arg.scale);
-#ifdef DEBUG
-      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
-        if (IS_DECR(arg.raw_data)) {
-          DebugPrintf(("  INDEXED_PRE_DECR: %d\n", reg_pos));
-        } else {
-          DebugPrintf(("  INDEXED_PRE_INCR: %d\n", reg_pos));
-        }
-      } else {
-        DebugPrintf(("  INDEXED / INDEXED_POST_*: %d\n", reg_pos));
-      }
-#endif
+
+      DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
+                    MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
+      DebugPrintf(("  INDEX: %s, Mod: %s\n", RTypeSet.getItem(index).c_str(),
+                    MTypeSet.getItem(GET_ARG_MOD(index_raw)).c_str() ));
       return delay;
     }
     case INDX_DISP: {
@@ -617,24 +590,20 @@ Cpu::loadArg(int32_t & temp, const ArgRecord & arg)
       const int32_t displ = GET_INDEX_DISPL(arg.raw_data);
       const uint32_t index_raw = GET_INDEX_REG(arg.raw_data);
       const uint32_t index = FILTER_PRE_POST(index_raw);
-      const uint32_t reg_pos = FILTER_PRE_POST(GET_FIRST_REG(arg.raw_data));
+      const uint32_t reg_raw_data = GET_FIRST_REG(arg.raw_data);
+      const uint32_t reg_pos = FILTER_PRE_POST(reg_raw_data);
       const int32_t pre = IS_PRE_POST_MOD(index_raw)
                           * (!IS_POST(index_raw))
                           * (1 - (2 * IS_DECR(index_raw)) );
       const uint32_t addr = getReg(reg_pos) + (pre + getReg(index)) * (1 << arg.scale) + displ;
       const uint32_t delay = memoryController.loadFromMem(data, addr, arg.scale);
       temp = fromMemorySpace(data, arg.scale);
-#ifdef DEBUG
-      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
-        if (IS_DECR(arg.raw_data)) {
-          DebugPrintf(("  INDEXED_PRE_DECR: %d\n", reg_pos));
-        } else {
-          DebugPrintf(("  INDEXED_PRE_INCR: %d\n", reg_pos));
-        }
-      } else {
-        DebugPrintf(("  INDEXED / INDEXED_POST_*: %d\n", reg_pos));
-      }
-#endif
+
+      DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
+                    MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
+      DebugPrintf(("  DISPL: %d, INDEX: %s, Mod: %s\n", displ,
+                    RTypeSet.getItem(index).c_str(),
+                    MTypeSet.getItem(GET_ARG_MOD(index_raw)).c_str() ));
       return delay;
     }
 
@@ -659,10 +628,9 @@ Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
                            * (IS_POST(arg.raw_data))
                            * (1 - (2 * IS_DECR(arg.raw_data)) );
       setReg(reg_pos, temp + post);
-#ifdef DEBUG
+
       DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
                     MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
-#endif
       return 0;
     }
     case DIRECT: {
@@ -674,7 +642,8 @@ Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
     }
     case REG_INDIR: {
       DoubleWord data;
-      const uint32_t reg_pos = FILTER_PRE_POST(arg.raw_data);
+      const uint32_t reg_raw_data = GET_FIRST_REG(arg.raw_data);
+      const uint32_t reg_pos = FILTER_PRE_POST(reg_raw_data);
       const int32_t pre = IS_PRE_POST_MOD(arg.raw_data) * (1 << arg.scale)
                           * (!IS_POST(arg.raw_data))
                           * (1 - (2 * IS_DECR(arg.raw_data)) );
@@ -686,22 +655,15 @@ Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
                            * (IS_POST(arg.raw_data))
                            * (1 - (2 * IS_DECR(arg.raw_data)) );
       setReg(reg_pos, addr + post);
-#ifdef DEBUG
-      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
-        if (IS_DECR(arg.raw_data)) {
-          DebugPrintf(("  ADDR_IN_REG_POST_DECR: %d\n", reg_pos));
-        } else {
-          DebugPrintf(("  ADDR_IN_REG_POST_INCR: %d\n", reg_pos));
-        }
-      } else {
-        DebugPrintf(("  ADDR_IN_REG / ADDR_IN_REG_PRE_*: %d\n", reg_pos));
-      }
-#endif
+
+      DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
+                    MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
       return delay;
     }
     case MEM_INDIR: {
       DoubleWord data;
-      const uint32_t reg_pos = FILTER_PRE_POST(arg.raw_data);
+      const uint32_t reg_raw_data = GET_FIRST_REG(arg.raw_data);
+      const uint32_t reg_pos = FILTER_PRE_POST(reg_raw_data);
       const int32_t pre = IS_PRE_POST_MOD(arg.raw_data) * (1 << arg.scale)
                           * (!IS_POST(arg.raw_data))
                           * (1 - (2 * IS_DECR(arg.raw_data)) );
@@ -715,22 +677,15 @@ Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
                            * (IS_POST(arg.raw_data))
                            * (1 - (2 * IS_DECR(arg.raw_data)) );
       setReg(reg_pos, addr + post);
-#ifdef DEBUG
-      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
-        if (IS_DECR(arg.raw_data)) {
-          DebugPrintf(("  ADDR_IN_MEM_POST_DECR: %d\n", reg_pos));
-        } else {
-          DebugPrintf(("  ADDR_IN_MEM_POST_INCR: %d\n", reg_pos));
-        }
-      } else {
-        DebugPrintf(("  ADDR_IN_MEM / ADDR_IN_MEM_PRE_*: %d\n", reg_pos));
-      }
-#endif
+
+      DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
+                    MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
       return delay;
     }
     case DISPLACED: {
       DoubleWord data;
-      const uint32_t reg_pos = FILTER_PRE_POST(GET_FIRST_REG(arg.raw_data));
+      const uint32_t reg_raw_data = GET_FIRST_REG(arg.raw_data);
+      const uint32_t reg_pos = FILTER_PRE_POST(reg_raw_data);
       const int32_t displ = GET_BIG_DISPL(arg.raw_data);
       const int32_t pre = IS_PRE_POST_MOD(arg.raw_data) * (1 << arg.scale)
                           * (!IS_POST(arg.raw_data))
@@ -743,24 +698,18 @@ Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
                            * (IS_POST(arg.raw_data))
                            * (1 - (2 * IS_DECR(arg.raw_data)) );
       setReg(reg_pos, addr - displ + post);
-#ifdef DEBUG
-      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
-        if (IS_DECR(arg.raw_data)) {
-          DebugPrintf(("  DISPLACED_PRE_DECR: %d\n", reg_pos));
-        } else {
-          DebugPrintf(("  DISPLACED_PRE_INCR: %d\n", reg_pos));
-        }
-      } else {
-        DebugPrintf(("  DISPLACED / DISPLACED_POST_*: %d\n", reg_pos));
-      }
-#endif
+
+      DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
+                    MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
+      DebugPrintf(("  DISPL: %d\n", displ ));
       return delay;
     }
     case INDEXED: {
       DoubleWord data;
       const uint32_t index_raw = GET_INDEX_REG(arg.raw_data);
       const uint32_t index = FILTER_PRE_POST(index_raw);
-      const uint32_t reg_pos = FILTER_PRE_POST(GET_FIRST_REG(arg.raw_data));
+      const uint32_t reg_raw_data = GET_FIRST_REG(arg.raw_data);
+      const uint32_t reg_pos = FILTER_PRE_POST(reg_raw_data);
       const int32_t pre = IS_PRE_POST_MOD(index_raw)
                           * (!IS_POST(index_raw))
                           * (1 - (2 * IS_DECR(index_raw)) );
@@ -772,17 +721,11 @@ Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
                            * (IS_POST(index_raw))
                            * (1 - (2 * IS_DECR(index_raw)) );
       setReg(index, pre + getReg(index) + post);
-#ifdef DEBUG
-      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
-        if (IS_DECR(arg.raw_data)) {
-          DebugPrintf(("  INDEXED_PRE_DECR: %d\n", reg_pos));
-        } else {
-          DebugPrintf(("  INDEXED_PRE_INCR: %d\n", reg_pos));
-        }
-      } else {
-        DebugPrintf(("  INDEXED / INDEXED_POST_*: %d\n", reg_pos));
-      }
-#endif
+
+      DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
+                    MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
+      DebugPrintf(("  INDEX: %s, Mod: %s\n", RTypeSet.getItem(index).c_str(),
+                    MTypeSet.getItem(GET_ARG_MOD(index_raw)).c_str() ));
       return delay;
     }
     case INDX_DISP: {
@@ -790,7 +733,8 @@ Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
       const int32_t displ = GET_INDEX_DISPL(arg.raw_data);
       const uint32_t index_raw = GET_INDEX_REG(arg.raw_data);
       const uint32_t index = FILTER_PRE_POST(index_raw);
-      const uint32_t reg_pos = FILTER_PRE_POST(GET_FIRST_REG(arg.raw_data));
+      const uint32_t reg_raw_data = GET_FIRST_REG(arg.raw_data);
+      const uint32_t reg_pos = FILTER_PRE_POST(reg_raw_data);
       const int32_t pre = IS_PRE_POST_MOD(index_raw)
                           * (!IS_POST(index_raw))
                           * (1 - (2 * IS_DECR(index_raw)) );
@@ -802,17 +746,12 @@ Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
                            * (IS_POST(index_raw))
                            * (1 - (2 * IS_DECR(index_raw)) );
       setReg(index, pre + getReg(index) + post);
-#ifdef DEBUG
-      if (IS_PRE_POST_MOD(arg.raw_data) && !IS_POST(arg.raw_data)) {
-        if (IS_DECR(arg.raw_data)) {
-          DebugPrintf(("  INDEXED_PRE_DECR: %d\n", reg_pos));
-        } else {
-          DebugPrintf(("  INDEXED_PRE_INCR: %d\n", reg_pos));
-        }
-      } else {
-        DebugPrintf(("  INDEXED / INDEXED_POST_*: %d\n", reg_pos));
-      }
-#endif
+
+      DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
+                    MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
+      DebugPrintf(("  DISPL: %d, INDEX: %s, Mod: %s\n", displ,
+                    RTypeSet.getItem(index).c_str(),
+                    MTypeSet.getItem(GET_ARG_MOD(index_raw)).c_str() ));
       return delay;
     }
 
