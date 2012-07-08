@@ -73,8 +73,10 @@ public:
 
 class ASTL_Arg : public ASTL_Node {
 public:
-  ASTL_Arg(const YYLTYPE & _pos)
-    : ASTL_Node(_pos)
+  ScaleOfArgument scale;
+
+  ASTL_Arg(const YYLTYPE & _pos, const ScaleOfArgument & _scale = BYTE4)
+    : ASTL_Node(_pos), scale(_scale)
   { }
   virtual const string toString() const { return ""; }
   virtual const ASTL_Class getClass() const throw() { return ASTL_ARG; }
@@ -85,8 +87,9 @@ public:
   const string label;
   const TypeOfArgument type;
 
-  ASTL_ArgLabel(const YYLTYPE & _pos, const string & id, const TypeOfArgument & _type)
-    : ASTL_Arg(_pos), label(id), type(_type)
+  ASTL_ArgLabel(const YYLTYPE & _pos, const string & id, const TypeOfArgument & _type,
+      const ScaleOfArgument & _scale = BYTE4)
+    : ASTL_Arg(_pos, _scale), label(id), type(_type)
   { }
 
   virtual const string toString() const {
@@ -101,11 +104,13 @@ public:
   const TypeOfArgument type;
 
   ASTL_ArgNumber( const YYLTYPE & _pos, const string & _num,
-                  const TypeOfArgument & _type = IMMED)
-    : ASTL_Arg(_pos), number(_num), type(_type)
+                  const TypeOfArgument & _type = IMMED,
+                  const ScaleOfArgument & _scale = BYTE4)
+    : ASTL_Arg(_pos, _scale), number(_num), type(_type)
   { }
   virtual const string toString() const {
-    return "(Number Arg: " + number + ")";
+    return "(Number Arg: " + number + " : "
+        + this->getTypeString(scale) + ")";
   }
   virtual const ASTL_Class getClass() const throw() { return ASTL_ARG_NUMBER; }
 };
@@ -120,14 +125,16 @@ public:
   ASTL_ArgNumber * displ;
   ASTL_ArgRegister * index;
 
-  ASTL_ArgRegister(const YYLTYPE & _pos, const string & _id)
-    : ASTL_Arg(_pos), id(_id), kind(REG), modif(REG_NO_ACTION)
+  ASTL_ArgRegister(const YYLTYPE & _pos, const string & _id,
+      const ScaleOfArgument & _scale = BYTE4)
+    : ASTL_Arg(_pos, _scale), id(_id), kind(REG), modif(REG_NO_ACTION)
     , displ(NULL), index(NULL)
   { }
   ~ASTL_ArgRegister();
 
   virtual const string toString() const {
-    return string("(Register Arg: ") + id + ")";
+    return string("(Register Arg: ") + id + " : "
+        + this->getTypeString(scale) + ")";
   }
   virtual const ASTL_Class getClass() const throw() { return ASTL_ARG_REGISTER;}
 
@@ -139,11 +146,13 @@ class ASTL_ArgSpecialRegister : public ASTL_ArgRegister {
 public:
   const Registers regNum;
 
-  ASTL_ArgSpecialRegister(const YYLTYPE & _pos, const Registers & reg)
-    : ASTL_ArgRegister(_pos, getRegisterID(reg)), regNum(reg)
+  ASTL_ArgSpecialRegister(const YYLTYPE & _pos, const Registers & reg,
+      const ScaleOfArgument & _scale = BYTE4)
+    : ASTL_ArgRegister(_pos, getRegisterID(reg), _scale), regNum(reg)
   { }
   virtual const string toString() const {
-    return string("(Special Register Arg: ") + id + ")";
+    return string("(Special Register Arg: ") + id + " : "
+        + this->getTypeString(scale) + ")";
   }
   virtual const ASTL_Class getClass() const throw() { return ASTL_ARG_SPECIAL_REGISTER;}
 
@@ -211,15 +220,12 @@ public:
 class ASTL_StmtBase : public ASTL_Stmt {
 public:
   const int32_t instruction;
-  const ScaleOfArgument scale;
 
-  ASTL_StmtBase(const YYLTYPE & _pos, const int32_t & _instr,
-      const ScaleOfArgument & _scale = BYTE4)
-    : ASTL_Stmt(_pos), instruction(_instr), scale(_scale)
+  ASTL_StmtBase(const YYLTYPE & _pos, const int32_t & _instr)
+    : ASTL_Stmt(_pos), instruction(_instr)
   { }
   virtual const string toString() const {
-    return "(Base stmt: " + ISet.getInstr(instruction) + " : "
-        + this->getTypeString(scale) + ")";
+    return "(Base stmt: " + ISet.getInstr(instruction) + ")";
   }
   virtual const ASTL_Class getClass() const throw() { return ASTL_STMT_BASE; }
 };
@@ -228,9 +234,8 @@ class ASTL_StmtExp : public ASTL_StmtBase {
 public:
   vector<ASTL_Arg *> args;
 
-  ASTL_StmtExp(const YYLTYPE & _pos, const int32_t & _instr,
-      const ScaleOfArgument & _scale = BYTE4)
-    : ASTL_StmtBase(_pos, _instr, _scale)
+  ASTL_StmtExp(const YYLTYPE & _pos, const int32_t & _instr)
+    : ASTL_StmtBase(_pos, _instr)
   { }
 
   ~ASTL_StmtExp() {
@@ -240,8 +245,7 @@ public:
   void addArg(ASTL_Arg * const arg) { args.push_back(arg); }
 
   virtual const string toString() const {
-    string tempOut = "(Base stmt: " + ISet.getInstr(instruction) + " : "
-        + this->getTypeString(scale) + " ";
+    string tempOut = "(Base stmt: " + ISet.getInstr(instruction) + " ";
     for(size_t num = 0; num < args.size(); num++) {
       tempOut += args[num]->toString();
     }

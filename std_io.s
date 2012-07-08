@@ -9,27 +9,27 @@
     .const .printCmd1:
       .i32_t   131073
     .const .endChar:
-      .i32_t   13
+      .i8_t   13
   .end
 
-  MOV:.i32_t,  0 ,    %T002
+  MOV,    0 ,    %T002
 .test:
-  EQ:.i32_t,   (%T001),  .endChar
-  IFJ:.i32_t,  @exit
-  PUT:.i32_t,  (%T001)+, .printCmd1
-  INCR:.i32_t, %T002
-  JMP:.i32_t,  @test
+  EQ,     (%T001) : .i8_t,    .endChar : .i8_t
+  IFJ,    @exit
+  PUT,    (%T001)+ : .i8_t,   .printCmd1
+  INCR,   %T002
+  JMP,    @test
 .exit:
-  RET:.i32_t,  %T002
+  RET,    %T002
 .end
 
 .function   "get_end_char"
   .local
     .const .endChar:
-      .i32_t   13
+      .i8_t   13
   .end
 
-  MOV:.i32_t,  .endChar,  %T001
-  RET:.i32_t,  %T001
+  MOV,    .endChar : .i8_t,   %T001
+  RET,    %T001
 .end
 

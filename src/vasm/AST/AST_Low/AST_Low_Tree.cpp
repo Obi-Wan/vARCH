@@ -110,7 +110,7 @@ ASTL_Tree::convertStatements(const vector<ASTL_Stmt *> & inStmts) const
             case ASTL_ARG_NUMBER: {
               ASTL_ArgNumber * arg = (ASTL_ArgNumber *) t_arg;
               finalArg = new asm_immediate_arg(arg->pos,
-                  atoi(arg->number.c_str()), arg->type, stmt->scale, REG_NO_ACTION);
+                  atoi(arg->number.c_str()), arg->type, arg->scale, REG_NO_ACTION);
               break;
             }
             case ASTL_ARG_SPECIAL_REGISTER:
@@ -174,9 +174,11 @@ ASTL_Tree::emitAsm(asm_program & program)
         ASTL_Param * astParam = func.params[paramNum];
 
         asm_immediate_arg * srcArg =
-            ArgumentsHandler::getReg(astParam->pos, astParam->srcReg.c_str(), REG, REG_NO_ACTION);
+            ArgumentsHandler::getReg( astParam->pos, astParam->srcReg.c_str(),
+                                      BYTE4, REG, REG_NO_ACTION);
         asm_immediate_arg * destArg =
-            ArgumentsHandler::getReg(astParam->pos, astParam->destId.c_str(), REG, REG_NO_ACTION);
+            ArgumentsHandler::getReg( astParam->pos, astParam->destId.c_str(),
+                                      BYTE4, REG, REG_NO_ACTION);
 
         destFunc->addParameter(ParametersHandler::getParam(astParam->pos, srcArg, destArg));
       }

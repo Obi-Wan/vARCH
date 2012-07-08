@@ -22,14 +22,15 @@ public:
   static asm_immediate_arg * getReg(const ASTL_ArgRegister * const arg);
 
   static asm_immediate_arg * getReg(const YYLTYPE & loc, const char * str,
-      const TypeOfArgument& type, const ModifierOfArgument & rmt);
+      const ScaleOfArgument & scale, const TypeOfArgument& type,
+      const ModifierOfArgument & rmt);
 
   static asm_immediate_arg * getConstInt(const YYLTYPE & loc, const int _val);
   static asm_immediate_arg * getConstReal(const YYLTYPE & loc, const float _val);
 
   static asm_immediate_arg * getSpecialReg(const YYLTYPE & loc,
-      const enum Registers& reg,
-      const TypeOfArgument& type, const ModifierOfArgument & rmt);
+      const enum Registers & reg, const ScaleOfArgument & scale,
+      const TypeOfArgument & type, const ModifierOfArgument & rmt);
 };
 
 inline asm_immediate_arg *
@@ -37,9 +38,11 @@ ArgumentsHandler::getReg(const ASTL_ArgRegister * const arg)
 {
   if (arg->getClass() == ASTL_ARG_SPECIAL_REGISTER) {
     const ASTL_ArgSpecialRegister * const sarg = (const ASTL_ArgSpecialRegister *) arg;
-    return ArgumentsHandler::getSpecialReg(sarg->pos, sarg->regNum, sarg->kind, sarg->modif);
+    return ArgumentsHandler::getSpecialReg(sarg->pos, sarg->regNum, sarg->scale,
+        sarg->kind, sarg->modif);
   } else {
-    return ArgumentsHandler::getReg(arg->pos, arg->id.c_str(), arg->kind, arg->modif);
+    return ArgumentsHandler::getReg(arg->pos, arg->id.c_str(), arg->scale,
+        arg->kind, arg->modif);
   }
 }
 
@@ -56,10 +59,12 @@ ArgumentsHandler::getRegNum(const char * str)
 
 inline asm_immediate_arg *
 ArgumentsHandler::getReg(const YYLTYPE & loc, const char * str,
-    const TypeOfArgument& type, const ModifierOfArgument & rmt)
+    const ScaleOfArgument & scale, const TypeOfArgument & type,
+    const ModifierOfArgument & rmt)
 {
   asm_immediate_arg * tempArg = new asm_immediate_arg(loc);
   tempArg->type = type;
+  tempArg->scale = scale;
   tempArg->regModType = rmt;
   tempArg->content.val = getRegNum(str+1) + NUM_REGS * (str[0] == 'A');
   tempArg->isTemp = (str[0] == 'T');
@@ -68,10 +73,12 @@ ArgumentsHandler::getReg(const YYLTYPE & loc, const char * str,
 
 inline asm_immediate_arg *
 ArgumentsHandler::getSpecialReg(const YYLTYPE & loc, const enum Registers& reg,
-    const TypeOfArgument& type, const ModifierOfArgument & rmt)
+    const ScaleOfArgument & scale, const TypeOfArgument& type,
+    const ModifierOfArgument & rmt)
 {
   asm_immediate_arg * tempArg = new asm_immediate_arg(loc);
   tempArg->type = type;
+  tempArg->scale = scale;
   tempArg->regModType = rmt;
   tempArg->content.regNum = reg;
   tempArg->isTemp = false;
