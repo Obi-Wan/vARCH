@@ -41,19 +41,19 @@ private:
   Mmu& memoryController;
 
   /** The raw_data registers */
-  int regsData[NUM_REGS];
+  int32_t regsData[NUM_REGS];
 
   /** The addresses registers */
-  int regsAddr[NUM_REGS];
+  int32_t regsAddr[NUM_REGS];
 
   struct StackPointers {
   private:
+    Cpu& cpu;
+
     uint32_t sSP; /* supervisor stack pointer */
     uint32_t uSP; /* user stack pointer */
-
-    Cpu& cpu;
   public:
-    StackPointers(Cpu& _c) : cpu(_c) { }
+    StackPointers(Cpu& _c);
     
     void setStackPointer(const uint32_t& newSP) {
       if (cpu.flags & F_SVISOR) sSP = newSP; else uSP = newSP;

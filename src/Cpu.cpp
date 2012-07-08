@@ -24,17 +24,28 @@ Cpu::ArgRecord::ArgRecord(const int32_t & packedType, const int32_t & data)
   , raw_data(data)
 { }
 
+inline
+Cpu::StackPointers::StackPointers(Cpu& _c)
+  : cpu(_c)
+{
+  uint32_t stackInitialPos = this->cpu.memoryController.getLimit();
+  SCALE_ADDR_DECREM(stackInitialPos, BYTE4);
+  uSP = sSP = stackInitialPos;
+}
+
 inline void
 Cpu::StackPointers::push(const int32_t& data) {
   uint32_t& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
-  cpu.memoryController.storeToMemUI32(uint32_t(data),--ref);
+  SCALE_ADDR_DECREM(ref, BYTE4);
+  cpu.memoryController.storeToMemUI32(uint32_t(data), ref);
 }
 
 inline int32_t
 Cpu::StackPointers::pop() {
   uint32_t& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
   DoubleWord data;
-  cpu.memoryController.loadFromMem(data, ref++, BYTE4);
+  cpu.memoryController.loadFromMem(data, ref, BYTE4);
+  SCALE_ADDR_INCREM(ref, BYTE4);
   return fromMemorySpace(data, BYTE4);
 }
 
@@ -42,8 +53,10 @@ inline void
 Cpu::StackPointers::pushAllRegs() {
   uint32_t& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
   for(uint32_t i = 0; i < NUM_REGS; i++) {
-    cpu.memoryController.storeToMemUI32(uint32_t(cpu.regsData[i]), --ref);
-    cpu.memoryController.storeToMemUI32(uint32_t(cpu.regsAddr[i]), --ref);
+    SCALE_ADDR_DECREM(ref, BYTE4);
+    cpu.memoryController.storeToMemUI32(uint32_t(cpu.regsData[i]), ref);
+    SCALE_ADDR_DECREM(ref, BYTE4);
+    cpu.memoryController.storeToMemUI32(uint32_t(cpu.regsAddr[i]), ref);
   }
 }
 
@@ -52,9 +65,12 @@ Cpu::StackPointers::popAllRegs() {
   uint32_t& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
   DoubleWord data;
   for(int32_t i = NUM_REGS-1; i >= 0; i--) {
-    cpu.memoryController.loadFromMem(data, ref++, BYTE4);
+    cpu.memoryController.loadFromMem(data, ref, BYTE4);
+    SCALE_ADDR_INCREM(ref, BYTE4);
     cpu.regsAddr[i] = fromMemorySpace(data, BYTE4);
-    cpu.memoryController.loadFromMem(data, ref++, BYTE4);
+
+    cpu.memoryController.loadFromMem(data, ref, BYTE4);
+    SCALE_ADDR_INCREM(ref, BYTE4);
     cpu.regsData[i] = fromMemorySpace(data, BYTE4);
   }
 }
@@ -73,7 +89,9 @@ Cpu::init() {
   resetFlags(flags);
   flags += F_SVISOR | INT_PUT( INT_MAX_S_PR ); // start in supervisor mode
   resetRegs();
-  sP.setStackPointer(memoryController.getLimit());
+  uint32_t stackInitialPos = memoryController.getLimit();
+  SCALE_ADDR_DECREM(stackInitialPos, BYTE4);
+  sP.setStackPointer(stackInitialPos);
 }
 
 /** Writes to standard output the content of registers, program counter

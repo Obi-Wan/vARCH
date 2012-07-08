@@ -56,7 +56,7 @@ Chipset::initMem() {
       mainMem[block].u32 = *((int32_t *)&biosLoad[block*4]);
     }
     const size_t remaining = biosLoad.size() - blocksNum * 4;
-    for (size_t count; count < remaining; count++) {
+    for (size_t count = 0; count < remaining; count++) {
       mainMem[block].u8[count] = biosLoad[block*4 + count];
     }
   } catch (const WrongFileException & e) {
