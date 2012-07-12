@@ -80,7 +80,7 @@ Disassembler::disassembleProgram(asm_program & prog)
   for(size_t f_index = 0; f_index < prog.functions.size(); f_index++)
   {
     asm_function & func = *prog.functions[f_index];
-    cout << "Function: \"" << func.name << "\"" << endl;
+    cout << "Function: \"" << func.name << "\"" << endl << "Statements:" << endl;
     for(ListOfStmts::iterator stmtIt = func.stmts.begin();
         stmtIt != func.stmts.end(); stmtIt++)
     {
@@ -103,7 +103,42 @@ Disassembler::disassembleProgram(asm_program & prog)
         disassembleAndPrint(bytecode);
       }
     }
+    cout << "Stack Locals:" << endl;
+    this->printLocals(func.stackLocals, func.functionOffset);
+    cout << "Unique Locals:" << endl;
+    this->printLocals(func.uniqueLocals, func.functionOffset);
+
     cout << "End Function \"" << func.name << "\"" << endl << endl;
+  }
+}
+
+inline void
+Disassembler::printLocals(const ListOfDataStmts & locals, const size_t & funcOffset) const
+{
+  Bloat bytecode;
+  for(ListOfDataStmts::const_iterator stmtIt = locals.begin();
+      stmtIt != locals.end(); stmtIt++)
+  {
+    asm_data_statement * stmt = *stmtIt;
+    if (stmt->getType() == ASM_LABEL_STATEMENT) {
+      asm_label_statement * l_stmt = (asm_label_statement *) stmt;
+      cout << "." << l_stmt->label << ": (position: ";
+      if (l_stmt->isGlobal()) {
+        cout << "global " << l_stmt->offset;
+      } else {
+        cout << "internal "
+              << l_stmt->offset << ", total "
+              << l_stmt->offset + funcOffset;
+      }
+      cout << ")" << endl;
+    } else {
+      bytecode.resize(stmt->getSize());
+      Bloat::iterator it = bytecode.begin();
+      stmt->emitCode(it);
+      cout << "  ";
+      copy(bytecode.begin(), bytecode.end(), ostream_iterator<int32_t>(cout, "  "));
+      cout << endl;
+    }
   }
 }
 
@@ -111,7 +146,7 @@ const int64_t
 Disassembler::fetchArg(const int32_t & typeArg, Bloat::const_iterator & codeIt,
     const Bloat::const_iterator & endIt)
 {
-  size_t numOfBytes = (1 << (GET_ARG_SCALE(typeArg)));
+  size_t numOfBytes = (GET_ARG_TYPE(typeArg) == IMMED) ? (1 << (GET_ARG_SCALE(typeArg))) : 4;
   if (codeIt > (endIt - numOfBytes)) {
     stringstream stream;
     stream << __PRETTY_FUNCTION__ << ": Overcame bytecode limit by "
@@ -121,30 +156,26 @@ Disassembler::fetchArg(const int32_t & typeArg, Bloat::const_iterator & codeIt,
             << " Number of bytes to read: " << numOfBytes << endl;
     throw WrongArgumentException(stream.str());
   }
-  if (GET_ARG_TYPE(typeArg) == IMMED) {
-    switch (numOfBytes) {
-      case 1: {
-        return (int64_t) *codeIt++;
-      }
-      case 2: {
-        return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8));
-      }
-      case 4: {
-        return DEAL_QWORD_FROM_SWORDS(codeIt);
-  //      return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8)
-  //          + (((int64_t) *codeIt++) << 16) + (((int64_t) *codeIt++) << 24));
-      }
-      case 8: {
-        return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8)
-            + (((int64_t) *codeIt++) << 16) + (((int64_t) *codeIt++) << 24)
-            + (((int64_t) *codeIt++) << 32) + (((int64_t) *codeIt++) << 40)
-            + (((int64_t) *codeIt++) << 48) + (((int64_t) *codeIt++) << 56));
-      }
-      default:
-        throw WrongArgumentException(string(__PRETTY_FUNCTION__) + ": Unknown byte scale");
+  switch (numOfBytes) {
+    case 1: {
+      return (int64_t) *codeIt++;
     }
-  } else {
-    return DEAL_QWORD_FROM_SWORDS(codeIt);
+    case 2: {
+      return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8));
+    }
+    case 4: {
+      return DEAL_QWORD_FROM_SWORDS(codeIt);
+//      return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8)
+//          + (((int64_t) *codeIt++) << 16) + (((int64_t) *codeIt++) << 24));
+    }
+    case 8: {
+      return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8)
+          + (((int64_t) *codeIt++) << 16) + (((int64_t) *codeIt++) << 24)
+          + (((int64_t) *codeIt++) << 32) + (((int64_t) *codeIt++) << 40)
+          + (((int64_t) *codeIt++) << 48) + (((int64_t) *codeIt++) << 56));
+    }
+    default:
+      throw WrongArgumentException(string(__PRETTY_FUNCTION__) + ": Unknown byte scale");
   }
 }
 
