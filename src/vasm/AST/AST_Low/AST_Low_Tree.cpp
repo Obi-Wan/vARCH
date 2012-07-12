@@ -168,20 +168,18 @@ ASTL_Tree::emitAsm(asm_program & program)
     asm_function * destFunc = new asm_function(func.pos, func.name);
 
     // Convert parameters and return
+    for(size_t paramNum = 0; paramNum < func.params.size(); paramNum++)
     {
-      for(size_t paramNum = 0; paramNum < func.params.size(); paramNum++)
-      {
-        ASTL_Param * astParam = func.params[paramNum];
+      ASTL_Param * astParam = func.params[paramNum];
 
-        asm_immediate_arg * srcArg =
-            ArgumentsHandler::getReg( astParam->pos, astParam->srcReg.c_str(),
-                                      BYTE4, REG, REG_NO_ACTION);
-        asm_immediate_arg * destArg =
-            ArgumentsHandler::getReg( astParam->pos, astParam->destId.c_str(),
-                                      BYTE4, REG, REG_NO_ACTION);
+      asm_immediate_arg * srcArg =
+          ArgumentsHandler::getReg( astParam->pos, astParam->srcReg.c_str(),
+                                    BYTE4, REG, REG_NO_ACTION);
+      asm_immediate_arg * destArg =
+          ArgumentsHandler::getReg( astParam->pos, astParam->destId.c_str(),
+                                    BYTE4, REG, REG_NO_ACTION);
 
-        destFunc->addParameter(ParametersHandler::getParam(astParam->pos, srcArg, destArg));
-      }
+      destFunc->addParameter(ParametersHandler::getParam(astParam->pos, srcArg, destArg));
     }
     // Convert locals
     {

@@ -8,6 +8,7 @@ COMMON_ASM_SRC = \
 		  IncludesTree.cpp \
 		  ../FileHandler.cpp \
 		  AsmArgs.cpp \
+		  IR/IR_LowLevel_Arguments.cpp \
 		  IR/IR_LowLevel_Statements.cpp \
 		  algorithms/Labels.cpp	\
 		  algorithms/TempsMap.cpp	\

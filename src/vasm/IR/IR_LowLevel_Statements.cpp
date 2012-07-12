@@ -103,41 +103,7 @@ asm_instruction_statement::ensureTempsUsage(const bool & used) const
 void
 asm_instruction_statement::emitArgs(Bloat::iterator & position) {
   for (size_t argNum = 0; argNum < args.size(); argNum++) {
-    this->emitArg(args[argNum], position);
-  }
-}
-
-void
-asm_instruction_statement::emitArg(const asm_arg * const arg, Bloat::iterator & position)
-{
-  const int64_t tempArg = arg->getCode();
-  switch (arg->scale) {
-    case BYTE1: {
-      *(position++) = (tempArg & SWORD);
-      break;
-    }
-    case BYTE2: {
-      *(position++) = EXTRACT_LOWER__SWORD_FROM_DWORD(tempArg);
-      *(position++) = EXTRACT_HIGHER_SWORD_FROM_DWORD(tempArg);
-      break;
-    }
-    case BYTE4: {
-      const int8_t chunks[4] = DEAL_SWORDS_FROM_QWORD(tempArg);
-      for(size_t count = 0; count < 4; count++) {
-        *(position++) = chunks[count];
-      }
-      break;
-    }
-    case BYTE8: {
-      // XXX Be careful that right now there is no correct handling of this
-      const int8_t chunks[8] = DEAL_SWORDS_FROM_OWORD(tempArg);
-      for(size_t count = 0; count < 8; count++) {
-        *(position++) = chunks[count];
-      }
-      break;
-    }
-    default:
-      throw WrongArgumentException(string(__FUNCTION__) + ": no such argument scale");
+    args[argNum]->emitCode(position);
   }
 }
 

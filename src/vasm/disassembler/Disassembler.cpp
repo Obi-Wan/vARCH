@@ -121,26 +121,30 @@ Disassembler::fetchArg(const int32_t & typeArg, Bloat::const_iterator & codeIt,
             << " Number of bytes to read: " << numOfBytes << endl;
     throw WrongArgumentException(stream.str());
   }
-  switch (numOfBytes) {
-    case 1: {
-      return (int64_t) *codeIt++;
+  if (GET_ARG_TYPE(typeArg) == IMMED) {
+    switch (numOfBytes) {
+      case 1: {
+        return (int64_t) *codeIt++;
+      }
+      case 2: {
+        return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8));
+      }
+      case 4: {
+        return DEAL_QWORD_FROM_SWORDS(codeIt);
+  //      return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8)
+  //          + (((int64_t) *codeIt++) << 16) + (((int64_t) *codeIt++) << 24));
+      }
+      case 8: {
+        return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8)
+            + (((int64_t) *codeIt++) << 16) + (((int64_t) *codeIt++) << 24)
+            + (((int64_t) *codeIt++) << 32) + (((int64_t) *codeIt++) << 40)
+            + (((int64_t) *codeIt++) << 48) + (((int64_t) *codeIt++) << 56));
+      }
+      default:
+        throw WrongArgumentException(string(__PRETTY_FUNCTION__) + ": Unknown byte scale");
     }
-    case 2: {
-      return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8));
-    }
-    case 4: {
-      return DEAL_QWORD_FROM_SWORDS(codeIt);
-//      return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8)
-//          + (((int64_t) *codeIt++) << 16) + (((int64_t) *codeIt++) << 24));
-    }
-    case 8: {
-      return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8)
-          + (((int64_t) *codeIt++) << 16) + (((int64_t) *codeIt++) << 24)
-          + (((int64_t) *codeIt++) << 32) + (((int64_t) *codeIt++) << 40)
-          + (((int64_t) *codeIt++) << 48) + (((int64_t) *codeIt++) << 56));
-    }
-    default:
-      throw WrongArgumentException(string(__PRETTY_FUNCTION__) + ": Unknown byte scale");
+  } else {
+    return DEAL_QWORD_FROM_SWORDS(codeIt);
   }
 }
 

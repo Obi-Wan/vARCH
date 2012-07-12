@@ -138,6 +138,7 @@ Mmu::loadFromMem(DoubleWord & data, const uint32_t & addr, const uint8_t & size)
   const uint32_t blockNum = ((addr + base) >> 2);
   const uint32_t blockOffset = ((addr + base) & 3);
 
+  data.u32 = 0;
   switch (size) {
     case BYTE1: {
       /* Aligned access */

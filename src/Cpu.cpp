@@ -234,9 +234,11 @@ Cpu::instructsOneArg(const int32_t& instr, int32_t& newFlags)
   const int32_t polishedInstr = instr - ARG_1(typeArg);
   DebugPrintf(("Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
 
+  const size_t scaleArg1 = (GET_ARG_TYPE(typeArg) == IMMED) ? GET_ARG_SCALE(typeArg) : BYTE4;
+
   DoubleWord rawArg;
-  timeDelay += memoryController.loadFromMem(rawArg, progCounter, GET_ARG_SCALE(typeArg));
-  SCALE_ADDR_INCREM(progCounter, GET_ARG_SCALE(typeArg));
+  timeDelay += memoryController.loadFromMem(rawArg, progCounter, scaleArg1);
+  SCALE_ADDR_INCREM(progCounter, scaleArg1);
 
   ArgRecord argRecord(typeArg, rawArg.u32);
 
@@ -332,11 +334,14 @@ Cpu::instructsTwoArg(const int32_t& instr, int32_t& newFlags)
   const int32_t polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2);
   DebugPrintf(("Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
 
+  const size_t scaleArg1 = (GET_ARG_TYPE(typeArg1) == IMMED) ? GET_ARG_SCALE(typeArg1) : BYTE4;
+  const size_t scaleArg2 = (GET_ARG_TYPE(typeArg2) == IMMED) ? GET_ARG_SCALE(typeArg2) : BYTE4;
+
   DoubleWord rawArg1, rawArg2;
-  timeDelay += memoryController.loadFromMem(rawArg1, progCounter, GET_ARG_SCALE(typeArg1));
-  SCALE_ADDR_INCREM(progCounter, GET_ARG_SCALE(typeArg1));
-  timeDelay += memoryController.loadFromMem(rawArg2, progCounter, GET_ARG_SCALE(typeArg2));
-  SCALE_ADDR_INCREM(progCounter, GET_ARG_SCALE(typeArg2));
+  timeDelay += memoryController.loadFromMem(rawArg1, progCounter, scaleArg1);
+  SCALE_ADDR_INCREM(progCounter, scaleArg1);
+  timeDelay += memoryController.loadFromMem(rawArg2, progCounter, scaleArg2);
+  SCALE_ADDR_INCREM(progCounter, scaleArg2);
 
   ArgRecord argRecord1(typeArg1, rawArg1.u32);
   ArgRecord argRecord2(typeArg2, rawArg2.u32);
@@ -396,6 +401,7 @@ Cpu::instructsTwoArg(const int32_t& instr, int32_t& newFlags)
       break;
 
     case EQ:
+      printf(" EQ: 0x%04X == 0x%04X\n", temp1, temp2);
       if (temp1 == temp2) newFlags += F_ZERO;
       break;
     case LO:
@@ -443,13 +449,17 @@ Cpu::instructsThreeArg(const int32_t& instr, int32_t& newFlags)
                                       - ARG_3(typeArg3);
   DebugPrintf(("Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
 
+  const size_t scaleArg1 = (GET_ARG_TYPE(typeArg1) == IMMED) ? GET_ARG_SCALE(typeArg1) : BYTE4;
+  const size_t scaleArg2 = (GET_ARG_TYPE(typeArg2) == IMMED) ? GET_ARG_SCALE(typeArg2) : BYTE4;
+  const size_t scaleArg3 = (GET_ARG_TYPE(typeArg3) == IMMED) ? GET_ARG_SCALE(typeArg3) : BYTE4;
+
   DoubleWord rawArg1, rawArg2, rawArg3;
-  timeDelay += memoryController.loadFromMem(rawArg1, progCounter, GET_ARG_SCALE(typeArg1));
-  SCALE_ADDR_INCREM(progCounter, GET_ARG_SCALE(typeArg1));
-  timeDelay += memoryController.loadFromMem(rawArg2, progCounter, GET_ARG_SCALE(typeArg2));
-  SCALE_ADDR_INCREM(progCounter, GET_ARG_SCALE(typeArg2));
-  timeDelay += memoryController.loadFromMem(rawArg3, progCounter, GET_ARG_SCALE(typeArg3));
-  SCALE_ADDR_INCREM(progCounter, GET_ARG_SCALE(typeArg3));
+  timeDelay += memoryController.loadFromMem(rawArg1, progCounter, scaleArg1);
+  SCALE_ADDR_INCREM(progCounter, scaleArg1);
+  timeDelay += memoryController.loadFromMem(rawArg2, progCounter, scaleArg2);
+  SCALE_ADDR_INCREM(progCounter, scaleArg2);
+  timeDelay += memoryController.loadFromMem(rawArg3, progCounter, scaleArg3);
+  SCALE_ADDR_INCREM(progCounter, scaleArg3);
 
   ArgRecord argRecord1(typeArg1, rawArg1.u32);
   ArgRecord argRecord2(typeArg2, rawArg2.u32);
@@ -508,7 +518,7 @@ Cpu::instructsThreeArg(const int32_t& instr, int32_t& newFlags)
 inline uint32_t
 Cpu::loadArg(int32_t & temp, const ArgRecord & arg)
 {
-  DebugPrintf(("- LOAD:  Type: % 8s, scale (Num bytes): %u, code: 0x%04X\n",
+  DebugPrintf(("- LOAD:  Type: % 9s, scale (Num bytes): %u, code: 0x%04X\n",
       ATypeSet.getItem(arg.type).c_str(), (1 << arg.scale), arg.raw_data));
   switch (arg.type) {
     case IMMED:
@@ -633,7 +643,7 @@ Cpu::loadArg(int32_t & temp, const ArgRecord & arg)
 inline uint32_t
 Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
 {
-  DebugPrintf(("- STORE: Type: % 8s, scale (Num bytes): %u, code: 0x%04X\n",
+  DebugPrintf(("- STORE: Type: % 9s, scale (Num bytes): %u, code: 0x%04X\n",
       ATypeSet.getItem(arg.type).c_str(), (1 << arg.scale), arg.raw_data));
   switch (arg.type) {
     case IMMED: {
@@ -846,9 +856,9 @@ Cpu::fromMemorySpace(const DoubleWord & data, const uint8_t & scale)
 {
   switch (scale) {
     case BYTE1:
-      return static_cast<int32_t>(int8_t(data.u8[0]));
+      return static_cast<int32_t>(int8_t(data.u8[0])) & SWORD;
     case BYTE2:
-      return static_cast<int32_t>(int16_t(data.u16[0]));
+      return static_cast<int32_t>(int16_t(data.u16[0])) & DWORD;
     case BYTE4:
       return int32_t(data.u32);
     default:
