@@ -5,11 +5,11 @@
 
   .local
     .const .printCmd:
-      .i32_t   131072
+      .i32_t  131072
     .const .printCmd1:
-      .i32_t   131073
+      .i32_t  131073
     .const .endChar:
-      .i8_t   13
+      .i8_t   0
   .end
 
   MOV,    0 ,    %T002
@@ -26,7 +26,7 @@
 .function   "get_end_char"
   .local
     .const .endChar:
-      .i8_t   13
+      .i8_t   0
   .end
 
   MOV,    .endChar : .i8_t,   %T001

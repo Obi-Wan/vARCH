@@ -6,10 +6,10 @@
   .string1:
     .string     "test: yeah"
     .i8_t      10           ; '\n'
-    .i8_t      13
+    .i8_t      0
   .stringError:
     .string     "Error"
-    .i8_t      13
+    .i8_t      0
 .end
 
 .function   "main"
@@ -57,7 +57,7 @@
       .i32_t  0
     .localString:
       .string "local_string"
-      .i8_t  13
+      .i8_t  0
   .end
 
   SUB,     .decrement , %T001
