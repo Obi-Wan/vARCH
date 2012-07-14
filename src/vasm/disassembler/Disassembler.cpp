@@ -40,12 +40,12 @@ Disassembler::printArg(const int32_t & typeArg, const int64_t & arg)
       break;
     }
     case DISPLACED: {
-      argString << RTypeSet.getItem(FILTER_PRE_POST(GET_BIG_DISPL(arg)))
+      argString << GET_BIG_DISPL(arg)
             << "(%" << RTypeSet.getItem(FILTER_PRE_POST(arg)) << ")";
       break;
     }
     case INDX_DISP: {
-      argString << RTypeSet.getItem(FILTER_PRE_POST(GET_BIG_DISPL(arg)))
+      argString << GET_INDEX_DISPL(arg)
             << "(%" << RTypeSet.getItem(FILTER_PRE_POST(arg)) << ")[%"
             << RTypeSet.getItem(FILTER_PRE_POST(GET_INDEX_DISPL(arg))) <<"]";
       break;
