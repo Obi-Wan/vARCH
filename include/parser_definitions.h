@@ -203,7 +203,7 @@ public:
 static class ScalesTypeSet : public DoubleCorrelationMap {
 public:
   ScalesTypeSet()
-    : DoubleCorrelationMap(0, "No such modifier", "No such enum modifier arg")
+    : DoubleCorrelationMap(0, "No such modifier", "No such enum scale arg")
   {
     assignNew("BYTE1", 0);               // 00
     assignNew("BYTE2");                  // 01
@@ -216,7 +216,7 @@ public:
 static class RegsTypeSet : public DoubleCorrelationMap {
 public:
   RegsTypeSet()
-    : DoubleCorrelationMap(0, "No such type", "No such enum type arg")
+    : DoubleCorrelationMap(0, "No such type", "No such enum register arg")
   {
     assignNew("R0", NUM_REGS * DATA_REGS);
     assignNew("R1");

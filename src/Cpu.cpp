@@ -120,7 +120,9 @@ Cpu::dumpRegistersAndMemory() const
   DoubleWord doubleWord;
   for(uint32_t i = 0; i < memoryController.getMaxMem(); i += 4) {
     memoryController.loadFromMem(doubleWord, i, BYTE4);
-    printf( "Mem: %04lu Data: %12d\n", (uint64_t) i, doubleWord.u32);
+    printf( "Mem: %04lu Data: %12d (31b %4d, %4d, %4d, %4d 0b)\n", (uint64_t) i,
+            doubleWord.u32,
+            doubleWord.u8[3], doubleWord.u8[2], doubleWord.u8[1], doubleWord.u8[0]);
   }
 
 //  restoreFlags(old);

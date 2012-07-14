@@ -197,12 +197,12 @@ Disassembler::disassembleAndPrint(const Bloat & bytecode)
       if (instr) {
         switch (GET_NUM_ARGS(instr)) {
           case 0:
-            cout << "  " << ISet.getInstr(instr) << endl;
+            cout << " " << ISet.getInstr(instr) << endl;
             break;
           case 1: {
             const int32_t typeArg1 = GET_ARG_1(instr);
             const int32_t polishedInstr = instr - ARG_1(typeArg1);
-            cout << "  " << ISet.getInstr(polishedInstr) << endl;
+            cout << " " << ISet.getInstr(polishedInstr) << endl;
             printArg(typeArg1, this->fetchArg(typeArg1, codeIt, endIt));
             break;
           }
@@ -210,7 +210,7 @@ Disassembler::disassembleAndPrint(const Bloat & bytecode)
             const int32_t typeArg1 = GET_ARG_1(instr);
             const int32_t typeArg2 = GET_ARG_2(instr);
             const int32_t polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2);
-            cout << "  " << ISet.getInstr(polishedInstr) << endl;
+            cout << " " << ISet.getInstr(polishedInstr) << endl;
             printArg(typeArg1, this->fetchArg(typeArg1, codeIt, endIt));
             printArg(typeArg2, this->fetchArg(typeArg2, codeIt, endIt));
             break;
@@ -221,7 +221,7 @@ Disassembler::disassembleAndPrint(const Bloat & bytecode)
             const int32_t typeArg3 = GET_ARG_3(instr);
             const int32_t polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2)
                                             - ARG_3(typeArg3);
-            cout << "  " << ISet.getInstr(polishedInstr) << endl;
+            cout << " " << ISet.getInstr(polishedInstr) << endl;
             printArg(typeArg1, this->fetchArg(typeArg1, codeIt, endIt));
             printArg(typeArg2, this->fetchArg(typeArg2, codeIt, endIt));
             printArg(typeArg3, this->fetchArg(typeArg3, codeIt, endIt));
