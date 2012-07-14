@@ -105,12 +105,3 @@ asm_immediate_arg::emitCode(Bloat::iterator & codeIt) const
   }
 }
 
-void
-asm_label_arg::emitCode(Bloat::iterator & codeIt) const
-{
-  const int8_t chunks[4] = DEAL_SWORDS_FROM_QWORD(pointedPosition);
-  for(size_t count = 0; count < 4; count++) {
-    *(codeIt++) = chunks[count];
-  }
-}
-

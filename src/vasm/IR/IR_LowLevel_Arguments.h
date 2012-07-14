@@ -111,22 +111,19 @@ struct asm_function_param : asm_arg {
 typedef vector<asm_function_param *>        ListOfParams;
 typedef vector<const asm_function_param *>  ConstListOfParams;
 
-struct asm_label_arg : asm_arg {
+struct asm_label_arg : asm_immediate_arg {
   string label;
-  uint32_t pointedPosition;
 
   asm_label_arg(const YYLTYPE& pos, const string& _lab
       , const TypeOfArgument& _type, const ScaleOfArgument & _scale = BYTE4)
-    : asm_arg(pos, _type, _scale, REG_NO_ACTION), label(_lab), pointedPosition(0)
+    : asm_immediate_arg(pos, 0, _type, _scale, REG_NO_ACTION, false), label(_lab)
   { }
   asm_label_arg(const YYLTYPE& pos, const char * _lab
       , const TypeOfArgument& _type, const ScaleOfArgument & _scale = BYTE4)
-    : asm_arg(pos, _type, _scale, REG_NO_ACTION), label(_lab), pointedPosition(0)
+    : asm_immediate_arg(pos, 0, _type, _scale, REG_NO_ACTION, false), label(_lab)
   { }
 
   const string toString() const { return string("(label: '") + label + "')"; }
-  void emitCode(Bloat::iterator & codeIt) const;
-  const size_t getSize() const { return 4; }
 
   const ObjType getType() const throw() { return ASM_LABEL_ARG; }
 };

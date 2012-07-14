@@ -325,11 +325,13 @@ asm_program::assignValuesToLabels()
                       localLabel->is_constant ? "true" : "false",
                       localLabel->is_shared ? "true" : "false"));
         if (localLabel->isShared()) {
-          argument.pointedPosition =
-                        (uint32_t)(localLabel->offset + func.functionOffset);
-        } else {
           /* TODO: add displaced referencing to Program Counter */
-          argument.pointedPosition = (uint32_t)(localLabel->offset);
+          argument.content.val =
+                        (int32_t)(localLabel->offset + func.functionOffset);
+        } else {
+          argument.type = DISPLACED;
+          argument.content.regNum = STACK_POINTER;
+          argument.displacement = (int32_t)(func.getStackedDataSize() - localLabel->offset);
         }
 
       } else {
@@ -339,7 +341,7 @@ asm_program::assignValuesToLabels()
         if (globalLabel) {
           DebugPrintf(("    It is global, with position: %3u\n",
                       (uint32_t)globalLabel->offset));
-          argument.pointedPosition = (int32_t)globalLabel->offset;
+          argument.content.val = (int32_t)globalLabel->offset;
         } else {
           DebugPrintf(("      ERROR!! It is not even global!\n"));
           fprintf(stderr, "ERROR:%s at Line %4d\n%s\n"

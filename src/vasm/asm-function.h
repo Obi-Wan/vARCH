@@ -93,6 +93,10 @@ asm_function::getStackedDataSize() const
       stmt_it != stackLocals.end(); stmt_it++)
   {
     size += (*stmt_it)->getSize();
+    /* Let's re align to 32bits, because this is what the PUSH instruction is
+     * going to do */
+    const size_t rest = size % 4;
+    size += (4 - rest) * (rest != 0);
   }
   return size;
 }
