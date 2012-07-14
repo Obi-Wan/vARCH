@@ -324,9 +324,13 @@ asm_program::assignValuesToLabels()
                       (uint32_t)localLabel->offset,
                       localLabel->is_constant ? "true" : "false",
                       localLabel->is_shared ? "true" : "false"));
-        argument.pointedPosition =
-            (int32_t)(localLabel->offset
-                      + localLabel->isShared() * func.functionOffset);
+        if (localLabel->isShared()) {
+          argument.pointedPosition =
+                        (uint32_t)(localLabel->offset + func.functionOffset);
+        } else {
+          /* TODO: add displaced referencing to Program Counter */
+          argument.pointedPosition = (uint32_t)(localLabel->offset);
+        }
 
       } else {
         DebugPrintf(("    It is not local, trying globally\n"));
@@ -389,7 +393,7 @@ asm_program::assemble(const string & outputName)
                 (uint64_t)i, bytecode[i], (uint64_t)i+1, bytecode[i+1],
                 (uint64_t)i+2, bytecode[i+2], (uint64_t)i+3, bytecode[i+3]));
   }
-  DebugPrintf((""));
+  DebugPrintf((" \b"));
   for (; i < bytecode.size(); i++) {
     DebugPrintf(("\b\b\b\b\b\b\bMem %03lu: %4d ", (uint64_t)i, bytecode[i]));
   }
