@@ -86,6 +86,12 @@ Disassembler::disassembleProgram(asm_program & prog)
         stmtIt != func.stmts.end(); stmtIt++)
     {
       asm_statement * stmt = *stmtIt;
+      cout.width(4);
+      cout.fill('0');
+      cout << stmt->offset;
+      cout.width(0);
+      cout.fill(' ');
+      cout << ":";
       if (stmt->getType() == ASM_LABEL_STATEMENT) {
         asm_label_statement * l_stmt = (asm_label_statement *) stmt;
         cout << "." << l_stmt->label << ": (position: ";
@@ -184,7 +190,7 @@ void
 Disassembler::disassembleAndPrint(const Bloat & bytecode)
 {
   const Bloat::const_iterator & endIt = bytecode.end();
-  for(Bloat::const_iterator codeIt = bytecode.begin(); codeIt < (endIt - 4);)
+  for(Bloat::const_iterator codeIt = bytecode.begin(); codeIt < endIt;)
   {
     const int32_t instr = DEAL_QWORD_FROM_SWORDS(codeIt);
     try {
@@ -222,7 +228,8 @@ Disassembler::disassembleAndPrint(const Bloat & bytecode)
             break;
           }
           default:
-            break;
+            throw WrongInstructionException(string(__PRETTY_FUNCTION__)
+                + ": Impossible block reached!");
         }
       }
     } catch (const WrongInstructionException & e) {
