@@ -9,12 +9,12 @@
     .const .printCmd1:
       .i32_t  131073
     .const .endChar:
-      .i8_t   0
+      .i16_t   0
   .end
 
   MOV,    0 ,    %T002
 .test:
-  EQ,     (%T001) : .i8_t,    .endChar : .i8_t
+  EQ,     (%T001) : .i8_t,    .endChar : .i16_t
   IFJ,    @exit
   PUT,    (%T001)+ : .i8_t,   .printCmd1
   INCR,   %T002
