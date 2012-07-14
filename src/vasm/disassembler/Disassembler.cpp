@@ -16,7 +16,7 @@
 void
 Disassembler::printArg(const int32_t & typeArg, const int64_t & arg)
 {
-  cout << "       Type Arg: ";
+  cout << "       Type: ";
   cout.width(12);
   cout << ATypeSet.getItem(GET_ARG_TYPE(typeArg));
   cout.width(0);
@@ -59,6 +59,7 @@ Disassembler::printArg(const int32_t & typeArg, const int64_t & arg)
   cout.width(10);
   cout << argString.str();
   cout.width(0);
+  cout << ", Scale: " << STypeSet.getItem(GET_ARG_SCALE(typeArg));
   switch (GET_ARG_TYPE(typeArg)) {
     case REG:
     case REG_INDIR...INDX_DISP: {

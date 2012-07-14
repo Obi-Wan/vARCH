@@ -200,6 +200,19 @@ public:
   }
 } MTypeSet;
 
+static class ScalesTypeSet : public DoubleCorrelationMap {
+public:
+  ScalesTypeSet()
+    : DoubleCorrelationMap(0, "No such modifier", "No such enum modifier arg")
+  {
+    assignNew("BYTE1", 0);               // 00
+    assignNew("BYTE2");                  // 01
+    assignNew("BYTE4");                  // 10
+    assignNew("BYTE8");                  // 11
+
+  }
+} STypeSet;
+
 static class RegsTypeSet : public DoubleCorrelationMap {
 public:
   RegsTypeSet()
