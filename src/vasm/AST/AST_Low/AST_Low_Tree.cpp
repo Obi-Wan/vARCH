@@ -104,7 +104,7 @@ ASTL_Tree::convertStatements(const vector<ASTL_Stmt *> & inStmts) const
           switch (t_arg->getClass()) {
             case ASTL_ARG_LABEL: {
               ASTL_ArgLabel * arg = (ASTL_ArgLabel *) t_arg;
-              finalArg = new asm_label_arg(arg->pos, arg->label, arg->type);
+              finalArg = new asm_label_arg(arg->pos, arg->label, arg->type, arg->scale);
               break;
             }
             case ASTL_ARG_NUMBER: {

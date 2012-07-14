@@ -93,7 +93,8 @@ public:
   { }
 
   virtual const string toString() const {
-    return string("(Label Arg: ") + label + ")";
+    return string("(Label Arg: ") + label + " : "
+        + this->getTypeString(scale) + ")";
   }
   virtual const ASTL_Class getClass() const throw() { return ASTL_ARG_LABEL; }
 };
