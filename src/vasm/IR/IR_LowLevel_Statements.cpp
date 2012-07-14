@@ -152,3 +152,39 @@ asm_return_statement::checkArgs() const
   }
 }
 
+void
+asm_int_keyword_statement::emitCode(Bloat::iterator & codeIt) {
+  switch (scale) {
+    case BYTE1: {
+      *(codeIt++) = integer & SWORD;
+      break;
+    }
+    case BYTE2: {
+      *(codeIt++) = EXTRACT_LOWER__SWORD_FROM_DWORD(integer);
+      *(codeIt++) = EXTRACT_HIGHER_SWORD_FROM_DWORD(integer);
+      break;
+    }
+    case BYTE4: {
+      const int8_t number[4] = DEAL_SWORDS_FROM_QWORD(integer);
+      for(size_t count = 0; count < 4; count++) {
+        *(codeIt++) = number[count];
+      }
+      break;
+    }
+    case BYTE8: {
+      const int8_t number[8] = DEAL_SWORDS_FROM_OWORD(integer);
+      for(size_t count = 0; count < 8; count++) {
+        *(codeIt++) = number[count];
+      }
+      break;
+    }
+    default: {
+      stringstream stream;
+      stream << __FUNCTION__ << ": Wrong Number scale! I was expecting "
+            << "valid values for the enumeration 'ScaleOfArgument', but "
+            << "got: " << scale << endl;
+      throw WrongArgumentException(stream.str());
+    }
+  }
+}
+

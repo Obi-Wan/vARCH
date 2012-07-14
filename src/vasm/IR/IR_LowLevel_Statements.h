@@ -195,21 +195,18 @@ struct asm_data_keyword_statement : asm_data_statement {
 };
 
 struct asm_int_keyword_statement : asm_data_keyword_statement {
-  int integer;
+  const int64_t integer;
+  const ScaleOfArgument scale;
 
-  asm_int_keyword_statement(const YYLTYPE& pos, const int _integer)
-    : asm_data_keyword_statement(pos), integer(_integer) { }
+  asm_int_keyword_statement(const YYLTYPE& pos, const int64_t _integer, const ScaleOfArgument & _scale)
+    : asm_data_keyword_statement(pos), integer(_integer), scale(_scale)
+  { }
 
   const string toString() const { return "(integer_keyword_statement)"; }
-  size_t getSize() const throw() { return 4; }
+  size_t getSize() const throw() { return (1 << scale); }
   const ObjType getType() const throw() { return ASM_INT_KEYWORD_STATEMENT; }
 
-  void emitCode(Bloat::iterator & codeIt) {
-    const int8_t number[4] = DEAL_SWORDS_FROM_QWORD(integer);
-    for(size_t count = 0; count < 4; count++) {
-      *(codeIt++) = number[count];
-    }
-  }
+  void emitCode(Bloat::iterator & codeIt);
 };
 
 struct asm_long_keyword_statement : asm_data_keyword_statement {

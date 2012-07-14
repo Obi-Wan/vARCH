@@ -31,36 +31,8 @@ ASTL_Tree::convertVariables(const vector<ASTL_Stmt *> & variables) const
       }
       case ASTL_STMT_DECL_NUM: {
         ASTL_VarDeclNumber * stmt = (ASTL_VarDeclNumber *) tempStmt;
-        asm_data_statement * tempDataStmt = NULL;
-        switch (stmt->scale) {
-          case BYTE1: {
-            int8_t val = atoi(stmt->number->number.c_str());
-            tempDataStmt = new asm_char_keyword_statement(stmt->pos, (const char *)&val);
-            break;
-          }
-          case BYTE2: {
-            int16_t val = atoi(stmt->number->number.c_str());
-            tempDataStmt = new asm_int_keyword_statement(stmt->pos, val);
-            break;
-          }
-          case BYTE4: {
-            int32_t val = atoi(stmt->number->number.c_str());
-            tempDataStmt = new asm_int_keyword_statement(stmt->pos, val);
-            break;
-          }
-          case BYTE8: {
-            int64_t val = atol(stmt->number->number.c_str());
-            tempDataStmt = new asm_long_keyword_statement(stmt->pos, val);
-            break;
-          }
-          default: {
-            stringstream stream;
-            stream << __FUNCTION__ << ": Wrong Number scale! I was expecting "
-                  << "valid values for the enumeration 'ScaleOfArgument', but "
-                  << "got: " << stmt->scale << endl;
-            throw WrongArgumentException(stream.str());
-          }
-        }
+        int64_t val = atol(stmt->number->number.c_str());
+        asm_data_statement * tempDataStmt = new asm_int_keyword_statement(stmt->pos, val, stmt->scale);
         destVars->push_back(tempDataStmt);
         break;
       }
@@ -146,7 +118,9 @@ ASTL_Tree::convertStatements(const vector<ASTL_Stmt *> & inStmts) const
       case ASTL_STMT_LABEL: {
         ASTL_StmtLabel * stmt = (ASTL_StmtLabel *) tempStmt;
         asm_label_statement * asmStmt = new asm_label_statement(stmt->pos, stmt->label);
-        asmStmt->is_constant = stmt->constant;
+        /* TODO: remove this forcing to true, and add relative referencing to
+         * Program Counter */
+        asmStmt->is_constant = stmt->constant || true;
         asmStmt->is_shared = stmt->shared;
         destStmts->push_back(asmStmt);
         break;
