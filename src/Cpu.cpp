@@ -404,22 +404,27 @@ Cpu::instructsTwoArg(const int32_t& instr, int32_t& newFlags)
       break;
 
     case EQ:
-      printf(" EQ: 0x%04X == 0x%04X\n", temp1, temp2);
+      DebugPrintf((" EQ: 0x%08X == 0x%08X\n", temp1, temp2));
       if (temp1 == temp2) newFlags += F_ZERO;
       break;
     case LO:
+      DebugPrintf((" EQ: 0x%08X < 0x%08X\n", temp1, temp2));
       if (temp1 < temp2) newFlags += F_ZERO;
       break;
     case MO:
+      DebugPrintf((" EQ: 0x%08X > 0x%08X\n", temp1, temp2));
       if (temp1 > temp2) newFlags += F_ZERO;
       break;
     case LE:
+      DebugPrintf((" EQ: 0x%08X <= 0x%08X\n", temp1, temp2));
       if (temp1 <= temp2) newFlags += F_ZERO;
       break;
     case ME:
+      DebugPrintf((" EQ: 0x%08X >= 0x%08X\n", temp1, temp2));
       if (temp1 >= temp2) newFlags += F_ZERO;
       break;
     case NEQ:
+      DebugPrintf((" EQ: 0x%08X != 0x%08X\n", temp1, temp2));
       if (temp1 != temp2) newFlags += F_ZERO;
       break;
       
@@ -595,7 +600,7 @@ Cpu::loadArg(int32_t & temp, const ArgRecord & arg)
 
       DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
                     MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
-      DebugPrintf(("  DISPL: %d\n", displ ));
+      DebugPrintf(("  DISPL: %d, Final ADDR: %u\n", displ, addr ));
       return delay;
     }
     case INDEXED: {
@@ -633,9 +638,9 @@ Cpu::loadArg(int32_t & temp, const ArgRecord & arg)
 
       DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
                     MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
-      DebugPrintf(("  DISPL: %d, INDEX: %s, Mod: %s\n", displ,
+      DebugPrintf(("  DISPL: %d, INDEX: %s, Mod: %s, Final ADDR: %u\n", displ,
                     RTypeSet.getItem(index).c_str(),
-                    MTypeSet.getItem(GET_ARG_MOD(index_raw)).c_str() ));
+                    MTypeSet.getItem(GET_ARG_MOD(index_raw)).c_str(), addr ));
       return delay;
     }
 
@@ -733,7 +738,7 @@ Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
 
       DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
                     MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
-      DebugPrintf(("  DISPL: %d\n", displ ));
+      DebugPrintf(("  DISPL: %d, Final ADDR: %u\n", displ, addr ));
       return delay;
     }
     case INDEXED: {
@@ -781,9 +786,9 @@ Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
 
       DebugPrintf(("  REG: %s, Mod: %s\n", RTypeSet.getItem(reg_pos).c_str(),
                     MTypeSet.getItem(GET_ARG_MOD(reg_raw_data)).c_str() ));
-      DebugPrintf(("  DISPL: %d, INDEX: %s, Mod: %s\n", displ,
+      DebugPrintf(("  DISPL: %d, INDEX: %s, Mod: %s, Final ADDR: %u\n", displ,
                     RTypeSet.getItem(index).c_str(),
-                    MTypeSet.getItem(GET_ARG_MOD(index_raw)).c_str() ));
+                    MTypeSet.getItem(GET_ARG_MOD(index_raw)).c_str(), addr ));
       return delay;
     }
 
