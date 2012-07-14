@@ -20,7 +20,7 @@ CharTerminal::CharTerminal() { }
 void
 CharTerminal::put(const int16_t& request, const int32_t& arg)
 {
-  DebugPrintf(("CharTerminal: ricevuto un segnale %d (arg: %d, %d)\n", request,
+  DebugPrintf(("CharTerminal: got signal %d (arg: %d, %d)\n", request,
                 arg, (arg & CHAR_MASK)));
   switch (request) {
     case COMP_TYPE:

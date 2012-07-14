@@ -164,9 +164,6 @@ Cpu::coreStep()
   timeDelay = memoryController.loadFromMem(fetchedInstr, progCounter, BYTE4);
   int32_t currentInstr = int32_t( fetchedInstr.u32 );
 
-  DebugPrintf(("Istruzione nell'area di mem: %d num args: %d\n", progCounter,
-         GET_NUM_ARGS(currentInstr) ));
-
   SCALE_ADDR_INCREM(progCounter, BYTE4);
 
   int res = 0;
@@ -198,7 +195,9 @@ Cpu::coreStep()
 inline int
 Cpu::instructsZeroArg(const int& instr, int& newFlags)
 {
-  DebugPrintf(("Instruction %s\n", ISet.getInstr(instr).c_str()));
+  DebugPrintf(("Instruction %s (Mem pos: %04u, num args: %u)\n",
+      ISet.getInstr(instr).c_str(), progCounter, GET_NUM_ARGS(instr) ));
+
   switch (instr) {
     case SLEEP:
       return instr;
@@ -232,7 +231,8 @@ Cpu::instructsOneArg(const int32_t& instr, int32_t& newFlags)
 {
   const int32_t typeArg = GET_ARG_1(instr);
   const int32_t polishedInstr = instr - ARG_1(typeArg);
-  DebugPrintf(("Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
+  DebugPrintf(("Instruction %s (Mem pos: %04u, num args: %u)\n",
+      ISet.getInstr(polishedInstr).c_str(), progCounter, GET_NUM_ARGS(polishedInstr) ));
 
   const size_t scaleArg1 = (GET_ARG_TYPE(typeArg) == IMMED) ? GET_ARG_SCALE(typeArg) : BYTE4;
 
@@ -332,7 +332,8 @@ Cpu::instructsTwoArg(const int32_t& instr, int32_t& newFlags)
   const int32_t typeArg1 = GET_ARG_1(instr);
   const int32_t typeArg2 = GET_ARG_2(instr);
   const int32_t polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2);
-  DebugPrintf(("Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
+  DebugPrintf(("Instruction %s (Mem pos: %04u, num args: %u)\n",
+      ISet.getInstr(polishedInstr).c_str(), progCounter, GET_NUM_ARGS(polishedInstr) ));
 
   const size_t scaleArg1 = (GET_ARG_TYPE(typeArg1) == IMMED) ? GET_ARG_SCALE(typeArg1) : BYTE4;
   const size_t scaleArg2 = (GET_ARG_TYPE(typeArg2) == IMMED) ? GET_ARG_SCALE(typeArg2) : BYTE4;
@@ -447,7 +448,8 @@ Cpu::instructsThreeArg(const int32_t& instr, int32_t& newFlags)
   const int32_t typeArg3 = GET_ARG_3(instr);
   const int32_t polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2)
                                       - ARG_3(typeArg3);
-  DebugPrintf(("Instruction %s\n", ISet.getInstr(polishedInstr).c_str()));
+  DebugPrintf(("Instruction %s (Mem pos: %04u, num args: %u)\n",
+      ISet.getInstr(polishedInstr).c_str(), progCounter, GET_NUM_ARGS(polishedInstr) ));
 
   const size_t scaleArg1 = (GET_ARG_TYPE(typeArg1) == IMMED) ? GET_ARG_SCALE(typeArg1) : BYTE4;
   const size_t scaleArg2 = (GET_ARG_TYPE(typeArg2) == IMMED) ? GET_ARG_SCALE(typeArg2) : BYTE4;
@@ -518,7 +520,7 @@ Cpu::instructsThreeArg(const int32_t& instr, int32_t& newFlags)
 inline uint32_t
 Cpu::loadArg(int32_t & temp, const ArgRecord & arg)
 {
-  DebugPrintf(("- LOAD:  Type: % 9s, scale (Num bytes): %u, code: 0x%04X\n",
+  DebugPrintf(("- LOAD:  Type: %9s, scale (Num bytes): %u, code: 0x%04X\n",
       ATypeSet.getItem(arg.type).c_str(), (1 << arg.scale), arg.raw_data));
   switch (arg.type) {
     case IMMED:
@@ -643,7 +645,7 @@ Cpu::loadArg(int32_t & temp, const ArgRecord & arg)
 inline uint32_t
 Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
 {
-  DebugPrintf(("- STORE: Type: % 9s, scale (Num bytes): %u, code: 0x%04X\n",
+  DebugPrintf(("- STORE: Type: %9s, scale (Num bytes): %u, code: 0x%04X\n",
       ATypeSet.getItem(arg.type).c_str(), (1 << arg.scale), arg.raw_data));
   switch (arg.type) {
     case IMMED: {
