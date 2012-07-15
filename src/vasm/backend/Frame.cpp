@@ -344,8 +344,8 @@ Frame::allocateLocalString(const asm_string_keyword_statement * data,
   const size_t rest = tStrInitialSize % 4;
 
   vector<int8_t> tempString;
-  tempString.resize(tStrInitialSize + (4 - rest) * (rest != 0), '\0');
   tempString.insert(tempString.end(), data->str.begin(), data->str.end());
+  tempString.resize(tStrInitialSize + (4 - rest) * (rest != 0), '\0');
 
   ListOfStmts tempListOfStmts;
 
