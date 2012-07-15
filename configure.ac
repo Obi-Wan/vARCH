@@ -18,7 +18,7 @@ AC_CONFIG_FILES([
 CFLAGS="${CFLAGS=}"
 CXXFLAGS="${CXXFLAGS=}"
 AC_SUBST([CFLAGS],["${CFLAGS} -Wall"])
-AC_SUBST([CXXFLAGS],["${CXXFLAGS} -Wall"])
+AC_SUBST([CXXFLAGS],["${CXXFLAGS} -Wall -std=c++0x"])
 
 ###############################################################################
 # Debug builds
