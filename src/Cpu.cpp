@@ -865,9 +865,9 @@ Cpu::fromMemorySpace(const DoubleWord & data, const uint8_t & scale)
 {
   switch (scale) {
     case BYTE1:
-      return static_cast<int32_t>(int8_t(data.u8[0])) & SWORD;
+      return static_cast<int32_t>(int8_t(data.u8[0])) & BWORD;
     case BYTE2:
-      return static_cast<int32_t>(int16_t(data.u16[0])) & DWORD;
+      return static_cast<int32_t>(int16_t(data.u16[0])) & HWORD;
     case BYTE4:
       return int32_t(data.u32);
     default:

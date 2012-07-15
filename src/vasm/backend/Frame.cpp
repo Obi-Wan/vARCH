@@ -352,7 +352,7 @@ Frame::allocateLocalString(const asm_string_keyword_statement * data,
   for(string::const_iterator charIt = data->str.begin(); charIt < data->str.end(); )
   {
     asm_immediate_arg * tempArg = new asm_immediate_arg(pos);
-    tempArg->content.val = DEAL_QWORD_FROM_SWORDS(charIt);
+    tempArg->content.val = DEAL_SWORD_FROM_BWORDS(charIt);
 
     asm_instruction_statement * stmt = new asm_instruction_statement(pos, PUSH);
     stmt->addArg(tempArg);

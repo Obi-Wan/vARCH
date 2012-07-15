@@ -19,7 +19,7 @@ public:
   void put(const short int& request, const int& arg);
 
   enum ChipsetActions {
-    CHIP_INFO_SWORDS  = 0x00,
+    CHIP_INFO_BWORDS  = 0x00,
     CHIP_INFO_IN_MEM  = 0x01,
     DEVS_NUM          = 0x02,
     DEVS_LIST_IN_MEM  = 0x04,

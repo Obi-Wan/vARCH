@@ -37,16 +37,16 @@ asm_immediate_arg::emitCode(Bloat::iterator & codeIt) const
   if (type == IMMED) {
     switch (this->scale) {
       case BYTE1: {
-        *(codeIt++) = this->content.val & SWORD;
+        *(codeIt++) = this->content.val & BWORD;
         break;
       }
       case BYTE2: {
-        *(codeIt++) = EXTRACT_LOWER__SWORD_FROM_DWORD(this->content.val);
-        *(codeIt++) = EXTRACT_HIGHER_SWORD_FROM_DWORD(this->content.val);
+        *(codeIt++) = EXTRACT_LOWER__BWORD_FROM_HWORD(this->content.val);
+        *(codeIt++) = EXTRACT_HIGHER_BWORD_FROM_HWORD(this->content.val);
         break;
       }
       case BYTE4: {
-        const int8_t chunks[4] = DEAL_SWORDS_FROM_QWORD(this->content.val);
+        const int8_t chunks[4] = DEAL_BWORDS_FROM_SWORD(this->content.val);
         for(size_t count = 0; count < 4; count++) {
           *(codeIt++) = chunks[count];
         }
@@ -54,7 +54,7 @@ asm_immediate_arg::emitCode(Bloat::iterator & codeIt) const
       }
       case BYTE8: {
         // XXX Be careful that right now there is no correct handling of this
-        const int8_t chunks[8] = DEAL_SWORDS_FROM_OWORD(this->content.lval);
+        const int8_t chunks[8] = DEAL_BWORDS_FROM_DWORD(this->content.lval);
         for(size_t count = 0; count < 8; count++) {
           *(codeIt++) = chunks[count];
         }
@@ -98,7 +98,7 @@ asm_immediate_arg::emitCode(Bloat::iterator & codeIt) const
         throw WrongArgumentException("getCode() No such kind of argument");
       }
     }
-    const int8_t chunks[4] = DEAL_SWORDS_FROM_QWORD(tempVal);
+    const int8_t chunks[4] = DEAL_BWORDS_FROM_SWORD(tempVal);
     for(size_t count = 0; count < 4; count++) {
       *(codeIt++) = chunks[count];
     }

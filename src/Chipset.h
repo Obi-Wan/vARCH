@@ -16,8 +16,8 @@
 
 using namespace std;
 
-#define EXTRACT_REQUEST(x) (EXTRACT_HIGHER_DWORD_FROM_QWORD(x))
-#define EXTRACT_DEVICE(x)  (EXTRACT_LOWER__DWORD_FROM_QWORD(x))
+#define EXTRACT_REQUEST(x) (EXTRACT_HIGHER_HWORD_FROM_SWORD(x))
+#define EXTRACT_DEVICE(x)  (EXTRACT_LOWER__HWORD_FROM_SWORD(x))
 
 class Chipset : public InterruptHandler {
 public:

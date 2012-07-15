@@ -156,23 +156,23 @@ void
 asm_int_keyword_statement::emitCode(Bloat::iterator & codeIt) {
   switch (scale) {
     case BYTE1: {
-      *(codeIt++) = integer & SWORD;
+      *(codeIt++) = integer & BWORD;
       break;
     }
     case BYTE2: {
-      *(codeIt++) = EXTRACT_LOWER__SWORD_FROM_DWORD(integer);
-      *(codeIt++) = EXTRACT_HIGHER_SWORD_FROM_DWORD(integer);
+      *(codeIt++) = EXTRACT_LOWER__BWORD_FROM_HWORD(integer);
+      *(codeIt++) = EXTRACT_HIGHER_BWORD_FROM_HWORD(integer);
       break;
     }
     case BYTE4: {
-      const int8_t number[4] = DEAL_SWORDS_FROM_QWORD(integer);
+      const int8_t number[4] = DEAL_BWORDS_FROM_SWORD(integer);
       for(size_t count = 0; count < 4; count++) {
         *(codeIt++) = number[count];
       }
       break;
     }
     case BYTE8: {
-      const int8_t number[8] = DEAL_SWORDS_FROM_OWORD(integer);
+      const int8_t number[8] = DEAL_BWORDS_FROM_DWORD(integer);
       for(size_t count = 0; count < 8; count++) {
         *(codeIt++) = number[count];
       }

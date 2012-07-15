@@ -16,7 +16,7 @@ dummyChipset::dummyChipset() { }
 void
 dummyChipset::put(const short int& request, const int& arg) {
   switch (request) {
-    case CHIP_INFO_SWORDS:
+    case CHIP_INFO_BWORDS:
       /* How many Single WORDS chip information takes */
       break;
     case CHIP_INFO_IN_MEM:

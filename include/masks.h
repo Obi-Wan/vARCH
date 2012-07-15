@@ -8,38 +8,37 @@
 #ifndef _MASKS_H
 #define	_MASKS_H
 
-#define HWORD 0x000000000000000f
-#define SWORD 0x00000000000000ff
-#define DWORD 0x000000000000ffff
-#define TWORD 0x0000000000ffffff
-#define QWORD 0x00000000ffffffff
-#define OWORD 0xffffffffffffffff
+#define BWORD 0x00000000000000ff
+#define HWORD 0x000000000000ffff
+#define SWORD 0x00000000ffffffff
+#define DWORD 0xffffffffffffffff
+
+/* Operations on HWORDS */
+#define EXTRACT_HIGHER_BWORD_FROM_HWORD(x) ((x >>  8) & BWORD)
+#define EXTRACT_LOWER__BWORD_FROM_HWORD(x) ((x      ) & BWORD)
+
+/* Operations on SWORDS */
+#define EXTRACT_HIGHER_BWORD_FROM_SWORD(x) ((x >> 24) & BWORD)
+#define EXTRACT_HIGHER_HWORD_FROM_SWORD(x) ((x >> 16) & HWORD)
+#define EXTRACT_LOWER__BWORD_FROM_SWORD(x) ((x      ) & BWORD)
+#define EXTRACT_LOWER__HWORD_FROM_SWORD(x) ((x      ) & HWORD)
+
+#define DEAL_BWORDS_FROM_SWORD(x) \
+  { static_cast<int8_t>(x & BWORD), static_cast<int8_t>((x >>  8) & BWORD), \
+    static_cast<int8_t>((x >> 16) & BWORD), static_cast<int8_t>((x >> 24) & BWORD) }
+#define DEAL_SWORD_FROM_BWORDS(x) \
+    (((int32_t)(*x++) & BWORD) + (((int32_t)(*x++) & BWORD) << 8) \
+    + (((int32_t)(*x++) & BWORD) << 16) + (((int32_t)(*x++) & BWORD) << 24))
 
 /* Operations on DWORDS */
-#define EXTRACT_HIGHER_SWORD_FROM_DWORD(x) ((x >>  8) & SWORD)
+#define EXTRACT_HIGHER_SWORD_FROM_DWORD(x) ((x >> 32) & SWORD)
 #define EXTRACT_LOWER__SWORD_FROM_DWORD(x) ((x      ) & SWORD)
 
-/* Operations on QWORDS */
-#define EXTRACT_HIGHER_SWORD_FROM_QWORD(x) ((x >> 24) & SWORD)
-#define EXTRACT_HIGHER_DWORD_FROM_QWORD(x) ((x >> 16) & DWORD)
-#define EXTRACT_HIGHER_TWORD_FROM_QWORD(x) ((x >>  8) & TWORD)
-#define EXTRACT_LOWER__SWORD_FROM_QWORD(x) ((x      ) & SWORD)
-#define EXTRACT_LOWER__DWORD_FROM_QWORD(x) ((x      ) & DWORD)
-#define EXTRACT_LOWER__TWORD_FROM_QWORD(x) ((x      ) & TWORD)
-
-#define DEAL_SWORDS_FROM_QWORD(x) \
-  {(x & SWORD), ((x >>  8) & SWORD), ((x >> 16) & SWORD), ((x >> 24) & SWORD)}
-#define DEAL_QWORD_FROM_SWORDS(x) \
-    (((int32_t)(*x++) & SWORD) + (((int32_t)(*x++) & SWORD) << 8) \
-    + (((int32_t)(*x++) & SWORD) << 16) + (((int32_t)(*x++) & SWORD) << 24))
-
-/* Operations on OWORDS */
-#define EXTRACT_HIGHER_QWORD_FROM_OWORD(x) ((x >> 32) & QWORD)
-#define EXTRACT_LOWER__QWORD_FROM_OWORD(x) ((x      ) & QWORD)
-
-#define DEAL_SWORDS_FROM_OWORD(x) \
-  {(x & SWORD), ((x >>  8) & SWORD), ((x >> 16) & SWORD), ((x >> 24) & SWORD), \
-   ((x >> 32) & SWORD), ((x >>  40) & SWORD), ((x >> 48) & SWORD), ((x >> 56) & SWORD)}
+#define DEAL_BWORDS_FROM_DWORD(x) \
+  { static_cast<int8_t>(x & BWORD), static_cast<int8_t>((x >>  8) & BWORD), \
+    static_cast<int8_t>((x >> 16) & BWORD), static_cast<int8_t>((x >> 24) & BWORD), \
+    static_cast<int8_t>((x >> 32) & BWORD), static_cast<int8_t>((x >>  40) & BWORD), \
+    static_cast<int8_t>((x >> 48) & BWORD), static_cast<int8_t>((x >> 56) & BWORD) }
 
 #endif	/* _MASKS_H */
 

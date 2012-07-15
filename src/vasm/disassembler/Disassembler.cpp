@@ -171,7 +171,7 @@ Disassembler::fetchArg(const int32_t & typeArg, Bloat::const_iterator & codeIt,
       return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8));
     }
     case 4: {
-      return DEAL_QWORD_FROM_SWORDS(codeIt);
+      return DEAL_SWORD_FROM_BWORDS(codeIt);
 //      return (((int64_t) *codeIt++) + (((int64_t) *codeIt++) << 8)
 //          + (((int64_t) *codeIt++) << 16) + (((int64_t) *codeIt++) << 24));
     }
@@ -192,7 +192,7 @@ Disassembler::disassembleAndPrint(const Bloat & bytecode)
   const Bloat::const_iterator & endIt = bytecode.end();
   for(Bloat::const_iterator codeIt = bytecode.begin(); codeIt < endIt;)
   {
-    const int32_t instr = DEAL_QWORD_FROM_SWORDS(codeIt);
+    const int32_t instr = DEAL_SWORD_FROM_BWORDS(codeIt);
     try {
       if (instr) {
         switch (GET_NUM_ARGS(instr)) {
