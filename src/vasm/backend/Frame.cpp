@@ -194,7 +194,8 @@ Frame::mindReturnStmts(ListOfStmts & stmts)
 
         asm_immediate_arg * regArg = new asm_immediate_arg(ret->position);
         regArg->type = REG;
-        regArg->content.val = 0;
+        regArg->content.regNum = REG_DATA_1;
+        regArg->isTemp = false;
 
         stmt->addArg(regArg);
 
@@ -248,22 +249,20 @@ Frame::mindParamsFCalls(ListOfStmts & stmts)
 void
 Frame::generateMovesForFunctionCalls(asm_function & function)
 {
-  ListOfStmts & stmts = function.stmts;
-
   // Move arguments from precolored registers to temporaries
   mindFunctionParameters(function);
 
   // Take care of callee-save registers
   // (if it doesn't return, we don't even bother doing callee-save)
   if (returns.size()) {
-    mindCalleeSaveRegs(stmts);
+    mindCalleeSaveRegs(function.stmts);
   }
 
   // Move arguments of returns if needed
-  mindReturnStmts(stmts);
+  mindReturnStmts(function.stmts);
 
   // Add moves of parameters for Function calls
-  mindParamsFCalls(stmts);
+  mindParamsFCalls(function.stmts);
 
   DebugPrintf(("Generating Moves for Function calls, done.\n"));
 }
