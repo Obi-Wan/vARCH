@@ -3,7 +3,7 @@
   .buffer:
     .string     "          "
   .bufferEnd:
-    .i8_t      13
+    .i8_t      0
 .end
 
 .function  "integerToString"

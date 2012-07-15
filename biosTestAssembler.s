@@ -31,7 +31,7 @@
   MOV,     @buffer ,    %T005
   JSR,     @integerToString , %T004 , %T005 , %T003
 ; Verify result
-  MOV,     %R1 ,        %T008
+  MOV,     %R0 ,        %T008
   EQ,      %T008 ,      0
   IFJ,     @error
   MOV,     @buffer ,    %T007
