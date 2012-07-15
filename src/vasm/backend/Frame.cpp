@@ -339,18 +339,28 @@ Frame::allocateLocalString(const asm_string_keyword_statement * data,
     const YYLTYPE &pos, ListOfStmts & stmts)
 {
   ListOfStmts localStmts;
-  for(string::const_iterator charIt = data->str.begin();
-      charIt != data->str.end(); charIt++)
+  /* Let's push the string in blocks of 4 chars and in reverse order
+   */
+  const size_t tStrInitialSize = data->str.size();
+  const size_t rest = tStrInitialSize % 4;
+
+  vector<int8_t> tempString;
+  tempString.resize(tStrInitialSize + (4 - rest) * (rest != 0), '\0');
+  tempString.insert(tempString.end(), data->str.begin(), data->str.end());
+
+  ListOfStmts tempListOfStmts;
+
+  for(string::const_iterator charIt = data->str.begin(); charIt < data->str.end(); )
   {
     asm_immediate_arg * tempArg = new asm_immediate_arg(pos);
-    tempArg->content.val = *charIt;
+    tempArg->content.val = DEAL_QWORD_FROM_SWORDS(charIt);
 
     asm_instruction_statement * stmt = new asm_instruction_statement(pos, PUSH);
     stmt->addArg(tempArg);
 
-    localStmts.push_back(stmt);
+    tempListOfStmts.push_front(stmt);
   }
-  stmts.insert(stmts.begin(), localStmts.begin(), localStmts.end());
+  stmts.insert(stmts.begin(), tempListOfStmts.begin(), tempListOfStmts.end());
 }
 
 void
@@ -358,13 +368,11 @@ Frame::deallocateLocalVariables(asm_function & function)
 {
   ListOfStmts & stmts = function.stmts;
 
-  const size_t & stackPointerBias = function.getStackedDataSize();
-
   /// ADD  $tot_vars_size  %SP
   {
     asm_immediate_arg * tempArg = new asm_immediate_arg(function.position);
     tempArg->type = IMMED;
-    tempArg->content.val = stackPointerBias;
+    tempArg->content.val = function.getStackedDataSize();
 
     asm_immediate_arg * regArg = new asm_immediate_arg(function.position);
     regArg->type = REG;
