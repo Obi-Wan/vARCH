@@ -117,11 +117,11 @@ void
 InterferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
     const LiveMap<DataType> & liveMap, const TempsMap & tempsMap)
 {
-  typedef class FlowGraph<DataType>::NodeType     FG_NodeType;
-//  typedef class FlowGraph<DataType>::NodeSetType  NodeSetType;
-//  typedef class FlowGraph<DataType>::NodeListType NodeListType;
-//  typedef class FlowGraph<DataType>::NodeMapType  NodeMapType;
-//  typedef class FlowGraph<DataType>::ArcsMap      ArcsMap;
+  typedef typename FlowGraph<DataType>::NodeType     FG_NodeType;
+//  typedef typename FlowGraph<DataType>::NodeSetType  NodeSetType;
+//  typedef typename FlowGraph<DataType>::NodeListType NodeListType;
+//  typedef typename FlowGraph<DataType>::NodeMapType  NodeMapType;
+//  typedef typename FlowGraph<DataType>::ArcsMap      ArcsMap;
 
 //  typedef typename FlowGraph<DataType>::ns_iterator fg_ns_iterator;
 //  typedef typename FlowGraph<DataType>::nl_iterator fg_nl_iterator;
@@ -133,10 +133,10 @@ InterferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
 //  typedef typename FlowGraph<DataType>::nm_c_iterator fg_nm_c_iterator;
 //  typedef typename FlowGraph<DataType>::am_c_iterator fg_am_c_iterator;
 
-  typedef class FlowGraph<DataType>::UIDMultiSetType UIDMultiSetType;
+  typedef typename FlowGraph<DataType>::UIDMultiSetType UIDMultiSetType;
 
-  typedef class LiveMap<DataType>::UIDSetType UIDSetType;
-  typedef class LiveMap<DataType>::UIDsMap    UIDsMap;
+  typedef typename LiveMap<DataType>::UIDSetType UIDSetType;
+  typedef typename LiveMap<DataType>::UIDsMap    UIDsMap;
 
   typedef typename UIDSetType::iterator us_iterator;
   typedef typename UIDsMap::iterator um_iterator;

@@ -43,11 +43,11 @@ template<typename DataType>
 class FlowGraph : public Graph<DataType, NodeFlowGraph> {
 public:
   // Inherited Internal Types
-  typedef class Graph<DataType, NodeFlowGraph>::NodeType NodeType;
-  typedef class Graph<DataType, NodeFlowGraph>::NodeSetType NodeSetType;
-  typedef class Graph<DataType, NodeFlowGraph>::NodeListType NodeListType;
-  typedef class Graph<DataType, NodeFlowGraph>::NodeMapType NodeMapType;
-  typedef class Graph<DataType, NodeFlowGraph>::ArcsMap ArcsMap;
+  typedef typename Graph<DataType, NodeFlowGraph>::NodeType NodeType;
+  typedef typename Graph<DataType, NodeFlowGraph>::NodeSetType NodeSetType;
+  typedef typename Graph<DataType, NodeFlowGraph>::NodeListType NodeListType;
+  typedef typename Graph<DataType, NodeFlowGraph>::NodeMapType NodeMapType;
+  typedef typename Graph<DataType, NodeFlowGraph>::ArcsMap ArcsMap;
 
   typedef typename Graph<DataType, NodeFlowGraph>::ns_iterator    ns_iterator;
   typedef typename Graph<DataType, NodeFlowGraph>::ns_c_iterator  ns_c_iterator;

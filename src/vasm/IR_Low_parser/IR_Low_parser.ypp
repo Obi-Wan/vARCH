@@ -56,15 +56,15 @@ extern int yylex \
   enum ScaleOfArgument type;
   enum ASTL_TypeQualifiers qualifier;
 
-  struct ASTL_Arg *arg;
-  struct ASTL_ArgRegister *arg_reg;
-  struct ASTL_Stmt *stmt;
-  struct ASTL_StmtLabel *stmtLab;
-  struct ASTL_StmtExp *stmtExp;
-  struct ASTL_StmtAssign *stmtAssign;
+  class ASTL_Arg *arg;
+  class ASTL_ArgRegister *arg_reg;
+  class ASTL_Stmt *stmt;
+  class ASTL_StmtLabel *stmtLab;
+  class ASTL_StmtExp *stmtExp;
+  class ASTL_StmtAssign *stmtAssign;
 
-  struct ASTL_FunctionDef * function;
-  struct ASTL_Param * function_parameter;
+  class ASTL_FunctionDef * function;
+  class ASTL_Param * function_parameter;
 
   list<ASTL_Stmt *>  * listOfStatements;
   list<ASTL_Param *>  * listOfParameters;
