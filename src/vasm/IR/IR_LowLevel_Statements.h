@@ -60,9 +60,7 @@ struct asm_instruction_statement : asm_statement {
 
   const string toString() const {
     string output = "(instr, ";
-    for(size_t argNum = 0; argNum < args.size(); argNum++) {
-      output += args[argNum]->toString() + " ";
-    }
+    for(asm_arg * arg : args) { output += arg->toString() + " ";  }
     output += " )";
     return output;
   }
@@ -83,9 +81,7 @@ struct asm_instruction_statement : asm_statement {
 
   size_t getSize() const throw() {
     size_t totalSize = 4;
-    for(size_t argNum = 0; argNum < args.size(); argNum++) {
-      totalSize += args[argNum]->getSize();
-    }
+    for(asm_arg * arg : args) { totalSize += arg->getSize(); }
     return totalSize;
   }
   const ObjType getType() const throw() { return ASM_INSTRUCTION_STATEMENT; }

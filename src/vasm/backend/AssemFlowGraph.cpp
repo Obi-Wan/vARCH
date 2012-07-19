@@ -90,11 +90,8 @@ inline void
 AssemFlowGraph::_addNodesToGraph(asm_function & function)
 {
   uint32_t progr = 0; // progressive number of instruction
-  ListOfStmts & stmts = function.stmts;
-  for(ListOfStmts::iterator stmtIt = stmts.begin(); stmtIt != stmts.end();
-      stmtIt++)
+  for(asm_statement * stmt : function.stmts)
   {
-    asm_statement * stmt = *stmtIt;
     this->addNewNode(buildStmtLabel(stmt, progr++), stmt);
 
     const NodeType * const node = &getListOfNodes().back();
@@ -338,18 +335,19 @@ AssemFlowGraph::_findUsesDefines()
           // Other instructions
           for(size_t argNum = 0; argNum < i_stmt->args.size(); argNum++)
           {
-            const bool isTemp = i_stmt->args[argNum]->isTemporary();
-            if ( isTemp || i_stmt->args[argNum]->isReg() ) {
-              asm_immediate_arg * arg =
-                                      (asm_immediate_arg *)i_stmt->args[argNum];
-              const uint32_t shiftedTempUID =
-                                        Frame::shiftArgUID(arg, isTemp);
+            asm_arg * const arg = i_stmt->args[argNum];
+            const bool isTemp = arg->isTemporary();
+            if ( isTemp || arg->isReg() ) {
+              asm_immediate_arg * arg_i = (asm_immediate_arg *) arg;
+              const uint32_t shiftedTempUID = Frame::shiftArgUID(arg_i, isTemp);
 
               // uses
               _addToSet( nodeUses, shiftedTempUID );
 
               // defines
-              if (_argIsDefined(i_stmt->instruction, argNum, arg->type, arg->regModType)) {
+              if (_argIsDefined(i_stmt->instruction, argNum, arg_i->type,
+                                arg_i->regModType))
+              {
                 _addToSet( nodeDefs, shiftedTempUID );
               }
             }
@@ -360,17 +358,14 @@ AssemFlowGraph::_findUsesDefines()
         // Surely it defines the caller-save registers
         for(uint32_t numReg = 0; numReg < STD_CALLEE_SAVE; numReg++)
         {
-          const uint32_t shiftedTempUID =
-                                      Frame::shiftArgUID(numReg, false);
+          const uint32_t shiftedTempUID = Frame::shiftArgUID(numReg, false);
           _addToSet( nodeDefs, shiftedTempUID );
         }
         // It uses the arguments
-        for(ConstListOfParams::const_iterator parIt = f_stmt->parameters.begin();
-            parIt != f_stmt->parameters.end(); parIt++)
+        for(const asm_function_param * par : f_stmt->parameters)
         {
-          const asm_function_param * par = *parIt;
           const asm_immediate_arg * source =
-                                        (const asm_immediate_arg *)par->source;
+                                        (const asm_immediate_arg *) par->source;
           const uint32_t shiftedTempUID =
                               Frame::shiftArgUID(source->content.regNum, false);
           _addToSet( nodeUses, shiftedTempUID );
@@ -379,8 +374,7 @@ AssemFlowGraph::_findUsesDefines()
         // Probably it uses the callee-save registers, and returned element
         for(uint32_t regNum = STD_CALLEE_SAVE; regNum < NUM_REGS; regNum++)
         {
-          const uint32_t shiftedTempUID =
-                                      Frame::shiftArgUID(regNum, false);
+          const uint32_t shiftedTempUID = Frame::shiftArgUID(regNum, false);
           _addToSet( nodeUses, shiftedTempUID );
         }
       }
@@ -450,18 +444,16 @@ AssemFlowGraph::checkTempsUsedUndefined(const asm_function & func,
 void
 AssemFlowGraph::applySelectedRegisters(const AssignedRegs & regs)
 {
-  for(nl_c_iterator nodeIt = getListOfNodes().begin();
-      nodeIt != getListOfNodes().end(); nodeIt++)
+  for(const NodeType & node : getListOfNodes())
   {
-    if (nodeIt->data->getType() == ASM_INSTRUCTION_STATEMENT) {
-      asm_instruction_statement * stmt =
-                                    (asm_instruction_statement *) nodeIt->data;
-      for(vector<asm_arg *>::iterator argIt = stmt->args.begin();
-          argIt != stmt->args.end(); argIt++)
+    if (node.data->getType() == ASM_INSTRUCTION_STATEMENT) {
+      asm_instruction_statement * stmt = (asm_instruction_statement *) node.data;
+
+      for(asm_arg * arg : stmt->args)
       {
-        if ((*argIt)->isTemporary()) {
-          asm_immediate_arg * arg = (asm_immediate_arg *) *argIt;
-          const uint32_t temp_uid = Frame::shiftArgUID(arg, true);
+        if (arg->isTemporary()) {
+          asm_immediate_arg * arg_i = (asm_immediate_arg *) arg;
+          const uint32_t temp_uid = Frame::shiftArgUID(arg_i, true);
 
           AssignedRegs::const_iterator reg = regs.find(temp_uid);
           if (reg == regs.end()) {
@@ -470,8 +462,8 @@ AssemFlowGraph::applySelectedRegisters(const AssignedRegs & regs)
                 + tempsMap.getLabel(temp_uid) + ")");
           }
           if (reg->second) {
-            arg->content.tempUID = reg->second -1;
-            arg->isTemp = false;
+            arg_i->content.tempUID = reg->second -1;
+            arg_i->isTemp = false;
           } else {
             throw WrongArgumentException(
                 "Pending Spills! not using a solution!");
@@ -486,18 +478,16 @@ void
 AssemFlowGraph::applySelectedRegisters(const AssignedRegs & regs,
     const AliasMap & aliases)
 {
-  for(nl_c_iterator nodeIt = getListOfNodes().begin();
-      nodeIt != getListOfNodes().end(); nodeIt++)
+  for(const NodeType & node : getListOfNodes())
   {
-    if (nodeIt->data->getType() == ASM_INSTRUCTION_STATEMENT) {
-      asm_instruction_statement * stmt =
-                                    (asm_instruction_statement *) nodeIt->data;
-      for(vector<asm_arg *>::iterator argIt = stmt->args.begin();
-          argIt != stmt->args.end(); argIt++)
+    if (node.data->getType() == ASM_INSTRUCTION_STATEMENT) {
+      asm_instruction_statement * stmt = (asm_instruction_statement *) node.data;
+
+      for(asm_arg * arg: stmt->args)
       {
-        if ((*argIt)->isTemporary()) {
-          asm_immediate_arg * arg = (asm_immediate_arg *) *argIt;
-          const uint32_t temp_uid = Frame::shiftArgUID(arg, true);
+        if (arg->isTemporary()) {
+          asm_immediate_arg * arg_i = (asm_immediate_arg *) arg;
+          const uint32_t temp_uid = Frame::shiftArgUID(arg_i, true);
 
           /* Verify that maybe it is an alias */
           const uint32_t temp_alias = aliases.getFinal(temp_uid);
@@ -517,8 +507,8 @@ AssemFlowGraph::applySelectedRegisters(const AssignedRegs & regs,
             to_be_assigned = reg->second;
           }
           if (to_be_assigned) {
-            arg->content.tempUID = to_be_assigned -1;
-            arg->isTemp = false;
+            arg_i->content.tempUID = to_be_assigned -1;
+            arg_i->isTemp = false;
           } else {
             throw WrongArgumentException(
                 "Pending Spills! not using a solution!");

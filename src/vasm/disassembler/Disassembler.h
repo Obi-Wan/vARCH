@@ -19,7 +19,7 @@ public:
 //  Disassembler();
 
   void disassembleAndPrint(const Bloat & bytecode);
-  void disassembleProgram(asm_program & prog);
+  void disassembleProgram(const asm_program & prog);
 };
 
 #endif /* DISASSEMBLER_H_ */

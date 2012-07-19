@@ -74,18 +74,15 @@ Disassembler::printArg(const int32_t & typeArg, const int64_t & arg)
 }
 
 void
-Disassembler::disassembleProgram(asm_program & prog)
+Disassembler::disassembleProgram(const asm_program & prog)
 {
   Bloat bytecode;
   bytecode.reserve(5);
-  for(size_t f_index = 0; f_index < prog.functions.size(); f_index++)
+  for(const asm_function * func : prog.functions)
   {
-    asm_function & func = *prog.functions[f_index];
-    cout << "Function: \"" << func.name << "\"" << endl << "Statements:" << endl;
-    for(ListOfStmts::iterator stmtIt = func.stmts.begin();
-        stmtIt != func.stmts.end(); stmtIt++)
+    cout << "Function: \"" << func->name << "\"" << endl << "Statements:" << endl;
+    for(asm_statement * stmt : func->stmts)
     {
-      asm_statement * stmt = *stmtIt;
       cout.width(4);
       cout.fill('0');
       cout << stmt->offset;
@@ -100,7 +97,7 @@ Disassembler::disassembleProgram(asm_program & prog)
         } else {
           cout << "internal "
                 << l_stmt->offset << ", total "
-                << l_stmt->offset + func.functionOffset;
+                << l_stmt->offset + func->functionOffset;
         }
         cout << ")" << endl;
       } else {
@@ -111,11 +108,11 @@ Disassembler::disassembleProgram(asm_program & prog)
       }
     }
     cout << "Stack Locals:" << endl;
-    this->printLocals(func.stackLocals, func.functionOffset);
+    this->printLocals(func->stackLocals, func->functionOffset);
     cout << "Unique Locals:" << endl;
-    this->printLocals(func.uniqueLocals, func.functionOffset);
+    this->printLocals(func->uniqueLocals, func->functionOffset);
 
-    cout << "End Function \"" << func.name << "\"" << endl << endl;
+    cout << "End Function \"" << func->name << "\"" << endl << endl;
   }
 }
 
@@ -123,12 +120,10 @@ inline void
 Disassembler::printLocals(const ListOfDataStmts & locals, const size_t & funcOffset) const
 {
   Bloat bytecode;
-  for(ListOfDataStmts::const_iterator stmtIt = locals.begin();
-      stmtIt != locals.end(); stmtIt++)
+  for(asm_data_statement * stmt : locals)
   {
-    asm_data_statement * stmt = *stmtIt;
     if (stmt->getType() == ASM_LABEL_STATEMENT) {
-      asm_label_statement * l_stmt = (asm_label_statement *) stmt;
+      const asm_label_statement * l_stmt = (const asm_label_statement *) stmt;
       cout << "." << l_stmt->label << ": (position: ";
       if (l_stmt->isGlobal()) {
         cout << "global " << l_stmt->offset;
@@ -142,8 +137,13 @@ Disassembler::printLocals(const ListOfDataStmts & locals, const size_t & funcOff
       bytecode.resize(stmt->getSize());
       Bloat::iterator it = bytecode.begin();
       stmt->emitCode(it);
-      cout << "  ";
-      copy(bytecode.begin(), bytecode.end(), ostream_iterator<int32_t>(cout, "  "));
+      for(const int8_t & num : bytecode)
+      {
+        cout << " ";
+        cout.width(3);
+        cout << int32_t(num);
+        cout.width(0);
+      }
       cout << endl;
     }
   }

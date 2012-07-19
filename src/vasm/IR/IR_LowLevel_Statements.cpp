@@ -76,11 +76,11 @@ asm_instruction_statement::checkArgs() const
 void
 asm_instruction_statement::ensureTempsUsage(const bool & used) const
 {
-  for(size_t numArg = 0; numArg < args.size(); numArg++)
+  for(asm_arg * arg_g : args)
   {
-    if (args[numArg]->getType() == ASM_IMMEDIATE_ARG)
+    if (arg_g->getType() == ASM_IMMEDIATE_ARG)
     {
-      const asm_immediate_arg * arg = (const asm_immediate_arg *) args[numArg];
+      const asm_immediate_arg * arg = (const asm_immediate_arg *) arg_g;
       if (!(arg->type == IMMED || arg->type == DIRECT) && (used ^ arg->isTemp))
       {
         stringstream stream;
@@ -101,10 +101,9 @@ asm_instruction_statement::ensureTempsUsage(const bool & used) const
 
 
 void
-asm_instruction_statement::emitArgs(Bloat::iterator & position) {
-  for (size_t argNum = 0; argNum < args.size(); argNum++) {
-    args[argNum]->emitCode(position);
-  }
+asm_instruction_statement::emitArgs(Bloat::iterator & position)
+{
+  for (asm_arg * arg : args) { arg->emitCode(position); }
 }
 
 void

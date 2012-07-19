@@ -49,16 +49,12 @@ public:
 
   size_t getFunciontsTotalSize() const {
     size_t totSize = 0;
-    for(size_t i = 0; i < functions.size(); i++) {
-      totSize += functions[i]->getSize();
-    }
+    for(asm_function * func : functions) { totSize += func->getSize(); }
     return totSize;
   }
   size_t getGlobalsTotalSize() const {
     size_t totSize = 0;
-    for(size_t i = 0; i < globals.size(); i++) {
-      totSize += globals[i]->getSize();
-    }
+    for(asm_data_statement * stmt : globals) { totSize += stmt->getSize(); }
     return totSize;
   }
 
