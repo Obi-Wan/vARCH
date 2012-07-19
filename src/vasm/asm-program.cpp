@@ -9,11 +9,12 @@
 
 #include "IncludesTree.h"
 #include "../FileHandler.h"
-//#include "disassembler/Disassembler.h"
 #include "backend/AssemFlowGraph.h"
 #include "backend/RegAllocator.h"
 #include "backend/Frame.h"
 #include "backend/Optimizer.h"
+
+#include "ErrorReporter.h"
 
 #include <sstream>
 using namespace std;
@@ -28,14 +29,10 @@ void
 asm_program::checkInstructions(const bool & usingTemps) const
 {
   bool error = false;
-  for(deque<asm_function *>::const_iterator iter = functions.begin();
-      iter != functions.end(); iter++)
+  for(asm_function * func : functions)
   {
-    asm_function * func = (*iter);
-    for(ListOfStmts::const_iterator stmt_it = func->stmts.begin();
-        stmt_it != func->stmts.end(); stmt_it++)
+    for(const asm_statement * stmt : func->stmts)
     {
-      const asm_statement * stmt = *stmt_it;
       if (stmt->isInstruction()) {
         try {
           ((const asm_instruction_statement *)stmt)->checkArgs();
@@ -78,25 +75,21 @@ asm_program::checkInstructions(const bool & usingTemps) const
 void
 asm_program::assignFunctionParameters()
 {
-  for(deque<asm_function *>::const_iterator iter = functions.begin();
-      iter != functions.end(); iter++)
+  for(asm_function * func : functions)
   {
-    asm_function * func = (*iter);
-    for(ListOfStmts::const_iterator stmt_it = func->stmts.begin();
-        stmt_it != func->stmts.end(); stmt_it++)
+    for(asm_statement * stmt : func->stmts)
     {
-      const asm_statement * stmt = *stmt_it;
       if (stmt->getType() == ASM_FUNCTION_CALL) {
         asm_function_call * f_stmt = (asm_function_call *) stmt;
 
         const vector<asm_arg *> & args = f_stmt->args;
         const string & f_name = ((const asm_label_arg *)args[0])->label;
-        for(size_t funcNum = 0; funcNum < functions.size(); funcNum++)
+
+        for(const asm_function * o_func : functions)
         {
-          const asm_function & func = *functions[funcNum];
-          if (func.name == f_name) {
+          if (o_func->name == f_name) {
             DebugPrintf(("Found referenced function. Copying params\n"));
-            f_stmt->importParameters(func.parameters);
+            f_stmt->importParameters(o_func->parameters);
             DebugPrintf(("Copied params\n"));
             break;
           }
@@ -110,10 +103,9 @@ void
 asm_program::ensureTempsUsage(const bool & used) const
 {
   bool error = false;
-  for(deque<asm_function *>::const_iterator iter = functions.begin();
-      iter != functions.end(); iter++)
+  for(asm_function * func : functions)
   {
-    error |= (*iter)->ensureTempsUsage(used);
+    error |= func->ensureTempsUsage(used);
   }
   if (error) {
     throw WrongArgumentException(used
@@ -235,30 +227,29 @@ void
 asm_program::rebuildOffsets()
 {
   size_t tempOffset = 0;
-  for(size_t index = 0; index < functions.size(); index++) {
-    asm_function * func = functions[index];
-
+  for(asm_function * func : functions)
+  {
     func->functionOffset = tempOffset;
     func->rebuildOffsets();
 
     tempOffset += func->getSize();
   }
-  for(size_t index = 0; index < globals.size(); index++) {
-    globals[index]->offset = tempOffset;
-    tempOffset += globals[index]->getSize();
+  for(asm_data_statement * stmt : globals) {
+    stmt->offset = tempOffset;
+    tempOffset += stmt->getSize();
   }
 }
 
 void
 asm_program::exposeGlobalLabels()
 {
-  bool error = false;
+  ErrorReporter errOut;
 
   /* And fix their labels */
   DebugPrintf(("-- Adding Functions to Global Labels - Phase --\n"));
-  for(size_t index = 0; index < functions.size(); index++) {
-    asm_function * func = functions[index];
 
+  for(asm_function * func : functions)
+  {
     asm_label_statement * tempLabel =
         new asm_label_statement(func->position, func->name, true);
     tempLabel->offset = func->functionOffset;
@@ -267,35 +258,24 @@ asm_program::exposeGlobalLabels()
     try {
       globalSymbols.addLabel(tempLabel);
     } catch (const WrongArgumentException & e) {
-      error = true;
-      fprintf(stderr, "ERROR:%s at Line %4d\n%s\n--> %s\n",
-              tempLabel->position.fileNode->printString().c_str(),
-              tempLabel->position.first_line,
-              tempLabel->position.fileNode->printStringStackIncludes().c_str(),
-              e.what());
+      errOut.addErrorMsg(tempLabel->position, e);
     }
   }
-  for(size_t index = 0; index < globals.size(); index++) {
-    asm_data_statement * stmt = globals[index];
-
+  for(asm_data_statement * stmt : globals)
+  {
     if (stmt->getType() == ASM_LABEL_STATEMENT) {
-      DebugPrintf(("Found label statement: %s!\n",
-             ((asm_label_statement *)stmt)->label.c_str()));
+      asm_label_statement * l_stmt = (asm_label_statement *) stmt;
+      DebugPrintf(("Found label statement: %s!\n", l_stmt->label.c_str() ));
       try {
-        globalSymbols.addLabel((asm_label_statement *)stmt);
+        globalSymbols.addLabel(l_stmt);
       } catch (const WrongArgumentException & e) {
-        error = true;
-        fprintf(stderr, "ERROR:%s at Line %4d\n%s\n--> %s\n",
-                stmt->position.fileNode->printString().c_str(),
-                stmt->position.first_line,
-                stmt->position.fileNode->printStringStackIncludes().c_str(),
-                e.what());
+        errOut.addErrorMsg(stmt->position, e);
       }
     }
   }
   DebugPrintf(("-- Terminated: Adding Funcs to Global Labels - Phase --\n\n"));
-  if (error) {
-    throw WrongArgumentException("Errors in labels definition");
+  if (errOut.hasErrors()) {
+    errOut.throwError( WrongArgumentException("Errors in labels definition") );
   }
 }
 
@@ -305,19 +285,18 @@ asm_program::assignValuesToLabels()
   bool error = false;
 
   DebugPrintf(("-- Assign labels - Phase --\n"));
-  for(size_t index = 0; index < functions.size(); index++)
+
+  for(asm_function * func : functions)
   {
-    asm_function & func = *functions[index];
     DebugPrintf((" - Processing references of function: %s\n",
-                  func.name.c_str()));
-    for(list<ArgLabelRecord *>::iterator ref  = func.refs.begin();
-        ref != func.refs.end(); ref++)
+                  func->name.c_str()));
+    for(ArgLabelRecord * ref : func->refs)
     {
-      asm_label_arg & argument = *((*ref)->arg);
+      asm_label_arg & argument = *(ref->arg);
       const string & labelName = argument.label;
 
       DebugPrintf(("  - Processing label: %s\n", labelName.c_str()));
-      asm_label_statement * localLabel = func.localSymbols.getStmt(labelName);
+      asm_label_statement * localLabel = func->localSymbols.getStmt(labelName);
       if (localLabel) {
         DebugPrintf(("    It is local, with position (in the program): %3u\n"
                       "      is const: %5s, is shared: %5s\n",
@@ -327,11 +306,11 @@ asm_program::assignValuesToLabels()
         if (localLabel->isShared()) {
           /* TODO: add displaced referencing to Program Counter */
           argument.content.val =
-                        (int32_t)(localLabel->offset + func.functionOffset);
+                        (int32_t)(localLabel->offset + func->functionOffset);
         } else {
           argument.type = DISPLACED;
           argument.content.regNum = STACK_POINTER;
-          argument.displacement = (int32_t)(func.getStackedDataSize() - localLabel->offset);
+          argument.displacement = (int32_t)(func->getStackedDataSize() - localLabel->offset);
         }
 
       } else {
@@ -367,43 +346,16 @@ asm_program::assemble(const string & outputName)
   Bloat bytecode;
   bytecode.resize(getFunciontsTotalSize() + getGlobalsTotalSize(), 0);
   Bloat::iterator pos = bytecode.begin();
-  for (size_t funcIndex = 0; funcIndex < functions.size(); funcIndex++) {
-    asm_function & func = *functions[funcIndex];
 
-    for(ListOfStmts::iterator stmt_it = func.stmts.begin();
-        stmt_it != func.stmts.end(); stmt_it++)
-    {
-      asm_statement * stmt = *stmt_it;
-      stmt->emitCode(pos);
-    }
-    for(size_t j = 0; j < func.uniqueLocals.size(); j++) {
-      func.uniqueLocals[j]->emitCode(pos);
-    }
+  for(asm_function * func : functions)
+  {
+    for(asm_statement * stmt : func->stmts) { stmt->emitCode(pos); }
+    for(asm_data_statement * stmt : func->uniqueLocals) { stmt->emitCode(pos); }
   }
-  for (size_t index = 0; index < globals.size(); index++) {
-    globals[index]->emitCode(pos);
-  }
+  for (asm_data_statement * stmt : globals) { stmt->emitCode(pos); }
 
   InfoPrintf(("Size of the generated file: %5u bytes\n",
               (uint32_t)bytecode.size() ));
-#ifdef DEBUG
-  DebugPrintf(("-- Dumping generated binary code --\n"));
-  const size_t sizeQuadrupoles = ROUND_DOWN(bytecode.size(), 4);
-  size_t i = 0;
-  for (i = 0; i < sizeQuadrupoles; i += 4) {
-    DebugPrintf(("Mem %03lu: %4d Mem %03lu: %4d Mem %03lu: %4d Mem %03lu: %4d\n",
-                (uint64_t)i, bytecode[i], (uint64_t)i+1, bytecode[i+1],
-                (uint64_t)i+2, bytecode[i+2], (uint64_t)i+3, bytecode[i+3]));
-  }
-  DebugPrintf((" \b"));
-  for (; i < bytecode.size(); i++) {
-    DebugPrintf(("\b\b\b\b\b\b\bMem %03lu: %4d ", (uint64_t)i, bytecode[i]));
-  }
-  DebugPrintf(("\b\b\b\b\b\b\b       \n"));
-
-//  DebugPrintf(("-- Dumping Partially Disassembled code --\n"));
-//  Disassembler().disassembleAndPrint(bytecode);
-#endif
 
   BinWriter writer(outputName.c_str());
   writer.saveBinFileContent(bytecode);
@@ -417,11 +369,10 @@ asm_program::emitDebugSymbols(const string & outputName) const
           << globalSymbols.emitDebugSymbols()
           << "END" << endl << endl;
 
-  for (size_t funcIndex = 0; funcIndex < functions.size(); funcIndex++)
+  for(asm_function * func : functions)
   {
-    asm_function & func = *functions[funcIndex];
-    writer << "FUNCTION \"" << func.name << "\"" << endl
-            << func.localSymbols.emitDebugSymbols()
+    writer << "FUNCTION \"" << func->name << "\"" << endl
+            << func->localSymbols.emitDebugSymbols()
             << "END" << endl << endl;
   }
 }
@@ -434,11 +385,10 @@ asm_program::emitXMLDebugSymbols(const string & outputName) const
           << globalSymbols.emitXMLDebugSymbols()
           << "</global_symbols>" << endl;
 
-  for (size_t funcIndex = 0; funcIndex < functions.size(); funcIndex++)
+  for(asm_function * func : functions)
   {
-    asm_function & func = *functions[funcIndex];
-    writer << "<function name=\"" << func.name << "\">" << endl
-            << func.localSymbols.emitXMLDebugSymbols()
+    writer << "<function name=\"" << func->name << "\">" << endl
+            << func->localSymbols.emitXMLDebugSymbols()
             << "</function>" << endl;
   }
 }

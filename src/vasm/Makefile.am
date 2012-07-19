@@ -6,6 +6,7 @@ bin_PROGRAMS = vasm_low
 
 COMMON_ASM_SRC = \
 		  IncludesTree.cpp \
+		  ErrorReporter.cpp \
 		  ../FileHandler.cpp \
 		  AsmArgs.cpp \
 		  IR/IR_LowLevel_Arguments.cpp \
