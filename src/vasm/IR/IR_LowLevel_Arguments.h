@@ -103,8 +103,8 @@ struct asm_function_param : asm_arg {
   { }
 
   ~asm_function_param() {
-    DEALLOC(this->source);
-    DEALLOC(this->destination);
+    delete this->source;
+    delete this->destination;
   }
 };
 

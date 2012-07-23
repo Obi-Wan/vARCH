@@ -11,10 +11,10 @@
 
 asm_function::~asm_function()
 {
-  DEALLOC_ELEMS_VECTOR(this->parameters, ListOfParams);
-  DEALLOC_ELEMS_VECTOR(this->stackLocals, ListOfDataStmts);
-  DEALLOC_ELEMS_VECTOR(this->uniqueLocals, ListOfDataStmts);
-  DEALLOC_ELEMS_VECTOR(this->stmts, ListOfStmts);
+  for(asm_function_param * obj : this->parameters) { delete obj; }
+  for(asm_data_statement * obj : this->stackLocals) { delete obj; }
+  for(asm_data_statement * obj : this->uniqueLocals) { delete obj; }
+  for(asm_statement * obj : this->stmts) { delete obj; }
 }
 
 /**
@@ -25,16 +25,15 @@ asm_function::~asm_function()
  * @param locs
  */
 void
-asm_function::addLocals(list<asm_data_statement *> * locs)
+asm_function::addLocals(list<asm_data_statement *> && locs)
 {
   bool is_constant = false;
   bool is_shared = false;
 
-  for(list<asm_data_statement *>::iterator stmtIt = locs->begin();
-      stmtIt != locs->end(); stmtIt++)
+  for(asm_data_statement * stmt : locs)
   {
-    asm_data_statement * stmt = *stmtIt;
-    if (stmt->getType() == ASM_LABEL_STATEMENT) {
+    if (stmt->getType() == ASM_LABEL_STATEMENT)
+    {
       is_constant = stmt->is_constant;
       is_shared = stmt->is_shared;
     }
@@ -50,9 +49,9 @@ asm_function::addLocals(list<asm_data_statement *> * locs)
 }
 
 void
-asm_function::addStmts(list<asm_statement *> * stmts)
+asm_function::addStmts(list<asm_statement *> && stmts)
 {
-  this->stmts.insert(this->stmts.end(), stmts->begin(), stmts->end());
+  this->stmts.insert(this->stmts.end(), stmts.begin(), stmts.end());
 }
 
 void
@@ -61,20 +60,21 @@ asm_function::finalize()
   DebugPrintf(("- Adding stmts and locals to function: %s -\n", name.c_str()));
   size_t tempLocalOffset = 0;
 
-  for(ListOfStmts::iterator stmt_it = stmts.begin(); stmt_it != stmts.end();
-      stmt_it++)
+  for(asm_statement * stmt : stmts)
   {
-    asm_statement * stmt = *stmt_it;
-
     stmt->offset = tempLocalOffset;
     tempLocalOffset += stmt->getSize();
 
-    if (stmt->isInstruction()) {
+    if (stmt->isInstruction())
+    {
       asm_instruction_statement * istmt = (asm_instruction_statement *) stmt;
-      for (size_t argNum = 0; argNum < istmt->args.size(); argNum++) {
-        if (istmt->args[argNum]->getType() == ASM_LABEL_ARG) {
+
+      for (asm_arg * arg : istmt->args)
+      {
+        if (arg->getType() == ASM_LABEL_ARG)
+        {
           ArgLabelRecord * tempRecord = new ArgLabelRecord();
-          tempRecord->arg = (asm_label_arg *)istmt->args[argNum];
+          tempRecord->arg = (asm_label_arg *) arg;
           tempRecord->parent = istmt;
           refs.push_back(tempRecord);
         }
@@ -84,9 +84,8 @@ asm_function::finalize()
     }
   }
 
-  for(size_t index = 0; index < uniqueLocals.size(); index++) {
-    asm_data_statement * stmt = uniqueLocals[index];
-
+  for(asm_data_statement * stmt : uniqueLocals)
+  {
     stmt->offset = tempLocalOffset;
     tempLocalOffset += stmt->getSize();
     checkAndAddLabel(stmt);
@@ -95,9 +94,9 @@ asm_function::finalize()
   // Distance from stack pointer
   size_t offsetFromStackPtr = 0;
   const size_t allocatedSize = getStackedDataSize();
-  for(size_t index = 0; index < stackLocals.size(); index++) {
-    asm_data_statement * stmt = stackLocals[index];
 
+  for(asm_data_statement * stmt : stackLocals)
+  {
     stmt->offset = allocatedSize - offsetFromStackPtr;
     offsetFromStackPtr += stmt->getSize();
     checkAndAddLabel(stmt);
@@ -110,17 +109,13 @@ void
 asm_function::rebuildOffsets()
 {
   size_t tempLocalOffset = 0;
-  for(ListOfStmts::iterator stmt_it = stmts.begin(); stmt_it != stmts.end();
-      stmt_it++)
+  for(asm_statement * stmt : stmts)
   {
-    asm_statement * stmt = *stmt_it;
-
     stmt->offset = tempLocalOffset;
     tempLocalOffset += stmt->getSize();
   }
-  for(size_t i = 0; i < uniqueLocals.size(); i++) {
-    asm_data_statement * stmt = uniqueLocals[i];
-
+  for(asm_data_statement * stmt : uniqueLocals)
+  {
     stmt->offset = tempLocalOffset;
     tempLocalOffset += stmt->getSize();
   }
@@ -128,9 +123,9 @@ asm_function::rebuildOffsets()
   // Distance from stack pointer
   size_t offsetFromStackPtr = 0;
   const size_t allocatedSize = getStackedDataSize();
-  for(size_t i = 0; i < stackLocals.size(); i++) {
-    asm_data_statement * stmt = stackLocals[i];
 
+  for(asm_data_statement * stmt : stackLocals)
+  {
     stmt->offset = allocatedSize - offsetFromStackPtr;
     offsetFromStackPtr += stmt->getSize();
   }

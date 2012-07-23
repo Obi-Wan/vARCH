@@ -105,32 +105,30 @@ void
 printAssembler(const asm_program * const program) {
 #ifdef DEBUG
   DebugPrintf(("-- Dumping Schematic Parsed Code --\n"));
-  for(size_t funcNum = 0; funcNum < program->functions.size(); funcNum++) {
-    const asm_function & func = *program->functions[funcNum];
-    DebugPrintf(("Line: %03d Function: %s\n", func.position.first_line,
-                  func.name.c_str()));
-    for(ListOfStmts::const_iterator stmt_it = func.stmts.begin();
-        stmt_it != func.stmts.end(); stmt_it++)
+  for(const asm_function * func : program->functions)
+  {
+    DebugPrintf(("Line: %03d Function: %s\n", func->position.first_line,
+                  func->name.c_str()));
+    for(const asm_statement * stmt : func->stmts)
     {
-      const asm_statement * stmt = *stmt_it;
       DebugPrintf((" Line: %03d %s\n", stmt->position.first_line,
                     stmt->toString().c_str()));
     }
-    for(size_t localNum = 0; localNum < func.uniqueLocals.size(); localNum++) {
+    for(asm_data_statement * stmt : func->uniqueLocals)
+    {
       DebugPrintf((" Line: %03d Local: %s\n",
-                    func.uniqueLocals[localNum]->position.first_line,
-                    func.uniqueLocals[localNum]->toString().c_str()));
+          stmt->position.first_line, stmt->toString().c_str()));
     }
-    for(size_t localNum = 0; localNum < func.stackLocals.size(); localNum++) {
+    for(asm_data_statement * stmt : func->stackLocals)
+    {
       DebugPrintf((" Line: %03d Local: %s\n",
-                    func.stackLocals[localNum]->position.first_line,
-                    func.stackLocals[localNum]->toString().c_str()));
+          stmt->position.first_line, stmt->toString().c_str()));
     }
   }
-  for(size_t num = 0; num < program->globals.size(); num++) {
+  for(asm_data_statement * stmt : program->globals)
+  {
     DebugPrintf(("Line: %03d Global: %s\n",
-                  program->globals[num]->position.first_line,
-                  program->globals[num]->toString().c_str()));
+        stmt->position.first_line, stmt->toString().c_str()));
   }
   DebugPrintf(("-- Terminated Dumping Parsed Code --\n\n"));
 #endif

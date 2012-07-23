@@ -48,8 +48,8 @@ struct asm_function {
   void checkAndAddLabel(asm_statement * stmt);
 
   void addStmt(asm_statement * stmt) { if (stmt) stmts.push_back(stmt); }
-  void addStmts(list<asm_statement *> * stmts);
-  void addLocals(list<asm_data_statement *> * locs);
+  void addStmts(list<asm_statement *> && stmts);
+  void addLocals(list<asm_data_statement *> && locs);
   void addParameter(asm_function_param * p) { if (p) parameters.push_back(p); }
 
   size_t getInstrSize() const;

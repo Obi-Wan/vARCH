@@ -14,10 +14,10 @@
 
 #include <sstream>
 
-list<asm_data_statement *> *
+list<asm_data_statement *>
 ASTL_Tree::convertVariables(const vector<ASTL_Stmt *> & variables) const
 {
-  list<asm_data_statement *> * destVars = new list<asm_data_statement *>();
+  list<asm_data_statement *> destVars;
 
   for(ASTL_Stmt * tempStmt : variables)
   {
@@ -27,30 +27,28 @@ ASTL_Tree::convertVariables(const vector<ASTL_Stmt *> & variables) const
         asm_label_statement * tempLabel = new asm_label_statement(stmt->pos, stmt->label);
         tempLabel->is_shared = stmt->shared;
         tempLabel->is_constant = stmt->constant;
-        destVars->push_back(tempLabel);
+        destVars.push_back(tempLabel);
         break;
       }
       case ASTL_STMT_DECL_NUM: {
         ASTL_VarDeclNumber * stmt = (ASTL_VarDeclNumber *) tempStmt;
         int64_t val = atol(stmt->number->number.c_str());
         asm_data_statement * tempDataStmt = new asm_int_keyword_statement(stmt->pos, val, stmt->scale);
-        destVars->push_back(tempDataStmt);
+        destVars.push_back(tempDataStmt);
         break;
       }
       case ASTL_STMT_DECL_STRING: {
         ASTL_VarDeclString * stmt = (ASTL_VarDeclString *) tempStmt;
         asm_data_statement * tempDataStmt = new asm_string_keyword_statement(stmt->pos, stmt->text);
-        destVars->push_back(tempDataStmt);
+        destVars.push_back(tempDataStmt);
         break;
       }
       case ASTL_STMT_DECL_FLOAT: {
-        delete destVars;
         throw WrongInstructionException("Floats not supported yet");
 //        ASTL_VarDeclFloat * stmt = (ASTL_VarDeclFloat *) tempStmt;
 //        float val = atof(stmt->number->number);
       }
       default: {
-        delete destVars;
         throw WrongInstructionException("Unknown data instruction: " + tempStmt->toString());
       }
     }
@@ -58,10 +56,10 @@ ASTL_Tree::convertVariables(const vector<ASTL_Stmt *> & variables) const
   return destVars;
 }
 
-list<asm_statement *> *
+list<asm_statement *>
 ASTL_Tree::convertStatements(const vector<ASTL_Stmt *> & inStmts) const
 {
-  list<asm_statement *> * destStmts = new list<asm_statement *>();
+  list<asm_statement *> destStmts;
 
   for(ASTL_Stmt * tempStmt : inStmts)
   {
@@ -106,13 +104,12 @@ ASTL_Tree::convertStatements(const vector<ASTL_Stmt *> & inStmts) const
             }
             default: {
               delete asmStmt;
-              delete destStmts;
               throw WrongArgumentException("Unknown argument type!");
             }
           }
           asmStmt->addArg(finalArg);
         }
-        destStmts->push_back(asmStmt);
+        destStmts.push_back(asmStmt);
         break;
       }
       case ASTL_STMT_LABEL: {
@@ -122,11 +119,10 @@ ASTL_Tree::convertStatements(const vector<ASTL_Stmt *> & inStmts) const
          * Program Counter */
         asmStmt->is_constant = stmt->constant || true;
         asmStmt->is_shared = stmt->shared;
-        destStmts->push_back(asmStmt);
+        destStmts.push_back(asmStmt);
         break;
       }
       default: {
-        delete destStmts;
         throw WrongArgumentException("Unsupported type of stmt");
       }
     }
@@ -155,15 +151,13 @@ ASTL_Tree::emitAsm(asm_program & program)
     }
     // Convert locals
     {
-      list<asm_data_statement *> * tempLocals = this->convertVariables(func->locals);
-      destFunc->addLocals(tempLocals);
-      delete tempLocals;
+      list<asm_data_statement *> && tempLocals = this->convertVariables(func->locals);
+      destFunc->addLocals(move(tempLocals));
     }
     // Convert statements
     {
-      list<asm_statement *> * tempStmts = this->convertStatements(func->stmts);
-      destFunc->addStmts(tempStmts);
-      delete tempStmts;
+      list<asm_statement *> && tempStmts = this->convertStatements(func->stmts);
+      destFunc->addStmts(move(tempStmts));
     }
     destFunc->finalize();
 
@@ -172,9 +166,8 @@ ASTL_Tree::emitAsm(asm_program & program)
 
   // Convert Globals
   {
-    list<asm_data_statement *> * tempGlobals = this->convertVariables(globals);
-    program.addGlobals(tempGlobals);
-    delete tempGlobals;
+    list<asm_data_statement *> && tempGlobals = this->convertVariables(globals);
+    program.addGlobals(move(tempGlobals));
   }
 }
 

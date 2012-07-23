@@ -41,8 +41,8 @@ public:
   void addGlobal(asm_data_statement * _global) {
     globals.insert(globals.end(), _global);
   }
-  void addGlobals(list<asm_data_statement *> * _globals) {
-    globals.insert(globals.end(), _globals->begin(), _globals->end());
+  void addGlobals(list<asm_data_statement *> && _globals) {
+    globals.insert(globals.end(), _globals.begin(), _globals.end());
   }
 
   void rebuildOffsets();

@@ -12,9 +12,9 @@
 #include "../../asm-program.h"
 
 class ASTL_Tree {
-  list<asm_data_statement *> * convertVariables(const vector<ASTL_Stmt *> &)
+  list<asm_data_statement *> convertVariables(const vector<ASTL_Stmt *> &)
       const;
-  list<asm_statement *> * convertStatements(const vector<ASTL_Stmt *> &) const;
+  list<asm_statement *> convertStatements(const vector<ASTL_Stmt *> &) const;
 
 public:
   EnvSymbols globalSymbols;
