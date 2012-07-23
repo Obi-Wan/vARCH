@@ -415,7 +415,7 @@ AssemFlowGraph::checkTempsUsedUndefined(const asm_function & func,
   CHECK_THROW( (getListOfNodes().begin() != getListOfNodes().end()),
       WrongArgumentException("Not possible to check for temporaries used, while"
                         " undefined, because an empty function was passed.") );
-  const NodeType * const node = &*getListOfNodes().begin();
+  const NodeType * const node = &*(this->getListOfNodes().begin());
 
   const LiveMap<asm_statement*>::um_c_iterator liveIns = lm.liveIn.find(node);
   CHECK_THROW( liveIns != lm.liveIn.end(),

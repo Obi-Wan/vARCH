@@ -28,7 +28,7 @@ private:
   LabelToUID labelToUID;
   UIDToLabel uidToLabel;
 public:
-  void putTemp(const string & label, const uint32_t & uid,
+  void putTemp(const string && label, const uint32_t & uid,
       const bool & ignoreDups = false);
   void putTemp(const uint32_t & uid, const bool & ignoreDups = false);
 

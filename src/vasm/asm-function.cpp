@@ -140,10 +140,8 @@ bool
 asm_function::ensureTempsUsage(const bool & used) const
 {
   bool error = false;
-  for(ListOfStmts::const_iterator stmt_it = stmts.begin();
-      stmt_it != stmts.end(); stmt_it++)
+  for(const asm_statement * stmt : stmts)
   {
-    const asm_statement * stmt = *stmt_it;
     if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
       try {
         ((const asm_instruction_statement *)stmt)->ensureTempsUsage(used);
@@ -160,8 +158,9 @@ inline void
 asm_function::checkAndAddLabel(asm_statement * stmt)
 {
   if (stmt->getType() == ASM_LABEL_STATEMENT) {
+    asm_label_statement * l_stmt = (asm_label_statement *) stmt;
     DebugPrintf(("Found local label: %s in function %s!\n",
-           ((asm_label_statement *)stmt)->label.c_str(), name.c_str()));
-    localSymbols.addLabel((asm_label_statement *)stmt);
+                 l_stmt->label.c_str(), this->name.c_str()));
+    localSymbols.addLabel(l_stmt);
   }
 }

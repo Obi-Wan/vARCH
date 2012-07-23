@@ -110,11 +110,7 @@ void
 asm_function_call::importParameters(const ListOfParams & params)
 {
   parameters.clear();
-  for(ListOfParams::const_iterator par = params.begin(); par != params.end(); par++)
-  {
-    parameters.push_back(*par);
-  }
-//  copy(params.begin(), params.end(), parameters.begin());
+  for(asm_function_param * par : params) { parameters.push_back(par); }
 }
 
 void

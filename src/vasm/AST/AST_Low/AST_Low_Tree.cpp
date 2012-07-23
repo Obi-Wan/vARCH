@@ -18,8 +18,9 @@ list<asm_data_statement *> *
 ASTL_Tree::convertVariables(const vector<ASTL_Stmt *> & variables) const
 {
   list<asm_data_statement *> * destVars = new list<asm_data_statement *>();
-  for(size_t varNum = 0; varNum < variables.size(); varNum++) {
-    ASTL_Stmt * tempStmt = variables[varNum];
+
+  for(ASTL_Stmt * tempStmt : variables)
+  {
     switch (tempStmt->getClass()) {
       case ASTL_STMT_LABEL: {
         ASTL_StmtLabel * stmt = (ASTL_StmtLabel *) tempStmt;
@@ -61,17 +62,16 @@ list<asm_statement *> *
 ASTL_Tree::convertStatements(const vector<ASTL_Stmt *> & inStmts) const
 {
   list<asm_statement *> * destStmts = new list<asm_statement *>();
-  for(size_t stmtNum = 0; stmtNum < inStmts.size(); stmtNum++)
+
+  for(ASTL_Stmt * tempStmt : inStmts)
   {
-    ASTL_Stmt * tempStmt = inStmts[stmtNum];
     switch (tempStmt->getClass()) {
       case ASTL_STMT_EXP: {
         ASTL_StmtExp * stmt = (ASTL_StmtExp *) tempStmt;
         asm_instruction_statement * asmStmt = InstructionsHandler::getStmt(stmt->pos, stmt->instruction);
 
-        for(size_t argNum = 0; argNum < stmt->args.size(); argNum++)
+        for(ASTL_Arg * t_arg : stmt->args)
         {
-          ASTL_Arg * t_arg = stmt->args[argNum];
           asm_arg * finalArg = NULL;
           switch (t_arg->getClass()) {
             case ASTL_ARG_LABEL: {
@@ -137,15 +137,13 @@ ASTL_Tree::convertStatements(const vector<ASTL_Stmt *> & inStmts) const
 void
 ASTL_Tree::emitAsm(asm_program & program)
 {
-  for(size_t funcNum = 0; funcNum < functionDefs.size(); funcNum++) {
-    ASTL_FunctionDef & func = *functionDefs[funcNum];
-    asm_function * destFunc = new asm_function(func.pos, func.name);
+  for(ASTL_FunctionDef * func : functionDefs)
+  {
+    asm_function * destFunc = new asm_function(func->pos, func->name);
 
     // Convert parameters and return
-    for(size_t paramNum = 0; paramNum < func.params.size(); paramNum++)
+    for(ASTL_Param * astParam : func->params)
     {
-      ASTL_Param * astParam = func.params[paramNum];
-
       asm_immediate_arg * srcArg =
           ArgumentsHandler::getReg( astParam->pos, astParam->srcReg.c_str(),
                                     BYTE4, REG, REG_NO_ACTION);
@@ -157,13 +155,13 @@ ASTL_Tree::emitAsm(asm_program & program)
     }
     // Convert locals
     {
-      list<asm_data_statement *> * tempLocals = this->convertVariables(func.locals);
+      list<asm_data_statement *> * tempLocals = this->convertVariables(func->locals);
       destFunc->addLocals(tempLocals);
       delete tempLocals;
     }
     // Convert statements
     {
-      list<asm_statement *> * tempStmts = this->convertStatements(func.stmts);
+      list<asm_statement *> * tempStmts = this->convertStatements(func->stmts);
       destFunc->addStmts(tempStmts);
       delete tempStmts;
     }
@@ -185,14 +183,14 @@ ASTL_Tree::printTree()
 {
 #ifdef DEBUG
   DebugPrintf(("-- Dumping AST_Low --\n"));
-  for(size_t funcNum = 0; funcNum < functionDefs.size(); funcNum++) {
-    ASTL_FunctionDef & func = *functionDefs[funcNum];
-    func.printFunction();
+  for(ASTL_FunctionDef * func : functionDefs)
+  {
+    func->printFunction();
   }
-  for(size_t num = 0; num < globals.size(); num++) {
+  for(ASTL_Stmt * glob : globals)
+  {
     DebugPrintf(("Line: %03d Global: %s\n",
-                  globals[num]->pos.first_line,
-                  globals[num]->toString().c_str()));
+                  glob->pos.first_line, glob->toString().c_str()));
   }
   DebugPrintf(("-- Terminated Dumping AST_Low Code --\n\n"));
 #endif
@@ -200,12 +198,7 @@ ASTL_Tree::printTree()
 
 ASTL_Tree::~ASTL_Tree()
 {
-  for(size_t funcNum = 0; funcNum < functionDefs.size(); funcNum++) {
-    ASTL_FunctionDef * func = functionDefs[funcNum];
-    delete func;
-  }
-  for(size_t num = 0; num < globals.size(); num++) {
-    delete globals[num];
-  }
+  for(ASTL_FunctionDef * func : functionDefs) { delete func; }
+  for(ASTL_Stmt * glob : globals) { delete glob; }
 }
 

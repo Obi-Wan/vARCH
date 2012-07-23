@@ -23,7 +23,7 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-TempsMap::putTemp(const string & label, const uint32_t & uid,
+TempsMap::putTemp(const string && label, const uint32_t & uid,
     const bool & ignoreDups)
 {
   if (!ignoreDups) {
@@ -82,7 +82,7 @@ TempsMap::putTemp(const uint32_t & uid, const bool & ignoreDups)
       break;
     }
   }
-  putTemp(stream.str(), uid, ignoreDups);
+  putTemp(move(stream.str()), uid, ignoreDups);
 }
 
 void
@@ -123,7 +123,7 @@ TempsMap::getUID(const string & label) const
 uint32_t
 AliasMap::getFinal(const uint32_t & alias) const
 {
-  const_iterator finalIt = find(alias);
+  const_iterator finalIt = this->find(alias);
   if (finalIt != end()) {
     return finalIt->second;
   } else {
@@ -135,7 +135,7 @@ void
 AliasMap::print() const
 {
   cout << "Printing Aliases Map:" << endl;
-  for(const_iterator it = begin(); it != end(); it++)
+  for(const_iterator it = this->begin(); it != this->end(); it++)
   {
     cout << "  - " << it->second << " <- " << it->first << endl;
   }
@@ -148,10 +148,10 @@ ReverseAliasMap::add(const uint32_t & alias, const uint32_t & final,
 {
   typedef set<uint32_t>::const_iterator sa_c_iterator;
 
-  iterator finalIt = find(final);
+  iterator finalIt = this->find(final);
 
   /* If destination is not in ReverseMap yet, let's create an entry */
-  if (finalIt == end()) {
+  if (finalIt == this->end()) {
     finalIt = insert(value_type(final, set<uint32_t>())).first;
   }
   /* Let's add the reverse relation */
@@ -164,8 +164,9 @@ ReverseAliasMap::add(const uint32_t & alias, const uint32_t & final,
     const set<uint32_t> & aliases = aliasIt->second;
 
     /* Copy the aliases to the new final (In the Alias Map) */
-    for(sa_c_iterator al = aliases.begin(); al != aliases.end(); al++) {
-      aliasMap[*al] = final;
+    for(const uint32_t & al : aliases)
+    {
+      aliasMap[al] = final;
     }
 
     /* Copy the aliases to the new final (In the Reverse Alias Map) */
@@ -182,14 +183,13 @@ void
 ReverseAliasMap::print() const
 {
   cout << "--> Printing Reverse Aliases Map: <--" << endl;
-  for(const_iterator it = begin(); it != end(); it++)
+  for(const_iterator it = this->begin(); it != this->end(); it++)
   {
     cout << "  - " << it->first << " -> \"";
-    const set<uint32_t> & aliases = it->second;
-    for(set<uint32_t>::const_iterator itAlias = aliases.begin();
-        itAlias != aliases.end(); itAlias++)
+
+    for(const uint32_t & alias : it->second)
     {
-      cout << " " << *itAlias;
+      cout << " " << alias;
     }
     cout << " \"" << endl;
   }
