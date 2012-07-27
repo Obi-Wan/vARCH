@@ -9,8 +9,8 @@
 
 ASTL_FunctionDef::~ASTL_FunctionDef()
 {
-  for(size_t num = 0; num < stmts.size(); num++) { delete stmts[num]; }
-  for(size_t num = 0; num < locals.size(); num++) { delete locals[num]; }
+  for(ASTL_Stmt * stmt : stmts) { delete stmt; }
+  for(ASTL_Stmt * local : locals) { delete local; }
 }
 
 void
@@ -26,17 +26,15 @@ ASTL_FunctionDef::printFunction()
 {
   DebugPrintf(("Line: %03d Function: %s\n", this->pos.first_line,
                 this->name.c_str()));
-  for(vector<ASTL_Stmt *>::const_iterator stmt_it = this->stmts.begin();
-      stmt_it != this->stmts.end(); stmt_it++)
+  for(const ASTL_Stmt * const stmt : stmts)
   {
-    const ASTL_Stmt * stmt = *stmt_it;
     DebugPrintf((" Line: %03d %s\n", stmt->pos.first_line,
                   stmt->toString().c_str()));
   }
-  for(size_t localNum = 0; localNum < this->locals.size(); localNum++) {
-    DebugPrintf((" Line: %03d Local: %s\n",
-                  this->locals[localNum]->pos.first_line,
-                  this->locals[localNum]->toString().c_str()));
+  for(const ASTL_Stmt * const local : locals)
+  {
+    DebugPrintf((" Line: %03d Local: %s\n", local->pos.first_line,
+                  local->toString().c_str()));
   }
 }
 

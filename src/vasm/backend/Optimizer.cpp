@@ -30,7 +30,7 @@ Optimizer::removeUselessMoves(asm_function & func)
         {
           asm_immediate_arg * arg0 = (asm_immediate_arg *) args[0];
           asm_immediate_arg * arg1 = (asm_immediate_arg *) args[1];
-          DebugPrintf(("Move between immediate args (%d, %d)!\n",
+          DebugPrintf(("Move between immediate args (%ld, %ld)!\n",
               arg0->content.val, arg1->content.val));
 
           if (arg0->content.val == arg1->content.val

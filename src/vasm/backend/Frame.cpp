@@ -138,10 +138,9 @@ Frame::mindCalleeSaveRegs(ListOfStmts & stmts)
 
       stmts.push_front(stmt);
     }
-    for(vector<ListOfStmts::iterator>::iterator retIt = returns.begin();
-        retIt != returns.end(); retIt++)
+    for(const ListOfStmts::iterator & retIt : returns)
     {
-      asm_return_statement * ret = (asm_return_statement *) **retIt;
+      asm_return_statement * ret = (asm_return_statement *) *retIt;
       // Build the move R[5-8] <- temp[5-8]
       asm_instruction_statement * stmt =
           new asm_instruction_statement(ret->position, MOV);
@@ -159,7 +158,7 @@ Frame::mindCalleeSaveRegs(ListOfStmts & stmts)
 
       stmt->addArg(regArg);
 
-      stmts.insert(*retIt, stmt);
+      stmts.insert(retIt, stmt);
     }
   }
 }
@@ -167,10 +166,9 @@ Frame::mindCalleeSaveRegs(ListOfStmts & stmts)
 inline void
 Frame::mindReturnStmts(ListOfStmts & stmts)
 {
-  for(vector<ListOfStmts::iterator>::iterator retIt = returns.begin();
-      retIt != returns.end(); retIt++)
+  for(const ListOfStmts::iterator & retIt : returns)
   {
-    asm_return_statement * ret = (asm_return_statement *) **retIt;
+    asm_return_statement * ret = (asm_return_statement *) *retIt;
     if (ret->args.size() == 1)
     {
       asm_arg * arg = ret->args[0];
@@ -178,7 +176,7 @@ Frame::mindReturnStmts(ListOfStmts & stmts)
       {
         asm_immediate_arg * i_arg = (asm_immediate_arg *) arg;
 
-        // Build the move R1 <- tempRet
+        // Build the move R0 <- tempRet
         asm_instruction_statement * stmt =
             new asm_instruction_statement(ret->position, MOV);
 
@@ -199,7 +197,7 @@ Frame::mindReturnStmts(ListOfStmts & stmts)
 
         stmt->addArg(regArg);
 
-        stmts.insert(*retIt, stmt);
+        stmts.insert(retIt, stmt);
       } else {
         throw WrongArgumentException(
             "Returned element should be a temporary or a register");
@@ -211,10 +209,9 @@ Frame::mindReturnStmts(ListOfStmts & stmts)
 void
 Frame::mindParamsFCalls(ListOfStmts & stmts)
 {
-  for(vector<ListOfStmts::iterator>::iterator callIt = f_calls.begin();
-      callIt != f_calls.end(); callIt++)
+  for(ListOfStmts::iterator & callIt : f_calls)
   {
-    asm_function_call * call = (asm_function_call *) **callIt;
+    asm_function_call * call = (asm_function_call *) *callIt;
     for(size_t numPar = 1; numPar < call->args.size(); numPar++)
     {
       asm_arg * arg = call->args[numPar];
@@ -237,7 +234,7 @@ Frame::mindParamsFCalls(ListOfStmts & stmts)
         stmt->addArg(tempArg);
         stmt->addArg(call->parameters[numPar-1]->source);
 
-        stmts.insert(*callIt, stmt);
+        stmts.insert(callIt, stmt);
       } else {
         throw WrongArgumentException(
             "Passed argument should be a temporary or a register");
@@ -279,11 +276,6 @@ Frame::makeInitArg(const asm_data_keyword_statement * data,
       tempArg->content.val = i_data->integer;
       break;
     }
-    case ASM_LONG_KEYWORD_STATEMENT: {
-      asm_long_keyword_statement * i_data = (asm_long_keyword_statement *) data;
-      tempArg->content.lval = i_data->longInteger;
-      break;
-    }
     case ASM_REAL_KEYWORD_STATEMENT: {
       asm_real_keyword_statement * i_data = (asm_real_keyword_statement *) data;
       tempArg->content.fval = i_data->real;
@@ -306,18 +298,13 @@ Frame::makeInitArg(const asm_data_keyword_statement * data,
 void
 Frame::allocateLocalVariables(asm_function & function)
 {
-  ListOfStmts & stmts = function.stmts;
-  const ListOfDataStmts & localVars = function.stackLocals;
-
   /// PUSH  $init_var_n
-  for(ListOfDataStmts::const_iterator initIt = localVars.begin();
-      initIt != localVars.end(); initIt++)
+  for(const asm_data_statement * const data : function.stackLocals)
   {
-    const asm_data_statement * data = *initIt;
     if (data->getType() == ASM_STRING_KEYWORD_STATEMENT)
     {
       allocateLocalString( (const asm_string_keyword_statement *) data,
-                            function.position, stmts);
+                            function.position, function.stmts);
     }
     else if (data->getType() != ASM_LABEL_STATEMENT)
     {
@@ -328,7 +315,7 @@ Frame::allocateLocalVariables(asm_function & function)
                         new asm_instruction_statement(function.position, PUSH);
 
       stmt->addArg(tempArg);
-      stmts.push_front(stmt);
+      function.stmts.push_front(stmt);
     }
   }
 }
@@ -365,8 +352,6 @@ Frame::allocateLocalString(const asm_string_keyword_statement * data,
 void
 Frame::deallocateLocalVariables(asm_function & function)
 {
-  ListOfStmts & stmts = function.stmts;
-
   /// ADD  $tot_vars_size  %SP
   {
     asm_immediate_arg * tempArg = new asm_immediate_arg(function.position);
@@ -385,10 +370,10 @@ Frame::deallocateLocalVariables(asm_function & function)
     stmt->addArg(regArg);
 
     /// For all the returns, "unwinds" the stack
-    for(vector<ListOfStmts::iterator>::iterator retIt = returns.begin();
-        retIt != returns.end(); retIt++)
+    for(const ListOfStmts::iterator & retIt : this->returns)
     {
-      stmts.insert(*retIt, stmt);
+      function.stmts.insert(retIt, stmt->getCopy());
     }
+    delete stmt;
   }
 }

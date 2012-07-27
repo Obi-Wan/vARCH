@@ -56,18 +56,18 @@ extern int yylex \
   enum ScaleOfArgument type;
   enum ASTL_TypeQualifiers qualifier;
 
-  class ASTL_Arg *arg;
-  class ASTL_ArgRegister *arg_reg;
-  class ASTL_Stmt *stmt;
-  class ASTL_StmtLabel *stmtLab;
-  class ASTL_StmtExp *stmtExp;
-  class ASTL_StmtAssign *stmtAssign;
+  class ASTL_Arg * arg;
+  class ASTL_ArgRegister * arg_reg;
+  class ASTL_Stmt * stmt;
+  class ASTL_StmtLabel * stmtLab;
+  class ASTL_StmtExp * stmtExp;
+  class ASTL_StmtAssign * stmtAssign;
 
   class ASTL_FunctionDef * function;
   class ASTL_Param * function_parameter;
 
-  list<ASTL_Stmt *>  * listOfStatements;
-  list<ASTL_Param *>  * listOfParameters;
+  list<ASTL_Stmt *> * listOfStatements;
+  list<ASTL_Param *> * listOfParameters;
 }
 
 %token KEYWORD_I8 KEYWORD_I16 KEYWORD_I32 KEYWORD_I64
@@ -187,12 +187,13 @@ function_init_params
 
 function_init
       : KEYWORD_FUNCTION STRING blank_lines
-                  { $$ = new ASTL_FunctionDef( yylloc, string($2.text, $2.len) ); }
+                  { $$ = new ASTL_FunctionDef( yylloc, move(string($2.text, $2.len)) ); }
       ;
 
 function_parameter
       : KEYWORD_PARAM REGISTER REGISTER blank_lines
-                  { $$ = new ASTL_Param( yylloc, string($2.text, $2.len), string($3.text, $3.len) ); }
+                  { $$ = new ASTL_Param( yylloc, move(string($2.text, $2.len)),
+                                         move(string($3.text, $3.len)) ); }
       ;
 
 
@@ -208,11 +209,12 @@ data_stmt
       : label_def blank_lines
                   { $$ = $1; }
       | type NUMBER blank_lines
-                  { $$ = new ASTL_VarDeclNumber(yylloc, $1, new ASTL_ArgNumber( yylloc, string($2.text, $2.len) ) ); }
+                  { $$ = new ASTL_VarDeclNumber(yylloc, $1,
+                                                 new ASTL_ArgNumber( yylloc, move(string($2.text, $2.len)) ) ); }
       | KEYWORD_STRING STRING blank_lines
-                  { $$ = new ASTL_VarDeclString(yylloc, string($2.text, $2.len) ); }
+                  { $$ = new ASTL_VarDeclString(yylloc, move(string($2.text, $2.len)) ); }
       | KEYWORD_REAL NUMBER blank_lines
-                  { $$ = new ASTL_VarDeclFloat(yylloc, new ASTL_ArgNumber( yylloc, string($2.text, $2.len) ) ); }
+                  { $$ = new ASTL_VarDeclFloat(yylloc, new ASTL_ArgNumber( yylloc, move(string($2.text, $2.len)) ) ); }
       ;
 
 stmt
@@ -223,7 +225,7 @@ stmt
 label_def
       : type_qualifier label_def
                   { $$ = $2; $$->addQualifier($1); }
-      | DEF_LABEL { $$ = new ASTL_StmtLabel( yylloc, string($1.text, $1.len)); }
+      | DEF_LABEL { $$ = new ASTL_StmtLabel( yylloc, move(string($1.text, $1.len)) ); }
       ;
 
 instruction_stmt
@@ -239,13 +241,13 @@ type
       ;
 
 arg
-      : NUMBER    { $$ = new ASTL_ArgNumber( yylloc, string($1.text, $1.len) ); }
+      : NUMBER    { $$ = new ASTL_ArgNumber( yylloc, move(string($1.text, $1.len)) ); }
       | '(' NUMBER ')'
-                  { $$ = new ASTL_ArgNumber( yylloc, string($2.text, $2.len), DIRECT ); }
+                  { $$ = new ASTL_ArgNumber( yylloc, move(string($2.text, $2.len)), DIRECT ); }
       | REF_AT_LABEL
-                  { $$ = new ASTL_ArgLabel( yylloc, string($1.text, $1.len), IMMED ); }
+                  { $$ = new ASTL_ArgLabel( yylloc, move(string($1.text, $1.len)), IMMED ); }
       | REF_TO_LABEL
-                  { $$ = new ASTL_ArgLabel( yylloc, string($1.text, $1.len), DIRECT ); }
+                  { $$ = new ASTL_ArgLabel( yylloc, move(string($1.text, $1.len)), DIRECT ); }
       | register_mod
                   { $$ = $1; }
       | arg ':' type
@@ -268,18 +270,18 @@ register_addressing
                   { $$ = $3; $$->kind = MEM_INDIR; }
       | NUMBER '(' register ')'
                   { $$ = $3; $$->kind = DISPLACED;
-                    $$->displ = new ASTL_ArgNumber( yylloc, string($1.text, $1.len) ); }
+                    $$->displ = new ASTL_ArgNumber( yylloc, move(string($1.text, $1.len)) ); }
       | '(' register ')' '[' register ']'
                   { $$ = $2; $$->kind = INDEXED;
                     $$->index = $5; $5->kind = REG_INDIR; }
       | NUMBER '(' register ')' '[' register ']'
                   { $$ = $3; $$->kind = INDX_DISP;
                     $$->index = $6; $6->kind = REG_INDIR;
-                    $$->displ = new ASTL_ArgNumber( yylloc, string($1.text, $1.len) ); }
+                    $$->displ = new ASTL_ArgNumber( yylloc, move(string($1.text, $1.len)) ); }
       ;
 
 register
-      : REGISTER  { $$ = new ASTL_ArgRegister( yylloc, string($1.text, $1.len) ); }
+      : REGISTER  { $$ = new ASTL_ArgRegister( yylloc, move(string($1.text, $1.len)) ); }
       | SPECIAL_REGISTER
                   { $$ = new ASTL_ArgSpecialRegister( yylloc, $1 ); }
       ;

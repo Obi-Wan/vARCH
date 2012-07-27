@@ -28,7 +28,7 @@ public:
     functions.insert(functions.begin(), _funcs->begin(), _funcs->end());
     globals.insert(globals.begin(), _globals->begin(), _globals->end());
   }
-  asm_program() { }
+  asm_program() = default;
   ~asm_program();
 
   void addFunction(asm_function * _func) {

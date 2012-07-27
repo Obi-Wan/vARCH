@@ -20,6 +20,7 @@ struct asm_statement {
   asm_statement(const YYLTYPE& pos) : offset(0), position(pos) { }
   asm_statement(const YYLTYPE& pos, const int& _offs)
     : offset(_offs), position(pos) { }
+  asm_statement(const asm_statement &) = default;
 
   virtual ~asm_statement() { }
 
@@ -30,6 +31,8 @@ struct asm_statement {
 
   virtual void emitCode(Bloat::iterator & position) { }
   virtual const ObjType getType() const throw() { return ASM_STATEMENT; }
+
+  virtual asm_statement * getCopy() const { return new asm_statement(*this); }
 };
 
 //////////////////
@@ -37,13 +40,28 @@ struct asm_statement {
 //////////////////
 
 struct asm_instruction_statement : asm_statement {
-  int instruction;
+
+  const int32_t instruction;
+
   vector<asm_arg *> args;
 
-  asm_instruction_statement(const YYLTYPE& pos, const int _instr)
-    : asm_statement(pos), instruction(_instr) { }
+  asm_instruction_statement(const YYLTYPE& pos, const int32_t _instr)
+    : asm_statement(pos), instruction(_instr)
+  { }
+  asm_instruction_statement(const asm_instruction_statement & stmt)
+    : asm_statement(stmt.position), instruction(stmt.instruction)
+  {
+    for(asm_arg * const arg : stmt.args)
+    {
+      this->args.push_back(arg->getCopy());
+    }
+  }
 
-  ~asm_instruction_statement() { for(asm_arg * arg : args) { delete arg; } }
+  ~asm_instruction_statement() {
+    for(asm_arg * arg : args) { delete arg; }
+  }
+
+  virtual asm_statement * getCopy() const { return new asm_instruction_statement(*this); }
 
   virtual bool isInstruction() const throw() { return true; }
 
@@ -102,6 +120,14 @@ struct asm_function_call : asm_instruction_statement {
   asm_function_call(const YYLTYPE& pos, const int _instr)
     : asm_instruction_statement(pos, _instr)
   { }
+  asm_function_call(const asm_function_call & stmt)
+    : asm_instruction_statement(stmt)
+  {
+    for(const asm_function_param * const param : stmt.parameters)
+    {
+      this->parameters.push_back((asm_function_param *)param->getCopy());
+    }
+  }
 
   virtual void checkArgs() const;
 
@@ -121,6 +147,8 @@ struct asm_function_call : asm_instruction_statement {
 
   size_t getSize() const throw() { return (4 + this->args[0]->getSize()); }
   const ObjType getType() const throw() { return ASM_FUNCTION_CALL; }
+
+  virtual asm_statement * getCopy() const { return new asm_function_call(*this); }
 };
 
 /**
@@ -132,6 +160,9 @@ struct asm_return_statement : asm_instruction_statement {
 
   asm_return_statement(const YYLTYPE& pos, const int _instr)
     : asm_instruction_statement(pos, _instr)
+  { }
+  asm_return_statement(const asm_return_statement & stmt)
+    : asm_instruction_statement(stmt)
   { }
 
   virtual void checkArgs() const;
@@ -145,6 +176,8 @@ struct asm_return_statement : asm_instruction_statement {
 
   size_t getSize() const throw() { return 4; }
   const ObjType getType() const throw() { return ASM_RETURN_STATEMENT; }
+
+  virtual asm_statement * getCopy() const { return new asm_return_statement(*this); }
 };
 
 ///////////////////////
@@ -156,36 +189,47 @@ struct asm_data_statement : asm_statement {
   bool is_shared;
 
   asm_data_statement(const YYLTYPE& pos)
-    : asm_statement(pos), is_constant(false), is_shared(false) { }
+    : asm_statement(pos), is_constant(false), is_shared(false)
+  { }
+  asm_data_statement(const asm_data_statement &) = default;
 
   const bool & isConst() const throw() { return is_constant; }
   // The idea is to share constants, in order to save moves and allocations
   bool isShared() const throw() { return is_shared || is_constant; }
 
   const ObjType getType() const throw() { return ASM_DATA_STATEMENT; }
+
+  virtual asm_statement * getCopy() const { return new asm_data_statement(*this); }
 };
 
 struct asm_label_statement : asm_data_statement {
-  string label;
+  const string label;
   bool is_global;
 
-  asm_label_statement(const YYLTYPE& pos, const char * _label, const bool & _glob = false)
+  asm_label_statement(const YYLTYPE& pos, const string && _label, const bool & _glob = false)
+    : asm_data_statement(pos), label(move(_label)), is_global(_glob)
+  { }
+  asm_label_statement(const YYLTYPE& pos, const string & _label, const bool & _glob = false)
     : asm_data_statement(pos), label(_label), is_global(_glob)
   { }
-  asm_label_statement(const YYLTYPE& pos, const string& _label, const bool & _glob = false)
-    : asm_data_statement(pos), label(_label), is_global(_glob)
-  { }
+  asm_label_statement(const asm_label_statement &) = default;
 
   const string toString() const { return string("(label: '") + label + "')"; }
   const ObjType getType() const throw() { return ASM_LABEL_STATEMENT; }
 
   const bool & isGlobal() const { return this->is_global; }
+
+  virtual asm_statement * getCopy() const { return new asm_label_statement(*this); }
 };
 
 struct asm_data_keyword_statement : asm_data_statement {
   asm_data_keyword_statement(const YYLTYPE& pos) : asm_data_statement(pos) { }
+  asm_data_keyword_statement(const asm_data_keyword_statement & ) = default;
+
   const string toString() const { return "(data_keyword_statement)"; }
   const ObjType getType() const throw() { return ASM_KEYWORD_STATEMENT; }
+
+  virtual asm_statement * getCopy() const { return new asm_data_keyword_statement(*this); }
 };
 
 struct asm_int_keyword_statement : asm_data_keyword_statement {
@@ -195,52 +239,25 @@ struct asm_int_keyword_statement : asm_data_keyword_statement {
   asm_int_keyword_statement(const YYLTYPE& pos, const int64_t _integer, const ScaleOfArgument & _scale)
     : asm_data_keyword_statement(pos), integer(_integer), scale(_scale)
   { }
+  asm_int_keyword_statement(const asm_int_keyword_statement &) = default;
 
   const string toString() const { return "(integer_keyword_statement)"; }
   size_t getSize() const throw() { return (1 << scale); }
   const ObjType getType() const throw() { return ASM_INT_KEYWORD_STATEMENT; }
 
   void emitCode(Bloat::iterator & codeIt);
+
+  virtual asm_statement * getCopy() const { return new asm_int_keyword_statement(*this); }
 };
 
-struct asm_long_keyword_statement : asm_data_keyword_statement {
-  long int longInteger;
-
-  asm_long_keyword_statement(const YYLTYPE& pos, const long int _long)
-    : asm_data_keyword_statement(pos), longInteger(_long) { }
-
-  const string toString() const { return "(long_integer_keyword_statement)"; }
-  size_t getSize() const throw() { return 8; }
-  const ObjType getType() const throw() { return ASM_LONG_KEYWORD_STATEMENT; }
-
-  void emitCode(Bloat::iterator & position) {
-    const int8_t number[8] = DEAL_BWORDS_FROM_DWORD(longInteger);
-    for(size_t count = 0; count < 8; count++) {
-      *(position++) = number[count];
-    }
-  }
-};
-
-struct asm_char_keyword_statement : asm_data_keyword_statement {
-  char character;
-
-  asm_char_keyword_statement(const YYLTYPE& pos, const char * _char)
-    : asm_data_keyword_statement(pos), character(*(_char)) { }
-
-  const string toString() const { return "(char_keyword_statement)"; }
-  size_t getSize() const throw() { return 1; }
-  const ObjType getType() const throw() { return ASM_CHAR_KEYWORD_STATEMENT; }
-
-  void emitCode(Bloat::iterator & position) {
-    *(position++) = (character & BWORD);
-  }
-};
-
+// TODO: compact string code emission
 struct asm_string_keyword_statement : asm_data_keyword_statement {
-  string str;
+  const string str;
 
-  asm_string_keyword_statement(const YYLTYPE& pos, const string& _str)
-    : asm_data_keyword_statement(pos), str(_str) { }
+  asm_string_keyword_statement(const YYLTYPE& pos, const string & _str)
+    : asm_data_keyword_statement(pos), str(_str)
+  { }
+  asm_string_keyword_statement(const asm_string_keyword_statement &) = default;
 
   const string toString() const {
     return  string("(string_keyword_statement: '") + str + "')";
@@ -253,13 +270,17 @@ struct asm_string_keyword_statement : asm_data_keyword_statement {
       *(position++) = (str[i] & BWORD);
     }
   }
+
+  virtual asm_statement * getCopy() const { return new asm_string_keyword_statement(*this); }
 };
 
 struct asm_real_keyword_statement : asm_data_keyword_statement {
   float real;
 
   asm_real_keyword_statement(const YYLTYPE& pos, const float _real)
-    : asm_data_keyword_statement(pos), real(_real) { }
+    : asm_data_keyword_statement(pos), real(_real)
+  { }
+  asm_real_keyword_statement(const asm_real_keyword_statement &) = default;
 
   const string toString() const { return  "(real_keyword_statement: )"; }
   size_t getSize() const throw() { return 4; }
@@ -271,6 +292,8 @@ struct asm_real_keyword_statement : asm_data_keyword_statement {
       *(codeIt++) = number[count];
     }
   }
+
+  virtual asm_statement * getCopy() const { return new asm_real_keyword_statement(*this); }
 };
 
 

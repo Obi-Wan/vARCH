@@ -21,8 +21,8 @@ using namespace std;
 
 asm_program::~asm_program()
 {
-  DEALLOC_ELEMS_VECTOR(this->functions, deque<asm_function *>);
-  DEALLOC_ELEMS_VECTOR(this->globals, vector<asm_data_statement *>);
+  for(asm_function * func : functions) { delete func; }
+  for(asm_data_statement * stmt : globals) { delete stmt; }
 }
 
 void

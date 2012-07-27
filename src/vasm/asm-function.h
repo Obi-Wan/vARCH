@@ -33,11 +33,11 @@ struct asm_function {
   TableOfSymbols localSymbols;
   list<ArgLabelRecord *> refs;
 
-  asm_function(const YYLTYPE& pos, const string& _name)
+  asm_function(const YYLTYPE& pos, const string & _name)
     : name(_name), functionOffset(0), position(pos)
   { }
-  asm_function(const YYLTYPE& pos, const char * _name)
-    : name(_name), functionOffset(0), position(pos)
+  asm_function(const YYLTYPE& pos, const string && _name)
+    : name(move(_name)), functionOffset(0), position(pos)
   { }
   ~asm_function();
 
@@ -64,12 +64,7 @@ inline size_t
 asm_function::getInstrSize() const
 {
   size_t size = 0;
-  for(ListOfStmts::const_iterator stmt_it = stmts.begin();
-        stmt_it != stmts.end(); stmt_it++)
-  {
-    const asm_statement * stmt = *stmt_it;
-    size += stmt->getSize();
-  }
+  for(const asm_statement * stmt : stmts) { size += stmt->getSize(); }
   return size;
 }
 
@@ -77,11 +72,7 @@ inline size_t
 asm_function::getSharedDataSize() const
 {
   size_t size = 0;
-  for(ListOfDataStmts::const_iterator stmt_it = uniqueLocals.begin();
-      stmt_it != uniqueLocals.end(); stmt_it++)
-  {
-    size += (*stmt_it)->getSize();
-  }
+  for(const asm_data_statement * stmt : uniqueLocals) { size += stmt->getSize(); }
   return size;
 }
 
@@ -89,10 +80,9 @@ inline size_t
 asm_function::getStackedDataSize() const
 {
   size_t size = 0;
-  for(ListOfDataStmts::const_iterator stmt_it = stackLocals.begin();
-      stmt_it != stackLocals.end(); stmt_it++)
+  for(const asm_data_statement * stmt : stackLocals)
   {
-    size += (*stmt_it)->getSize();
+    size += stmt->getSize();
     /* Let's re align to 32bits, because this is what the PUSH instruction is
      * going to do */
     const size_t rest = size % 4;

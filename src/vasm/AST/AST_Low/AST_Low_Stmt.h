@@ -87,9 +87,9 @@ public:
   const string label;
   const TypeOfArgument type;
 
-  ASTL_ArgLabel(const YYLTYPE & _pos, const string & id, const TypeOfArgument & _type,
+  ASTL_ArgLabel(const YYLTYPE & _pos, const string && id, const TypeOfArgument & _type,
       const ScaleOfArgument & _scale = BYTE4)
-    : ASTL_Arg(_pos, _scale), label(id), type(_type)
+    : ASTL_Arg(_pos, _scale), label(move(id)), type(_type)
   { }
 
   virtual const string toString() const {
@@ -104,10 +104,10 @@ public:
   const string number;
   const TypeOfArgument type;
 
-  ASTL_ArgNumber( const YYLTYPE & _pos, const string & _num,
+  ASTL_ArgNumber( const YYLTYPE & _pos, const string && _num,
                   const TypeOfArgument & _type = IMMED,
                   const ScaleOfArgument & _scale = BYTE4)
-    : ASTL_Arg(_pos, _scale), number(_num), type(_type)
+    : ASTL_Arg(_pos, _scale), number(move(_num)), type(_type)
   { }
   virtual const string toString() const {
     return "(Number Arg: " + number + " : "
@@ -126,9 +126,9 @@ public:
   ASTL_ArgNumber * displ;
   ASTL_ArgRegister * index;
 
-  ASTL_ArgRegister(const YYLTYPE & _pos, const string & _id,
+  ASTL_ArgRegister(const YYLTYPE & _pos, const string && _id,
       const ScaleOfArgument & _scale = BYTE4)
-    : ASTL_Arg(_pos, _scale), id(_id), kind(REG), modif(REG_NO_ACTION)
+    : ASTL_Arg(_pos, _scale), id(move(_id)), kind(REG), modif(REG_NO_ACTION)
     , displ(NULL), index(NULL)
   { }
   ~ASTL_ArgRegister();
@@ -159,16 +159,16 @@ public:
 
   bool isTemp() const { return false; }
 
-  const string getRegisterID(const Registers & _reg_num) {
+  const string getRegisterID(const Registers & _reg_num) const {
     switch (_reg_num) {
       case PROGRAM_COUNTER:
-        return "PC";
+        return string("PC");
       case STATE_REGISTER:
-        return "SR";
+        return string("SR");
       case STACK_POINTER:
-        return "SP";
+        return string("SP");
       case USER_STACK_POINTER:
-        return "USP";
+        return string("USP");
       default:
         throw WrongArgumentException(string(__FUNCTION__) + ": Unexpected Special Register Number");
     }
@@ -193,8 +193,8 @@ public:
   bool constant;
   bool shared;
 
-  ASTL_StmtLabel(const YYLTYPE & _pos, const string & id)
-    : ASTL_Stmt(_pos), label(id), constant(false), shared(false)
+  ASTL_StmtLabel(const YYLTYPE & _pos, const string && id)
+    : ASTL_Stmt(_pos), label(move(id)), constant(false), shared(false)
   { }
   virtual const string toString() const {
     return "(Label stmt: " + label + " ( "
@@ -240,16 +240,14 @@ public:
   { }
 
   ~ASTL_StmtExp() {
-    for(size_t num = 0; num < args.size(); num++) { delete args[num]; }
+    for(ASTL_Arg * const arg : args) { delete arg; }
   }
 
   void addArg(ASTL_Arg * const arg) { args.push_back(arg); }
 
   virtual const string toString() const {
     string tempOut = "(Base stmt: " + ISet.getInstr(instruction) + " ";
-    for(size_t num = 0; num < args.size(); num++) {
-      tempOut += args[num]->toString();
-    }
+    for(const ASTL_Arg * const arg : args) { arg->toString(); }
     tempOut += " )";
     return tempOut;
   }
@@ -302,8 +300,8 @@ class ASTL_VarDeclString : public ASTL_VarDecl {
 public:
   const string text;
 
-  ASTL_VarDeclString(const YYLTYPE & _pos, const string & _text)
-    : ASTL_VarDecl(_pos, BYTE1), text(_text)
+  ASTL_VarDeclString(const YYLTYPE & _pos, const string && _text)
+    : ASTL_VarDecl(_pos, BYTE1), text(move(_text))
   { }
 
   virtual const string toString() const { return "(String Var decl : "
@@ -320,8 +318,8 @@ public:
   const string srcReg;
   const string destId;
 
-  ASTL_Param(const YYLTYPE & _pos, const string & _src, const string & _dest)
-    : ASTL_Node(_pos), srcReg(_src), destId(_dest)
+  ASTL_Param(const YYLTYPE & _pos, const string && _src, const string && _dest)
+    : ASTL_Node(_pos), srcReg(move(_src)), destId(move(_dest))
   { }
 
   virtual const string toString() const { return "(Param " + srcReg + " -> " + destId + ")"; }

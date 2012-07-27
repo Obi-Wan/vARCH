@@ -38,6 +38,7 @@ struct asm_arg {
     : type(IMMED), scale(BYTE4), regModType(REG_NO_ACTION), relOffset(0)
     , position(pos)
   { }
+  asm_arg(const asm_arg &) = default;
 
   virtual ~asm_arg() { }
 
@@ -48,14 +49,15 @@ struct asm_arg {
 
   virtual bool isTemporary() const throw() { return false; }
   virtual bool isReg() const throw() { return false; }
+
+  virtual asm_arg * getCopy() const { return new asm_arg(*this); }
 };
 
 struct asm_immediate_arg : asm_arg {
   union {
     enum Registers regNum;
     uint32_t tempUID;
-    int32_t val;
-    int64_t lval;
+    int64_t val;
     float fval;
   } content;
 
@@ -69,7 +71,7 @@ struct asm_immediate_arg : asm_arg {
     : asm_arg(pos), isTemp(false), displacement(0), index(0)
     , isIndexTemp(false)
   { }
-  asm_immediate_arg(const YYLTYPE & pos, const int & _val,
+  asm_immediate_arg(const YYLTYPE & pos, const int64_t & _val,
                     const TypeOfArgument & type, const ScaleOfArgument & scale,
                     const ModifierOfArgument & rmt,
                     const bool & _isTemp = false)
@@ -84,6 +86,7 @@ struct asm_immediate_arg : asm_arg {
   {
     content.fval = _fval;
   }
+  asm_immediate_arg(const asm_immediate_arg &) = default;
 
   void emitCode(Bloat::iterator & codeIt) const;
   const ObjType getType() const throw() { return ASM_IMMEDIATE_ARG; }
@@ -92,40 +95,48 @@ struct asm_immediate_arg : asm_arg {
 
   virtual bool isTemporary() const throw() { return isTemp; }
   virtual bool isReg() const throw() { return (type != IMMED && type != DIRECT); }
+
+  virtual asm_arg * getCopy() const { return new asm_immediate_arg(*this); }
 };
 
 struct asm_function_param : asm_arg {
   asm_arg * source, * destination;
 
-  asm_function_param(const YYLTYPE& pos, asm_arg * _source, asm_arg * _dest)
+  asm_function_param(const YYLTYPE& pos, asm_arg * const _source, asm_arg * const _dest)
     : asm_arg(pos, REG, BYTE4, REG_NO_ACTION)
     , source(_source), destination(_dest)
   { }
+  asm_function_param(const asm_function_param &) = default;
 
   ~asm_function_param() {
     delete this->source;
     delete this->destination;
   }
+
+  virtual asm_arg * getCopy() const { return new asm_function_param(*this); }
 };
 
 typedef vector<asm_function_param *>        ListOfParams;
 typedef vector<const asm_function_param *>  ConstListOfParams;
 
 struct asm_label_arg : asm_immediate_arg {
-  string label;
+  const string label;
 
-  asm_label_arg(const YYLTYPE& pos, const string& _lab
+  asm_label_arg(const YYLTYPE& pos, const string && _lab
+      , const TypeOfArgument& _type, const ScaleOfArgument & _scale = BYTE4)
+    : asm_immediate_arg(pos, 0, _type, _scale, REG_NO_ACTION, false), label(move(_lab))
+  { }
+  asm_label_arg(const YYLTYPE& pos, const string & _lab
       , const TypeOfArgument& _type, const ScaleOfArgument & _scale = BYTE4)
     : asm_immediate_arg(pos, 0, _type, _scale, REG_NO_ACTION, false), label(_lab)
   { }
-  asm_label_arg(const YYLTYPE& pos, const char * _lab
-      , const TypeOfArgument& _type, const ScaleOfArgument & _scale = BYTE4)
-    : asm_immediate_arg(pos, 0, _type, _scale, REG_NO_ACTION, false), label(_lab)
-  { }
+  asm_label_arg(const asm_label_arg &) = default;
 
   const string toString() const { return string("(label: '") + label + "')"; }
 
   const ObjType getType() const throw() { return ASM_LABEL_ARG; }
+
+  virtual asm_arg * getCopy() const { return new asm_label_arg(*this); }
 };
 
 #endif /* IR_LOWLEVEL_ARGUMENTS_H_ */

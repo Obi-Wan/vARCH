@@ -54,7 +54,7 @@ asm_immediate_arg::emitCode(Bloat::iterator & codeIt) const
       }
       case BYTE8: {
         // XXX Be careful that right now there is no correct handling of this
-        const int8_t chunks[8] = DEAL_BWORDS_FROM_DWORD(this->content.lval);
+        const int8_t chunks[8] = DEAL_BWORDS_FROM_DWORD(this->content.val);
         for(size_t count = 0; count < 8; count++) {
           *(codeIt++) = chunks[count];
         }
