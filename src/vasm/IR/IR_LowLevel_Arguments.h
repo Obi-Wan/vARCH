@@ -40,7 +40,7 @@ struct asm_arg {
   { }
   asm_arg(const asm_arg &) = default;
 
-  virtual ~asm_arg() { }
+  virtual ~asm_arg() = default;
 
   virtual const string toString() const { return ""; }
   virtual const size_t getSize() const { return 0; }

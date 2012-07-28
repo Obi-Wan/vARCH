@@ -22,7 +22,7 @@ struct asm_statement {
     : offset(_offs), position(pos) { }
   asm_statement(const asm_statement &) = default;
 
-  virtual ~asm_statement() { }
+  virtual ~asm_statement() = default;
 
   virtual bool isInstruction() const throw() { return false; }
 

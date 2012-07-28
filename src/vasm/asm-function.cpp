@@ -15,6 +15,8 @@ asm_function::~asm_function()
   for(asm_data_statement * obj : this->stackLocals) { delete obj; }
   for(asm_data_statement * obj : this->uniqueLocals) { delete obj; }
   for(asm_statement * obj : this->stmts) { delete obj; }
+
+  for(ArgLabelRecord * ref : this->refs) { delete ref; }
 }
 
 /**

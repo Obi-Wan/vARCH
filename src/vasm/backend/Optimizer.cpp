@@ -44,9 +44,11 @@ Optimizer::removeUselessMoves(asm_function & func)
       }
     }
   }
-  for(size_t numStmt = 0; numStmt < idMoves.size(); numStmt++)
+  for(ListOfStmts::iterator toRemove : idMoves)
   {
-    func.stmts.erase(idMoves[numStmt]);
+    asm_statement * stmt = *toRemove;
+    func.stmts.erase(toRemove);
+    delete stmt;
   }
 }
 
@@ -95,9 +97,11 @@ Optimizer::removeUselessArithmetics(asm_function & func)
       }
     }
   }
-  for(size_t numStmt = 0; numStmt < useless.size(); numStmt++)
+  for(ListOfStmts::iterator toRemove : useless)
   {
-    func.stmts.erase(useless[numStmt]);
+    asm_statement * stmt = *toRemove;
+    func.stmts.erase(toRemove);
+    delete stmt;
   }
 }
 

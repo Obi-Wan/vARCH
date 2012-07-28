@@ -103,8 +103,8 @@ Frame::mindFunctionParameters(asm_function & function)
     asm_instruction_statement * stmt =
         new asm_instruction_statement(par->position, MOV);
 
-    stmt->addArg(par->source);
-    stmt->addArg(par->destination);
+    stmt->addArg(par->source->getCopy());
+    stmt->addArg(par->destination->getCopy());
 
     stmts.push_front(stmt);
   }
@@ -172,23 +172,14 @@ Frame::mindReturnStmts(ListOfStmts & stmts)
     if (ret->args.size() == 1)
     {
       asm_arg * arg = ret->args[0];
+
       if (arg->isTemporary() || arg->isReg())
       {
-        asm_immediate_arg * i_arg = (asm_immediate_arg *) arg;
-
         // Build the move R0 <- tempRet
         asm_instruction_statement * stmt =
             new asm_instruction_statement(ret->position, MOV);
 
-        asm_immediate_arg * tempArg = new asm_immediate_arg(ret->position);
-        tempArg->type = i_arg->type;
-        tempArg->content.val = i_arg->content.val;
-        tempArg->isTemp = i_arg->isTemp;
-        tempArg->displacement = i_arg->displacement;
-        tempArg->index = i_arg->index;
-        tempArg->isIndexTemp = i_arg->isIndexTemp;
-
-        stmt->addArg(tempArg);
+        stmt->addArg(arg->getCopy());
 
         asm_immediate_arg * regArg = new asm_immediate_arg(ret->position);
         regArg->type = REG;
@@ -215,24 +206,15 @@ Frame::mindParamsFCalls(ListOfStmts & stmts)
     for(size_t numPar = 1; numPar < call->args.size(); numPar++)
     {
       asm_arg * arg = call->args[numPar];
+
       if (arg->isTemporary() || arg->isReg())
       {
-        asm_immediate_arg * i_arg = (asm_immediate_arg *) arg;
-
         // Build the move param <- temp
         asm_instruction_statement * stmt =
             new asm_instruction_statement(call->position, MOV);
 
-        asm_immediate_arg * tempArg = new asm_immediate_arg(call->position);
-        tempArg->type = i_arg->type;
-        tempArg->content.val = i_arg->content.val;
-        tempArg->isTemp = i_arg->isTemp;
-        tempArg->displacement = i_arg->displacement;
-        tempArg->index = i_arg->index;
-        tempArg->isIndexTemp = i_arg->isIndexTemp;
-
-        stmt->addArg(tempArg);
-        stmt->addArg(call->parameters[numPar-1]->source);
+        stmt->addArg(arg->getCopy());
+        stmt->addArg(call->parameters[numPar-1]->source->getCopy());
 
         stmts.insert(callIt, stmt);
       } else {
