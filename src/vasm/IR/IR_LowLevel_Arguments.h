@@ -70,7 +70,9 @@ struct asm_immediate_arg : asm_arg {
   asm_immediate_arg(const YYLTYPE & pos)
     : asm_arg(pos), isTemp(false), displacement(0), index(0)
     , isIndexTemp(false)
-  { }
+  {
+    content.val = 0;
+  }
   asm_immediate_arg(const YYLTYPE & pos, const int64_t & _val,
                     const TypeOfArgument & type, const ScaleOfArgument & scale,
                     const ModifierOfArgument & rmt,
