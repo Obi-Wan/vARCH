@@ -56,13 +56,13 @@ enum TypeOfArgument {
   INDX_DISP,              // 111
 };
 
-#define GET_BIG_DISPL(arg)  ((((arg) >> 8) & ((1 << 23)-1)) + ((arg) & (1 << 31)))
-#define GET_INDEX_DISPL(arg)  ((((arg) >> 16) & ((1 << 15)-1)) + ((arg) & (1 << 31)))
-#define GET_FIRST_REG(arg)  ((arg) & ((1 << 8)-1))
-#define GET_INDEX_REG(arg) (((arg) >> 8) & ((1 << 8)-1))
+#define GET_BIG_DISPL(arg)  (int32_t(arg) >> 8)
+#define GET_INDEX_DISPL(arg)  (int32_t(arg) >> 16)
+#define GET_FIRST_REG(arg)  (int32_t(arg) & ((1 << 8)-1))
+#define GET_INDEX_REG(arg) ((int32_t(arg) >> 8) & ((1 << 8)-1))
 
-#define BUILD_BIG_DISPL(arg)  ((((arg) & ((1 << 23)-1)) << 8) + ((arg) & (1 << 31)))
-#define BUILD_INDEX_DISPL(arg)  ((((arg) & ((1 << 15)-1)) << 16) + ((arg) & (1 << 31)))
+#define BUILD_BIG_DISPL(arg)  (int32_t(arg) << 8)
+#define BUILD_INDEX_DISPL(arg)  (int32_t(arg) << 16)
 #define BUILD_FIRST_REG(arg)  ((arg) & ((1 << 8)-1))
 #define BUILD_INDEX_REG(arg) (((arg) & ((1 << 8)-1)) << 8)
 

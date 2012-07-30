@@ -70,7 +70,7 @@ asm_immediate_arg::emitCode(Bloat::iterator & codeIt) const
       case REG:
       case REG_INDIR:
       case MEM_INDIR: {
-        tempVal = content.regNum + BUILD_PRE_POST_MOD(regModType);
+        tempVal = content.regNum | BUILD_PRE_POST_MOD(regModType);
         break;
       }
       case DIRECT: {
@@ -80,18 +80,18 @@ asm_immediate_arg::emitCode(Bloat::iterator & codeIt) const
       }
       case DISPLACED: {
         tempVal = BUILD_BIG_DISPL(displacement)
-            + BUILD_FIRST_REG(content.regNum + BUILD_PRE_POST_MOD(regModType));
+            | BUILD_FIRST_REG(content.regNum | BUILD_PRE_POST_MOD(regModType));
         break;
       }
       case INDEXED: {
-        tempVal = BUILD_INDEX_REG(index + BUILD_PRE_POST_MOD(regModType))
-            + BUILD_FIRST_REG(content.regNum);
+        tempVal = BUILD_INDEX_REG(index | BUILD_PRE_POST_MOD(regModType))
+            | BUILD_FIRST_REG(content.regNum);
         break;
       }
       case INDX_DISP: {
         tempVal = BUILD_INDEX_DISPL(displacement)
-            + BUILD_INDEX_REG(index + BUILD_PRE_POST_MOD(regModType))
-            + BUILD_FIRST_REG(content.regNum);
+            | BUILD_INDEX_REG(index | BUILD_PRE_POST_MOD(regModType))
+            | BUILD_FIRST_REG(content.regNum);
         break;
       }
       default: {
