@@ -71,6 +71,9 @@ AsmArgs::parse() throw (WrongArgumentException)
     } else if (!tempArg.compare("-disassemble-result")) {
       disassembleResult = true;
 
+    } else if (!tempArg.compare("-fomit-frame-pointer")) {
+      omitFramePointer = true;
+
     } else if (!tempArg.compare("-h")) {
       throw WrongArgumentException("");
     } else {
@@ -95,8 +98,10 @@ AsmArgs::parse() throw (WrongArgumentException)
                 regCoalesce ? "Enabled" : "Disabled"));
   InfoPrintf(("Disassembling result: %s\n",
                 disassembleResult ? "Enabled" : "Disabled"));
-  InfoPrintf(("Only Validating: %s\n\n",
+  InfoPrintf(("Only Validating: %s\n",
                 onlyValidate ? "Enabled" : "Disabled"));
+  InfoPrintf(("Omit frame pointer: %s\n\n",
+                omitFramePointer ? "Enabled" : "Disabled"));
 
   CHECK_THROW( !inputName.empty(),
           WrongArgumentException("you didn't specify the input file") );
@@ -122,6 +127,8 @@ AsmArgs::printHelp() const throw()
   cout << "To enable some sort of optimizations:" << endl
         << "  -O<optimization_level> with <optimization_level> as a number "
         << "between 0 and 3" << endl;
+  cout << "To omit frame pointer (not supported, yet):"
+        << endl << "  add flag -fomit-frame-pointer" << endl;
   cout << "To only parse, without emitting code:"
         << endl << "  add flag -only-validate" << endl;
 }

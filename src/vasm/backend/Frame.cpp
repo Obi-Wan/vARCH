@@ -221,6 +221,69 @@ Frame::mindParamsFCalls(ListOfStmts & stmts)
 }
 
 void
+Frame::updateFramePointer(asm_function & function)
+{
+  const bool isMain = !function.name.compare("main");
+
+  {
+    // Add the MOV that initializes FP from SP
+    asm_instruction_statement * stmt =
+        new asm_instruction_statement(function.position, MOV);
+
+    asm_immediate_arg * regArg1 = new asm_immediate_arg(function.position);
+    regArg1->type = REG;
+    regArg1->content.regNum = STACK_POINTER;
+    regArg1->isTemp = false;
+
+    stmt->addArg(regArg1);
+
+    asm_immediate_arg * regArg2 = new asm_immediate_arg(function.position);
+    regArg2->type = REG;
+    regArg2->content.regNum = REG_ADDR_8;
+    regArg2->isTemp = false;
+
+    stmt->addArg(regArg2);
+
+    function.stmts.push_front(stmt);
+  }
+
+  if (!isMain) {
+    // If not the main, add the PUSH of the older FP and the POP at the return
+
+    { // PUSH at beginning
+      asm_instruction_statement * stmt =
+          new asm_instruction_statement(function.position, PUSH);
+
+      asm_immediate_arg * regArg = new asm_immediate_arg(function.position);
+      regArg->type = REG;
+      regArg->content.regNum = REG_ADDR_8;
+      regArg->isTemp = false;
+
+      stmt->addArg(regArg);
+
+      function.stmts.push_front(stmt);
+    }
+    { // POP at the returns
+      asm_instruction_statement * stmt =
+          new asm_instruction_statement(function.position, POP);
+
+      asm_immediate_arg * regArg = new asm_immediate_arg(function.position);
+      regArg->type = REG;
+      regArg->content.regNum = REG_ADDR_8;
+      regArg->isTemp = false;
+
+      stmt->addArg(regArg);
+
+      for(ListOfStmts::iterator retIt : returns) {
+        function.stmts.insert(retIt, stmt->getCopy());
+      }
+
+      delete stmt;
+    }
+  }
+}
+
+void
 Frame::generateMovesForFunctionCalls(asm_function & function)
 {
   // Move arguments from precolored registers to temporaries

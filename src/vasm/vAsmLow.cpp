@@ -73,7 +73,7 @@ main(int argc, char** argv)
 
       program->rebuildOffsets();
       program->exposeGlobalLabels();
-      program->assignValuesToLabels();
+      program->assignValuesToLabels(args);
       program->assemble( args.getOutputName() );
 
       if (args.getDisassembleResult()) {

@@ -65,7 +65,7 @@ public:
   void moveMainToTop();
   void doRegisterAllocation(const AsmArgs & args);
   void exposeGlobalLabels();
-  void assignValuesToLabels();
+  void assignValuesToLabels(const AsmArgs & args);
   void assemble(const string & outputName);
 
   void emitDebugSymbols(const string & outputName) const;

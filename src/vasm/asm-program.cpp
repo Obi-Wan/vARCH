@@ -149,6 +149,9 @@ asm_program::doRegisterAllocation(const AsmArgs & args)
       frame.generateMovesForFunctionCalls(func);
       frame.allocateLocalVariables(func);
       frame.deallocateLocalVariables(func);
+      if (!args.getOmitFramePointer()) {
+        frame.updateFramePointer(func);
+      }
 
       AssemFlowGraph flowGraph(tempsMap);
       flowGraph.populateGraph(func);
@@ -281,7 +284,7 @@ asm_program::exposeGlobalLabels()
 }
 
 void
-asm_program::assignValuesToLabels()
+asm_program::assignValuesToLabels(const AsmArgs & args)
 {
   bool error = false;
 
@@ -307,11 +310,20 @@ asm_program::assignValuesToLabels()
         if (localLabel->isShared()) {
           /* TODO: add displaced referencing to Program Counter */
           argument.content.val =
-                        (int32_t)(localLabel->offset + func->functionOffset);
+                        int64_t(localLabel->offset + func->functionOffset);
+//          argument.type = DISPLACED;
+//          argument.content.regNum = PROGRAM_COUNTER;
+//          argument.displacement = int64_t(localLabel->offset)
+//                        - int64_t(argument.relOffset + ref->parent->offset);
         } else {
           argument.type = DISPLACED;
-          argument.content.regNum = STACK_POINTER;
-          argument.displacement = (int32_t)(func->getStackedDataSize() - localLabel->offset);
+          if (args.getOmitFramePointer()) {
+            argument.content.regNum = STACK_POINTER;
+            argument.displacement = (int32_t)(func->getStackedDataSize() - localLabel->offset);
+          } else {
+            argument.content.regNum = REG_ADDR_8;
+            argument.displacement = - int32_t(localLabel->offset);
+          }
         }
 
       } else {

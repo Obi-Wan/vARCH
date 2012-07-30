@@ -30,10 +30,12 @@ class AsmArgs {
 
   bool onlyValidate;
   bool disassembleResult;
+  bool omitFramePointer;
 public:
   AsmArgs(int _argc, char** _argv)
     : argc(_argc), argv(_argv), optimLevel(2), regAutoAlloc(false)
     , regCoalesce(false), onlyValidate(false), disassembleResult(false)
+    , omitFramePointer(false)
   { }
 
   void parse() throw(WrongArgumentException);
@@ -49,6 +51,7 @@ public:
   const bool &getRegCoalesce() const throw() { return regCoalesce; }
   const bool &getOnlyValidate() const throw() { return onlyValidate; }
   const bool &getDisassembleResult() const throw() { return disassembleResult; }
+  const bool &getOmitFramePointer() const throw() { return omitFramePointer; }
 };
 
 #endif /* ASMARGS_H_ */

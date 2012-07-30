@@ -69,6 +69,22 @@ public:
    * ADD  $tot_vars_size  %SP
    */
   void deallocateLocalVariables(asm_function & function);
+
+  /**
+   * Generates the instructions to deal with the frame pointer.
+   * @param function
+   *
+   * If the function is the main, it just initializes:
+   *
+   * MOV %SP %A7
+   *
+   * Otherwise it also does:
+   *  - At function entry
+   * PUSH %A7
+   *  - At function exit
+   * POP  %A7
+   */
+  void updateFramePointer(asm_function & function);
 };
 
 inline uint32_t

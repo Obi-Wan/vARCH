@@ -60,13 +60,9 @@ void
 asm_function::finalize()
 {
   DebugPrintf(("- Adding stmts and locals to function: %s -\n", name.c_str()));
-  size_t tempLocalOffset = 0;
 
   for(asm_statement * stmt : stmts)
   {
-    stmt->offset = tempLocalOffset;
-    tempLocalOffset += stmt->getSize();
-
     if (stmt->isInstruction())
     {
       asm_instruction_statement * istmt = (asm_instruction_statement *) stmt;
@@ -88,19 +84,11 @@ asm_function::finalize()
 
   for(asm_data_statement * stmt : uniqueLocals)
   {
-    stmt->offset = tempLocalOffset;
-    tempLocalOffset += stmt->getSize();
     checkAndAddLabel(stmt);
   }
 
-  // Distance from stack pointer
-  size_t offsetFromStackPtr = 0;
-  const size_t allocatedSize = getStackedDataSize();
-
   for(asm_data_statement * stmt : stackLocals)
   {
-    stmt->offset = allocatedSize - offsetFromStackPtr;
-    offsetFromStackPtr += stmt->getSize();
     checkAndAddLabel(stmt);
   }
 
@@ -122,14 +110,14 @@ asm_function::rebuildOffsets()
     tempLocalOffset += stmt->getSize();
   }
 
-  // Distance from stack pointer
-  size_t offsetFromStackPtr = 0;
+  // Distance from Frame Pointer
+  size_t offsetFromFP = 0;
   const size_t allocatedSize = getStackedDataSize();
 
   for(asm_data_statement * stmt : stackLocals)
   {
-    stmt->offset = allocatedSize - offsetFromStackPtr;
-    offsetFromStackPtr += stmt->getSize();
+    stmt->offset = allocatedSize - offsetFromFP - 4;
+    offsetFromFP += stmt->getSize();
   }
 }
 
