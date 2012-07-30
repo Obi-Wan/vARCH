@@ -227,14 +227,14 @@ void
 asm_program::rebuildOffsets()
 {
   size_t tempOffset = 0;
-  for(asm_function * func : functions)
+  for(asm_function * const func : functions)
   {
     func->functionOffset = tempOffset;
     func->rebuildOffsets();
 
     tempOffset += func->getSize();
   }
-  for(asm_data_statement * stmt : globals) {
+  for(asm_data_statement * const stmt : globals) {
     stmt->offset = tempOffset;
     tempOffset += stmt->getSize();
   }
@@ -248,9 +248,9 @@ asm_program::exposeGlobalLabels()
   /* And fix their labels */
   DebugPrintf(("-- Adding Functions to Global Labels - Phase --\n"));
 
-  for(asm_function * func : functions)
+  for(asm_function * const func : functions)
   {
-    asm_label_statement * tempLabel =
+    asm_label_statement * const tempLabel =
         new asm_label_statement(func->position, func->name, true);
     tempLabel->offset = func->functionOffset;
     func->stmts.push_front(tempLabel);
@@ -261,16 +261,17 @@ asm_program::exposeGlobalLabels()
       errOut.addErrorMsg(tempLabel->position, e);
     }
   }
-  for(asm_data_statement * stmt : globals)
+  for(asm_data_statement * const stmt : globals)
   {
-    if (stmt->getType() == ASM_LABEL_STATEMENT) {
-      asm_label_statement * l_stmt = (asm_label_statement *) stmt;
-      DebugPrintf(("Found label statement: %s!\n", l_stmt->label.c_str() ));
-      try {
+    try {
+      if (stmt->getType() == ASM_LABEL_STATEMENT) {
+        asm_label_statement * l_stmt = (asm_label_statement *) stmt;
+        DebugPrintf(("Found label statement: %s!\n", l_stmt->label.c_str() ));
+
         globalSymbols.addLabel(l_stmt);
-      } catch (const WrongArgumentException & e) {
-        errOut.addErrorMsg(stmt->position, e);
       }
+    } catch (const WrongArgumentException & e) {
+      errOut.addErrorMsg(stmt->position, e);
     }
   }
   DebugPrintf(("-- Terminated: Adding Funcs to Global Labels - Phase --\n\n"));

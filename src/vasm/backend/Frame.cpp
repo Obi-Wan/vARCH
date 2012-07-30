@@ -17,9 +17,6 @@ using namespace std;
 void
 Frame::init(asm_function & function)
 {
-  ListOfStmts & stmts = function.stmts;
-  ListOfParams & params = function.parameters;
-
   // Adding registers to TempsMap
   for(uint32_t numReg = 0; numReg < NUM_REGS * 2; numReg++)
   {
@@ -27,10 +24,8 @@ Frame::init(asm_function & function)
     tempsMap.putTemp( shiftedTempUID, true);
   }
 
-  for(ListOfParams::iterator parIt = params.begin(); parIt != params.end();
-      parIt++)
+  for(asm_function_param * par : function.parameters)
   {
-    asm_function_param * par = *parIt;
     try {
       asm_immediate_arg * temp = (asm_immediate_arg *) par->destination;
       const uint32_t shiftedTempUID = shiftArgUID(temp->content.tempUID, true);
@@ -53,8 +48,8 @@ Frame::init(asm_function & function)
     }
   }
 
-  for(ListOfStmts::iterator stmtIt = stmts.begin(); stmtIt != stmts.end();
-      stmtIt++)
+  for(ListOfStmts::iterator stmtIt = function.stmts.begin();
+      stmtIt != function.stmts.end(); stmtIt++)
   {
     asm_statement * stmt = *stmtIt;
     if (stmt->isInstruction()) {
