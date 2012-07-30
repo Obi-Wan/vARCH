@@ -32,7 +32,7 @@ private:
   uint32_t timeDelay;
 
   /** The actual flags of the cpu */
-  int flags;
+  int32_t flags;
 
   /** link to the chipset */
   Chipset& chipset;
@@ -99,25 +99,25 @@ private:
   uint32_t storeArg(const int32_t & value, const ArgRecord & argRecord);
 
   /* Regs functions */
-  int getReg(const int& arg);
-  void setReg(const int& arg, const int& value);
+  const int32_t getReg(const int32_t& arg);
+  void setReg(const int32_t& arg, const int32_t& value);
 
   void resetRegs() throw() {
     for(size_t i = 0; i < NUM_REGS; i++) regsData[i] = regsAddr[i] = 0;
   }
 
   /* Flags functions */
-  void resetFlags(int& _flags) throw() {
+  void resetFlags(int32_t& _flags) throw() {
     _flags -= _flags & ( F_ZERO + F_CARRY + F_NEGATIVE + F_OVERFLOW );
   }
-  void restoreFlags(const int& _flags) throw() { flags = _flags; }
-  int clearFlags(int mask) throw() {
-    int oldFlags = flags;
+  void restoreFlags(const int32_t & _flags) throw() { flags = _flags; }
+  int32_t clearFlags(const int32_t & mask) throw() {
+    int32_t oldFlags = flags;
     flags -= flags & mask;
     return oldFlags;
   }
-  int setFlags(int mask) throw() {
-    int oldFlags = flags;
+  int32_t setFlags(const int32_t & mask) throw() {
+    int32_t oldFlags = flags;
     flags |= mask;
     return oldFlags;
   }

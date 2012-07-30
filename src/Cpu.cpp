@@ -78,7 +78,8 @@ Cpu::StackPointers::popAllRegs() {
 #define SET_ARITM_FLAGS( x ) (( x < 0) ? F_NEGATIVE : ( (! x ) ? F_ZERO : 0 ))
 
 Cpu::Cpu(Chipset& _chipset, Mmu& mC)
-    : chipset(_chipset), memoryController(mC), sP(*this)
+  : timeDelay(0), flags(0), chipset(_chipset), memoryController(mC), sP(*this)
+  , progCounter(0)
 {
   init();
 }
@@ -798,8 +799,8 @@ Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
 }
 
 
-inline int
-Cpu::getReg(const int& regPos)
+inline const int32_t
+Cpu::getReg(const int32_t & regPos)
 {
   switch (regPos) {
     case REG_DATA_1 ... REG_DATA_8:
@@ -823,7 +824,7 @@ Cpu::getReg(const int& regPos)
 }
 
 inline void
-Cpu::setReg(const int& regPos, const int& value)
+Cpu::setReg(const int32_t & regPos, const int32_t & value)
 {
   switch (regPos) {
     case REG_DATA_1 ... REG_DATA_8:
