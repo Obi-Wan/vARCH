@@ -67,7 +67,7 @@ struct asm_instruction_statement : asm_statement {
 
   asm_instruction_statement * addArg(asm_arg * newArg) {
     args.push_back(newArg);
-    newArg->relOffset = this->getSize()-4;
+    newArg->relOffset = this->getSize();
     return this;
   }
 

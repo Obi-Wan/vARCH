@@ -308,7 +308,7 @@ asm_program::assignValuesToLabels(const AsmArgs & args)
                       localLabel->is_constant ? "true" : "false",
                       localLabel->is_shared ? "true" : "false"));
         if (localLabel->isShared()) {
-          /* TODO: add displaced referencing to Program Counter */
+          /* TODO: add displaced referencing to Program Counter or other label*/
           argument.content.val =
                         int64_t(localLabel->offset + func->functionOffset);
 //          argument.type = DISPLACED;
