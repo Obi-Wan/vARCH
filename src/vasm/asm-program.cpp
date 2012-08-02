@@ -364,6 +364,7 @@ asm_program::assemble(const string & outputName)
   {
     for(asm_statement * stmt : func->stmts) { stmt->emitCode(pos); }
     for(asm_data_statement * stmt : func->uniqueLocals) { stmt->emitCode(pos); }
+    pos += func->getPaddingSize();
   }
   for (asm_data_statement * stmt : globals) { stmt->emitCode(pos); }
 

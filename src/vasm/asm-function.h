@@ -57,7 +57,11 @@ struct asm_function {
 
   size_t getStackedDataSize() const;
 
-  size_t getSize() const { return getInstrSize() + getSharedDataSize(); }
+  size_t getPaddingSize() const;
+
+  size_t getSize() const {
+    return getInstrSize() + getSharedDataSize() + getPaddingSize();
+  }
 };
 
 inline size_t
@@ -89,6 +93,13 @@ asm_function::getStackedDataSize() const
     size += (4 - rest) * (rest != 0);
   }
   return size;
+}
+
+inline size_t
+asm_function::getPaddingSize() const
+{
+  const size_t rest = ((getInstrSize() + getSharedDataSize()) % 4);
+  return (4 - rest) * (rest != 0);
 }
 
 #endif	/* ASM_FUNCTION_H */
