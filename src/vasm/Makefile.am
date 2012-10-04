@@ -20,7 +20,8 @@ COMMON_ASM_SRC = \
 		  backend/RegAllocator.cpp \
 		  backend/Frame.cpp \
 		  backend/Optimizer.cpp \
-		  disassembler/Disassembler.cpp
+		  disassembler/Disassembler.cpp \
+		  preprocessor/AsmPreprocessor.cpp
 
 vasm_low_SOURCES = \
 		  ${COMMON_ASM_SRC} \

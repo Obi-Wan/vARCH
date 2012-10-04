@@ -8,6 +8,11 @@
 
 %x PREPROC_STATE_INCLUDE_FILE
 
+%x PREPROC_STATE_DEFINE_NAME
+%x PREPROC_STATE_DEFINE_DEF
+%x PREPROC_STATE_DEFINE_ARGS
+%x PREPROC_STATE_DEFINE_BODY
+
 DIGIT     [0-9]
 LETTER    [a-zA-Z]
 PUNCT     [\-!"#$%&'()*+,./:;<=>?@[\\\]^_`{|}~]
@@ -69,7 +74,9 @@ openFile(const char * filename, const char *& path);
 
 ^[ \t]*"#"[ \t]*include { BEGIN(PREPROC_STATE_INCLUDE_FILE); }
 
-^[ \t]*"#"[ \t]*define { return PREPROC_DEFINE; }
+^[ \t]*"#"[ \t]*define { BEGIN(PREPROC_STATE_DEFINE_NAME); return PREPROC_DEFINE; }
+
+^[ \t]*"#"[ \t]*undefine { return PREPROC_UNDEFINE; }
 
 <<EOF>>   { if(!closeIncludeFile(yylloc)) yyterminate(); }
 
@@ -161,6 +168,13 @@ BITCAST {
             BEGIN(STRING_CONTEXT);
           }
 
+\\[ \t]*\n {
+            yylloc->first_line++;
+            yylloc->first_column = 1;
+            yylloc->last_line++;
+            yylloc->last_column = 1;
+          }
+
 ("//"|";").*\n|\n {
             yylloc->first_line++;
             yylloc->first_column = 1;
@@ -222,6 +236,99 @@ BITCAST {
             includesTree->printStderrStackIncludes();
             exit(1);
           }
+}
+
+<PREPROC_STATE_DEFINE_NAME>{
+
+[ \t]+      /* eat up whitespace */
+
+({ID}|"_")* {
+            yylval->str.text = yytext;
+            yylval->str.len = yyleng;
+            BEGIN(PREPROC_STATE_DEFINE_DEF);
+            return ID;
+          }
+
+}
+
+<PREPROC_STATE_DEFINE_DEF>{
+
+[ \t]+      /* eat up whitespace */
+
+"(" {
+            BEGIN(PREPROC_STATE_DEFINE_ARGS);
+            return *yytext;
+          }
+
+\n {
+            yylloc->first_line++;
+            yylloc->first_column = 1;
+            yylloc->last_line++;
+            yylloc->last_column = 1;
+            BEGIN(INITIAL);
+
+            string_buff.str("");
+            readString = string_buff.str();
+            yylval->str.text = readString.c_str();
+            yylval->str.len = readString.size();
+            return STRING;
+          }
+. {
+            string_buff.str("");
+            string_buff << *yytext;
+            BEGIN(PREPROC_STATE_DEFINE_BODY);
+          }
+
+}
+
+<PREPROC_STATE_DEFINE_ARGS>{
+
+[ \t]+      /* eat up whitespace */
+
+{ID} {
+            yylval->str.text = yytext;
+            yylval->str.len = yyleng;
+            return ID;
+          }
+
+"," {
+            return *yytext;
+          }
+
+")"[ \t]* {
+            string_buff.str("");
+            BEGIN(PREPROC_STATE_DEFINE_BODY);
+            return *yytext;
+          }
+
+}
+
+<PREPROC_STATE_DEFINE_BODY>{
+
+\\[ \t]*\n {
+            yylloc->first_line++;
+            yylloc->first_column = 1;
+            yylloc->last_line++;
+            yylloc->last_column = 1;
+          }
+
+\n {
+            yylloc->first_line++;
+            yylloc->first_column = 1;
+            yylloc->last_line++;
+            yylloc->last_column = 1;
+            BEGIN(INITIAL);
+
+            readString = string_buff.str();
+            yylval->str.text = readString.c_str();
+            yylval->str.len = readString.size();
+            return STRING;
+          }
+
+. {
+            string_buff << *yytext;
+          }
+
 }
 
 <COMMENT>{

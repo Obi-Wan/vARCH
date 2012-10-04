@@ -1,6 +1,10 @@
 #include "std_io.s"
 #include "std_conversion.s"
 
+#define DEFINITION  "try!"
+#define OTHER_DEF   MOV,     @string1 ,   %T001
+#define PARAM( x, y ) MOV, x, y
+
 .global
   ; string to write
   .string1:
