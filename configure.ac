@@ -1,4 +1,4 @@
-AC_INIT([vARCH], [0.1], [ben.vighy@gmail.com])
+AC_INIT([vARCH], [0.2], [ben.vighy@gmail.com])
 
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([-Wall dist-bzip2])
