@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include "asm-program.h"
 #include "IR_Low_parser.h"
+#include "backend/AsmChecker.h"
 #include "AST/AST_Low/AST_Low_Tree.h"
 #include "AsmArgs.h"
 #include "disassembler/Disassembler.h"
@@ -66,7 +67,8 @@ main(int argc, char** argv)
       ast_tree.emitAsm(program);
 
       program.moveMainToTop();
-      program.checkInstructions(usingTemps);
+      AsmChecker::checkInstructions(program, usingTemps);
+
 #ifdef DEBUG
       printAssembler(program);
 #endif
@@ -75,7 +77,7 @@ main(int argc, char** argv)
         program.assignFunctionParameters();
         program.doRegisterAllocation(args);
       } else {
-        program.ensureTempsUsage(usingTemps);
+        AsmChecker::ensureTempsUsage(program, usingTemps);
       }
 
       program.rebuildOffsets();

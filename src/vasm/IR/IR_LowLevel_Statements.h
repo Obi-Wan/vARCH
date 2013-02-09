@@ -71,7 +71,6 @@ struct asm_instruction_statement : asm_statement {
     return this;
   }
 
-  virtual void checkArgs() const;
   void ensureTempsUsage(const bool & used) const;
 
   const string toString() const {
@@ -117,19 +116,19 @@ struct asm_function_call : asm_instruction_statement {
   /** Parameters of the called function: don't deallocate them!!! */
   ConstListOfParams parameters;
 
-  asm_function_call(const YYLTYPE& pos, const int _instr)
-    : asm_instruction_statement(pos, _instr)
+  bool external;
+
+  asm_function_call(const YYLTYPE& pos, const int _instr, const bool ext = false)
+    : asm_instruction_statement(pos, _instr), external(ext)
   { }
   asm_function_call(const asm_function_call & stmt)
-    : asm_instruction_statement(stmt)
+    : asm_instruction_statement(stmt), external(stmt.external)
   {
     for(const asm_function_param * const param : stmt.parameters)
     {
       this->parameters.push_back((asm_function_param *)param->getCopy());
     }
   }
-
-  virtual void checkArgs() const;
 
   void importParameters(const ListOfParams & params);
 
@@ -164,8 +163,6 @@ struct asm_return_statement : asm_instruction_statement {
   asm_return_statement(const asm_return_statement & stmt)
     : asm_instruction_statement(stmt)
   { }
-
-  virtual void checkArgs() const;
 
   void emitCode(Bloat::iterator & codeIt) {
     const int8_t chunks[4] = DEAL_BWORDS_FROM_SWORD(instruction);

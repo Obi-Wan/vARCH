@@ -121,24 +121,6 @@ asm_function::rebuildOffsets()
   }
 }
 
-bool
-asm_function::ensureTempsUsage(const bool & used) const
-{
-  bool error = false;
-  for(const asm_statement * stmt : stmts)
-  {
-    if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
-      try {
-        ((const asm_instruction_statement *)stmt)->ensureTempsUsage(used);
-      } catch (const WrongArgumentException & e) {
-        fprintf(stderr, "ERROR: in instruction!\n%s\n", e.what());
-        error = true;
-      }
-    }
-  }
-  return error;
-}
-
 inline void
 asm_function::checkAndAddLabel(asm_statement * stmt)
 {

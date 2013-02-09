@@ -26,53 +26,6 @@ asm_program::~asm_program()
 }
 
 void
-asm_program::checkInstructions(const bool & usingTemps) const
-{
-  bool error = false;
-  for(asm_function * func : functions)
-  {
-    for(const asm_statement * stmt : func->stmts)
-    {
-      if (stmt->isInstruction()) {
-        try {
-          ((const asm_instruction_statement *)stmt)->checkArgs();
-
-          if (usingTemps && stmt->getType() == ASM_FUNCTION_CALL) {
-            const asm_function_call * f_stmt = (const asm_function_call *) stmt;
-
-            const vector<asm_arg *> & args = f_stmt->args;
-            const string & f_name = ((const asm_label_arg *)args[0])->label;
-            for(size_t funcNum = 0; funcNum < functions.size(); funcNum++)
-            {
-              const asm_function & func = *functions[funcNum];
-              if (func.name == f_name) {
-                if (func.parameters.size() != (args.size() -1)) {
-                  stringstream stream;
-                  stream  << "Not enough arguments for function call at:"
-                          << endl << f_stmt->position.fileNode->printString()
-                            << " Line: " << f_stmt->position.first_line << endl
-                          << " - Function '" << f_name << "' requires "
-                            << func.parameters.size() << " parameters, while "
-                            << (args.size() -1) << " were provided." << endl;
-                  throw WrongArgumentException(stream.str());
-                }
-                break;
-              }
-            }
-          }
-        } catch (const WrongArgumentException & e) {
-          fprintf(stderr, "ERROR: in instruction!\n%s\n", e.what());
-          error = true;
-        }
-      }
-    }
-  }
-  if (error) {
-    throw WrongArgumentException("Errors in instructions definition");
-  }
-}
-
-void
 asm_program::assignFunctionParameters()
 {
   for(asm_function * func : functions)
@@ -96,20 +49,6 @@ asm_program::assignFunctionParameters()
         }
       }
     }
-  }
-}
-
-void
-asm_program::ensureTempsUsage(const bool & used) const
-{
-  bool error = false;
-  for(asm_function * func : functions)
-  {
-    error |= func->ensureTempsUsage(used);
-  }
-  if (error) {
-    throw WrongArgumentException(used
-        ? "Explicit registers were found" : "Temporaries were found");
   }
 }
 

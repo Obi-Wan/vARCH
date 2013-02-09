@@ -43,7 +43,6 @@ struct asm_function {
 
   void finalize();
   void rebuildOffsets();
-  bool ensureTempsUsage(const bool & used) const;
 
   void checkAndAddLabel(asm_statement * stmt);
 
