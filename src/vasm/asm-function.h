@@ -42,7 +42,6 @@ struct asm_function {
   ~asm_function();
 
   void finalize();
-  void rebuildOffsets();
 
   void checkAndAddLabel(asm_statement * stmt);
 

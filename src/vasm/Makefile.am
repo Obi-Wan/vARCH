@@ -21,6 +21,8 @@ COMMON_ASM_SRC = \
 		  backend/Frame.cpp \
 		  backend/Optimizer.cpp \
 		  backend/AsmChecker.cpp \
+		  backend/Linker.cpp \
+		  backend/Backend.cpp \
 		  disassembler/Disassembler.cpp \
 		  preprocessor/AsmPreprocessor.cpp
 

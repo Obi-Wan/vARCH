@@ -1,0 +1,189 @@
+/*
+ * Linker.cpp
+ *
+ *  Created on: 09/feb/2013
+ *      Author: ben
+ */
+
+#include "Linker.h"
+
+#include "ErrorReporter.h"
+
+void
+Linker::link()
+{
+  this->moveMainToTop();
+  this->rebuildOffsets();
+  this->exposeGlobalLabels();
+  this->assignValuesToLabels();
+}
+
+INLINE void
+Linker::moveMainToTop()
+{
+  /* Let's put the main function in front of all the others */
+  for(deque<asm_function *>::iterator iter = program.functions.begin();
+      iter != program.functions.end(); iter++)
+  {
+    if (!(*iter)->name.compare("main")) {
+      /* Main found! */
+      asm_function * main = (*iter);
+      program.functions.erase(iter);
+      program.functions.insert(program.functions.begin(), main);
+      break;
+    }
+  }
+}
+
+INLINE void
+Linker::rebuildOffsets()
+{
+  size_t tempOffset = 0;
+  for(asm_function * const func : program.functions)
+  {
+    func->functionOffset = tempOffset;
+    rebuildFunctionOffsets(*func);
+
+    tempOffset += func->getSize();
+  }
+  for(asm_data_statement * const stmt : program.globals) {
+    stmt->offset = tempOffset;
+    tempOffset += stmt->getSize();
+  }
+}
+
+INLINE void
+Linker::rebuildFunctionOffsets(asm_function & func)
+{
+  size_t tempLocalOffset = 0;
+  for(asm_statement * stmt : func.stmts)
+  {
+    stmt->offset = tempLocalOffset;
+    tempLocalOffset += stmt->getSize();
+  }
+  for(asm_data_statement * stmt : func.uniqueLocals)
+  {
+    stmt->offset = tempLocalOffset;
+    tempLocalOffset += stmt->getSize();
+  }
+
+  // Distance from Frame Pointer
+  size_t offsetFromFP = 0;
+  const size_t allocatedSize = func.getStackedDataSize();
+
+  for(asm_data_statement * stmt : func.stackLocals)
+  {
+    stmt->offset = allocatedSize - offsetFromFP - 4;
+    offsetFromFP += stmt->getSize();
+  }
+}
+
+INLINE void
+Linker::exposeGlobalLabels()
+{
+  ErrorReporter errOut;
+
+  /* And fix their labels */
+  DebugPrintf(("-- Adding Functions to Global Labels - Phase --\n"));
+
+  for(asm_function * const func : program.functions)
+  {
+    asm_label_statement * const tempLabel =
+        new asm_label_statement(func->position, func->name, true);
+    tempLabel->offset = func->functionOffset;
+    func->stmts.push_front(tempLabel);
+
+    try {
+      program.globalSymbols.addLabel(tempLabel);
+    } catch (const WrongArgumentException & e) {
+      errOut.addErrorMsg(tempLabel->position, e);
+    }
+  }
+  for(asm_data_statement * const stmt : program.globals)
+  {
+    try {
+      if (stmt->getType() == ASM_LABEL_STATEMENT) {
+        asm_label_statement * l_stmt = (asm_label_statement *) stmt;
+        DebugPrintf(("Found label statement: %s!\n", l_stmt->label.c_str() ));
+
+        program.globalSymbols.addLabel(l_stmt);
+      }
+    } catch (const WrongArgumentException & e) {
+      errOut.addErrorMsg(stmt->position, e);
+    }
+  }
+  DebugPrintf(("-- Terminated: Adding Funcs to Global Labels - Phase --\n\n"));
+  if (errOut.hasErrors()) {
+    errOut.throwError( WrongArgumentException("Errors in labels definition") );
+  }
+}
+
+INLINE void
+Linker::assignValuesToLabels()
+{
+  bool error = false;
+
+  DebugPrintf(("-- Assign labels - Phase --\n"));
+
+  for(asm_function * func : program.functions)
+  {
+    DebugPrintf((" - Processing references of function: %s\n",
+                  func->name.c_str()));
+    for(ArgLabelRecord * ref : func->refs)
+    {
+      asm_label_arg & argument = *(ref->arg);
+      const string & labelName = argument.label;
+
+      DebugPrintf(("  - Processing label: %s\n", labelName.c_str()));
+      asm_label_statement * localLabel = func->localSymbols.getStmt(labelName);
+      if (localLabel) {
+        DebugPrintf(("    It is local, with position (in the program): %3u\n"
+                      "      is const: %5s, is shared: %5s\n",
+                      (uint32_t)localLabel->offset,
+                      localLabel->is_constant ? "true" : "false",
+                      localLabel->is_shared ? "true" : "false"));
+        if (localLabel->isShared()) {
+          /* TODO: add displaced referencing to Program Counter or other label*/
+          argument.content.val =
+                        int64_t(localLabel->offset + func->functionOffset);
+//          argument.type = DISPLACED;
+//          argument.content.regNum = PROGRAM_COUNTER;
+//          argument.displacement = int64_t(localLabel->offset)
+//                        - int64_t(argument.relOffset + ref->parent->offset);
+        } else {
+          argument.type = DISPLACED;
+          if (args.getOmitFramePointer()) {
+            argument.content.regNum = STACK_POINTER;
+            argument.displacement = (int32_t)(func->getStackedDataSize() - localLabel->offset);
+          } else {
+            argument.content.regNum = REG_ADDR_8;
+            argument.displacement = - int32_t(localLabel->offset);
+          }
+        }
+
+      } else {
+        DebugPrintf(("    It is not local, trying globally\n"));
+        asm_label_statement * globalLabel = program.globalSymbols.getStmt(labelName);
+
+        if (globalLabel) {
+          DebugPrintf(("    It is global, with position: %3u\n",
+                      (uint32_t)globalLabel->offset));
+          argument.content.val = (int32_t)globalLabel->offset;
+        } else {
+          DebugPrintf(("      ERROR!! It is not even global!\n"));
+          fprintf(stderr, "ERROR:%s at Line %4d\n%s\n"
+                  "--> Reference to not existing Label: '%s'\n",
+                  argument.position.fileNode->printString().c_str(),
+                  argument.position.first_line,
+                  argument.position.fileNode->printStringStackIncludes().c_str(),
+                  labelName.c_str());
+          error = true;
+        }
+      }
+    }
+  }
+  DebugPrintf(("-- Terminated: Assign labels - Phase --\n\n"));
+  if (error) {
+    throw WrongArgumentException("Errors in labels assignment");
+  }
+}

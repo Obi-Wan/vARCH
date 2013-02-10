@@ -131,14 +131,14 @@ ASTL_Tree::convertStatements(const vector<ASTL_Stmt *> & inStmts) const
 }
 
 void
-ASTL_Tree::emitAsm(asm_program & program)
+ASTL_Tree::emitAsm(asm_program & program) const
 {
-  for(ASTL_FunctionDef * func : functionDefs)
+  for(const ASTL_FunctionDef * func : functionDefs)
   {
     asm_function * destFunc = new asm_function(func->pos, func->name);
 
     // Convert parameters and return
-    for(ASTL_Param * astParam : func->params)
+    for(const ASTL_Param * astParam : func->params)
     {
       asm_immediate_arg * srcArg =
           ArgumentsHandler::getReg( astParam->pos, astParam->srcReg.c_str(),

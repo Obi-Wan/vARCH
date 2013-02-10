@@ -45,8 +45,6 @@ public:
     globals.insert(globals.end(), _globals.begin(), _globals.end());
   }
 
-  void rebuildOffsets();
-
   size_t getFunciontsTotalSize() const {
     size_t totSize = 0;
     for(asm_function * func : functions) { totSize += func->getSize(); }
@@ -58,12 +56,6 @@ public:
     return totSize;
   }
 
-  void assignFunctionParameters();
-
-  void moveMainToTop();
-  void doRegisterAllocation(const AsmArgs & args);
-  void exposeGlobalLabels();
-  void assignValuesToLabels(const AsmArgs & args);
   void assemble(const string & outputName);
 
   void emitDebugSymbols(const string & outputName) const;

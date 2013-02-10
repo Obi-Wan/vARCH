@@ -32,7 +32,7 @@ public:
     globals.insert(globals.end(), var_decl->begin(), var_decl->end());
   }
 
-  void emitAsm(asm_program & program);
+  void emitAsm(asm_program & program) const;
   void printTree();
 };
 

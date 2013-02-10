@@ -95,32 +95,6 @@ asm_function::finalize()
   DebugPrintf(("- Terminated: Adding stmts and locals -\n\n"));
 }
 
-void
-asm_function::rebuildOffsets()
-{
-  size_t tempLocalOffset = 0;
-  for(asm_statement * stmt : stmts)
-  {
-    stmt->offset = tempLocalOffset;
-    tempLocalOffset += stmt->getSize();
-  }
-  for(asm_data_statement * stmt : uniqueLocals)
-  {
-    stmt->offset = tempLocalOffset;
-    tempLocalOffset += stmt->getSize();
-  }
-
-  // Distance from Frame Pointer
-  size_t offsetFromFP = 0;
-  const size_t allocatedSize = getStackedDataSize();
-
-  for(asm_data_statement * stmt : stackLocals)
-  {
-    stmt->offset = allocatedSize - offsetFromFP - 4;
-    offsetFromFP += stmt->getSize();
-  }
-}
-
 inline void
 asm_function::checkAndAddLabel(asm_statement * stmt)
 {

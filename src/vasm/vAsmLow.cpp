@@ -6,12 +6,10 @@
  */
 
 #include <cstdlib>
+#include "AsmArgs.h"
 #include "asm-program.h"
 #include "IR_Low_parser.h"
-#include "backend/AsmChecker.h"
-#include "AST/AST_Low/AST_Low_Tree.h"
-#include "AsmArgs.h"
-#include "disassembler/Disassembler.h"
+#include "backend/Backend.h"
 
 using namespace std;
 
@@ -63,42 +61,14 @@ main(int argc, char** argv)
     if (args.getOnlyValidate()) {
       ast_tree.printTree();
     } else {
-      asm_program program;
-      ast_tree.emitAsm(program);
+      Backend backend(args);
+      backend.sourceAST(ast_tree);
 
-      program.moveMainToTop();
-      AsmChecker::checkInstructions(program, usingTemps);
+      backend.emit();
 
 #ifdef DEBUG
-      printAssembler(program);
+      printAssembler(backend.getProgram());
 #endif
-
-      if (usingTemps) {
-        program.assignFunctionParameters();
-        program.doRegisterAllocation(args);
-      } else {
-        AsmChecker::ensureTempsUsage(program, usingTemps);
-      }
-
-      program.rebuildOffsets();
-      program.exposeGlobalLabels();
-      program.assignValuesToLabels(args);
-      program.assemble( args.getOutputName() );
-
-      if (args.getDisassembleResult()) {
-        Disassembler().disassembleProgram(program);
-      }
-
-      if (!args.getDebugSymbolsName().empty()) {
-        const string & symName = args.getDebugSymbolsName();
-        const size_t & symNameSize = symName.size();
-        if (symNameSize > 4 && !symName.substr(symNameSize-4,4).compare(".xml"))
-        {
-          program.emitXMLDebugSymbols(args.getDebugSymbolsName());
-        } else {
-          program.emitDebugSymbols(args.getDebugSymbolsName());
-        }
-      }
     }
     cleanParser();
     printDefines(defines);

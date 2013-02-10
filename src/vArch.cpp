@@ -22,7 +22,7 @@ main(int argc, char** argv) {
   Chipset chipset(MAX_MEM_ADDR, new DoubleWord[NUM_MEM_BYTES]);
   try {
     chipset.startClock();
-  } catch (BasicException e) {
+  } catch (const BasicException & e) {
     printf("An exception occurred: %s\n", e.what());
   }
 
