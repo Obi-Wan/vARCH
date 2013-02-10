@@ -19,12 +19,7 @@ AsmArgs::parse() throw (WrongArgumentException)
     const string tempArg(argv[argNum]);
 
     if (!tempArg.compare("-c")) {
-      /* Tells which file to compile */
-      CHECK_THROW( inputName.empty(),
-          WrongArgumentException("Double definition of input file") );
-      CHECK_THROW( (++argNum < argc),
-          WrongArgumentException("You didn't specify the input name") );
-      inputName.assign(argv[argNum]);
+      onlyCompile = true;
 
     } else if (!tempArg.compare("-o")) {
       /* Tells which file will be the output */
@@ -77,11 +72,17 @@ AsmArgs::parse() throw (WrongArgumentException)
     } else if (!tempArg.compare("-h")) {
       throw WrongArgumentException("");
     } else {
-      throw WrongArgumentException(string("Unknown option: ") + argv[argNum]);
+      inputFiles.push_back(argv[argNum]);
     }
   }
 
-  InfoPrintf(("Input  filename: %s\n", inputName.c_str()));
+#ifdef INFO
+  string filenames;
+  for(uint32_t nameNum = 0; nameNum < inputFiles.size(); nameNum++) {
+    filenames += " " + inputFiles[nameNum];
+  }
+#endif
+  InfoPrintf(("Input filenames: %s\n", filenames.c_str()));
   InfoPrintf(("Output filename: %s\n", outputName.c_str()));
 #ifdef INFO
   string includes;
@@ -103,32 +104,25 @@ AsmArgs::parse() throw (WrongArgumentException)
   InfoPrintf(("Omit frame pointer: %s\n\n",
                 omitFramePointer ? "Enabled" : "Disabled"));
 
-  CHECK_THROW( !inputName.empty(),
-          WrongArgumentException("you didn't specify the input file") );
+  CHECK_THROW( !inputFiles.empty(),
+          WrongArgumentException("You didn't specify any input file") );
   CHECK_THROW( !outputName.empty(),
-          WrongArgumentException("you didn't specify the output file") );
+          WrongArgumentException("You didn't specify the output file") );
 }
 
 void
 AsmArgs::printHelp() const throw()
 {
-  cout << "Syntax is: 'new-asm -c <input_file> -o <output_file>'" << endl;
-  cout << "To specify additional paths for searching the include files:" << endl
-        << "  -I<include_path> as many times as you want" << endl;
-  cout << "To generate a file containing debug symbols:" << endl
-        << "  -d <output_file> (if extension is .xml, an XML file will be "
-            "generated)" << endl;
-  cout << "To let the assembler auto allocate registers:" << endl
-        << "  add flag -reg-auto-alloc" << endl;
-  cout << "To let the assembler coalesce registers (when auto allocating):"
-        << endl << "  add flag -reg-coalesce" << endl;
-  cout << "To disassemble the generated code, and see the nice output:"
-        << endl << "  add flag -disassemble-result" << endl;
-  cout << "To enable some sort of optimizations:" << endl
-        << "  -O<optimization_level> with <optimization_level> as a number "
-        << "between 0 and 3" << endl;
-  cout << "To omit frame pointer (not supported, yet):"
-        << endl << "  add flag -fomit-frame-pointer" << endl;
-  cout << "To only parse, without emitting code:"
-        << endl << "  add flag -only-validate" << endl;
+  cout << "Syntax is: 'new-asm <input_files> -o <output_file> [options]'" << endl;
+  cout << " -only-validate : only parse, without emitting code" << endl;
+  cout << " -c : Just compiles, and output a static object file" << endl;
+  cout << " -I<include_path> : adds an include path" << endl;
+  cout << " -d <output_file> : generates debug symbols file "
+        << "(if extension is .xml, an XML file will be generated)" << endl;
+  cout << " -reg-auto-alloc : Lets the assembler auto allocate registers" << endl;
+  cout << " -reg-coalesce : (if -reg-auto-alloc) coalesces registers" << endl;
+  cout << " -disassemble-result : outputs the disassembled code" << endl;
+  cout << " -O<optimization_level> : between 0 and 3, enables different "
+        << "optimization levels" << endl;
+  cout << " -fomit-frame-pointer : omits frame pointer (not working, yet)" << endl;
 }

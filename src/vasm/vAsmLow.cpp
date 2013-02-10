@@ -43,33 +43,39 @@ main(int argc, char** argv)
   }
   setIncludeDirs(&args.getIncludeDirs());
 
-  if (!openFirstFile(args.getInputName().c_str()))
-  {
-    fprintf(stderr, "I couldn't open the ASM file to process: %s\n",
-            args.getInputName().c_str());
-    return (EXIT_FAILURE);
-  }
-  const bool & usingTemps = args.getRegAutoAlloc();
   try {
-    ASTL_Tree ast_tree;
+    Backend backend(args);
 
-    int res = yyparse(ast_tree, defines);
-    if (res) {
-      fprintf(stderr, "An error may have occurred, code: %3d\n", res);
-      throw BasicException("Error parsing\n");
+    for(const string & filename : args.getInputName()) {
+      if (!openFirstFile(filename.c_str()))
+      {
+        fprintf(stderr, "I couldn't open the ASM file to process: %s\n",
+                filename.c_str());
+        return (EXIT_FAILURE);
+      }
+
+      ASTL_Tree ast_tree;
+
+      int32_t res = yyparse(ast_tree, defines);
+      if (res) {
+        fprintf(stderr, "An error may have occurred, code: %3d\n", res);
+        throw BasicException("Error parsing\n");
+      }
+      if (args.getOnlyValidate()) {
+        ast_tree.printTree();
+      } else {
+        backend.sourceAST(ast_tree);
+      }
     }
-    if (args.getOnlyValidate()) {
-      ast_tree.printTree();
-    } else {
-      Backend backend(args);
-      backend.sourceAST(ast_tree);
 
+    if (!args.getOnlyValidate()) {
       backend.emit();
+    }
 
 #ifdef DEBUG
       printAssembler(backend.getProgram());
 #endif
-    }
+
     cleanParser();
     printDefines(defines);
 

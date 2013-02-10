@@ -18,7 +18,7 @@ class AsmArgs {
   int argc;
   char** argv;
 
-  string inputName;
+  vector<string> inputFiles;
   string outputName;
   string debugSymbolsName;
   vector<string> includeDirs;
@@ -28,27 +28,29 @@ class AsmArgs {
   bool regAutoAlloc;
   bool regCoalesce;
 
+  bool onlyCompile;
   bool onlyValidate;
   bool disassembleResult;
   bool omitFramePointer;
 public:
   AsmArgs(int _argc, char** _argv)
     : argc(_argc), argv(_argv), optimLevel(2), regAutoAlloc(false)
-    , regCoalesce(false), onlyValidate(false), disassembleResult(false)
-    , omitFramePointer(false)
+    , regCoalesce(false), onlyCompile(false), onlyValidate(false)
+    , disassembleResult(false), omitFramePointer(false)
   { }
 
   void parse() throw(WrongArgumentException);
 
   void printHelp() const throw();
 
-  const string &getInputName() const throw() { return inputName; }
+  const vector<string> & getInputName() const throw() { return inputFiles; }
   const string &getOutputName() const throw() { return outputName; }
   const string &getDebugSymbolsName() const throw() { return debugSymbolsName; }
   const vector<string> &getIncludeDirs() const throw() { return includeDirs; }
   const uint32_t &getOptimizationLevel() const throw() { return optimLevel; }
   const bool &getRegAutoAlloc() const throw() { return regAutoAlloc; }
   const bool &getRegCoalesce() const throw() { return regCoalesce; }
+  const bool &getOnlyCompile() const throw() { return onlyCompile; }
   const bool &getOnlyValidate() const throw() { return onlyValidate; }
   const bool &getDisassembleResult() const throw() { return disassembleResult; }
   const bool &getOmitFramePointer() const throw() { return omitFramePointer; }
