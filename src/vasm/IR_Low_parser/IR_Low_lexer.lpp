@@ -13,6 +13,9 @@
 %x PREPROC_STATE_DEFINE_ARGS
 %x PREPROC_STATE_DEFINE_BODY
 
+%x PREPROC_STATE_LINE_DEF
+%x PREPROC_STATE_LINE_NUMBER
+
 DIGIT     [0-9]
 LETTER    [a-zA-Z]
 PUNCT     [\-!"#$%&'()*+,./:;<=>?@[\\\]^_`{|}~]
@@ -73,6 +76,8 @@ openFile(const char * filename, const char *& path);
 <INITIAL>{
 
 ^[ \t]*"#"[ \t]*include { BEGIN(PREPROC_STATE_INCLUDE_FILE); }
+
+^[ \t]*"#"[ \t]*line { BEGIN(PREPROC_STATE_LINE_NUMBER); }
 
 ^[ \t]*"#"[ \t]*define { BEGIN(PREPROC_STATE_DEFINE_NAME); return PREPROC_DEFINE; }
 
@@ -232,6 +237,51 @@ BITCAST {
 
 .|\n      {
             fprintf( stderr, "Line %4d bad include line\n", yylloc->first_line);
+            includesTree->printStderrCurrent();
+            includesTree->printStderrStackIncludes();
+            exit(1);
+          }
+}
+
+<PREPROC_STATE_LINE_NUMBER>{
+
+[ \t]+      /* eat up whitespace */
+
+
+{DIGIT}+ {
+            yylloc->first_line = atoi(yytext);
+            yylloc->last_line = yylloc->first_line;
+            BEGIN(PREPROC_STATE_LINE_DEF);
+          }
+
+. {
+            fprintf( stderr, "Line %4d Lexing Error, After \"line\" pre-"
+                     "processor statement there should be a digit. This was "
+                     "found instead: '%s'\n",
+                     yylloc->first_line, yytext );
+            includesTree->printStderrCurrent();
+            includesTree->printStderrStackIncludes();
+            exit(1);
+          }
+}
+
+<PREPROC_STATE_LINE_DEF>{
+
+[ \t]+      /* eat up whitespace */
+
+\n {
+            yylloc->first_line++;
+            yylloc->first_column = 1;
+            yylloc->last_line++;
+            yylloc->last_column = 1;
+            BEGIN(INITIAL);
+          }
+
+. {
+            fprintf( stderr, "Line %4d Lexing Error, After digit of \"line\" "
+                     "pre-processor statement there should be a n-line. This "
+                     "was found instead: '%s'\n",
+                     yylloc->first_line, yytext );
             includesTree->printStderrCurrent();
             includesTree->printStderrStackIncludes();
             exit(1);
