@@ -13,7 +13,7 @@
 using namespace std;
 
 void
-AsmArgs::parse() throw (WrongArgumentException)
+AsmArgs::parse()
 {
   for(int32_t argNum = 1; argNum < argc; argNum++) {
     const string tempArg(argv[argNum]);

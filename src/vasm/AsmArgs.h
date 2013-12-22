@@ -39,11 +39,32 @@ public:
     , disassembleResult(false), omitFramePointer(false)
   { }
 
-  void parse() throw(WrongArgumentException);
+  void parse();
 
   void printHelp() const throw();
 
-  const vector<string> & getInputName() const throw() { return inputFiles; }
+  const vector<const string> getSrcInputNames() const {
+    vector<const string> tempOut;
+    for(const string & str : inputFiles) {
+      size_t str_len = str.size();
+      CHECK_THROW(str_len >= 2, WrongArgumentException("Filename too short: " + str));
+      if (str.substr(str_len-3, str_len-1).compare(".s")) {
+        tempOut.push_back(str);
+      }
+    }
+    return tempOut;
+  }
+  const vector<const string> getObjInputNames() const {
+    vector<const string> tempOut;
+    for(const string & str : inputFiles) {
+      size_t str_len = str.size();
+      CHECK_THROW(str_len >= 2, WrongArgumentException("Filename too short: " + str));
+      if (str.substr(str_len-3, str_len-1).compare(".o")) {
+        tempOut.push_back(str);
+      }
+    }
+    return tempOut;
+  }
   const string &getOutputName() const throw() { return outputName; }
   const string &getDebugSymbolsName() const throw() { return debugSymbolsName; }
   const vector<string> &getIncludeDirs() const throw() { return includeDirs; }

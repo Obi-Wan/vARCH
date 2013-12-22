@@ -46,7 +46,7 @@ main(int argc, char** argv)
   try {
     Backend backend(args);
 
-    for(const string & filename : args.getInputName()) {
+    for(const string & filename : args.getSrcInputNames()) {
       if (!openFirstFile(filename.c_str()))
       {
         fprintf(stderr, "I couldn't open the ASM file to process: %s\n",

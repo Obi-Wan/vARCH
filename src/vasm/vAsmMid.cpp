@@ -40,10 +40,10 @@ main(int argc, char** argv)
   }
   setIncludeDirs(&args.getIncludeDirs());
 
-  if (!openFirstFile(args.getInputName().c_str()))
+  if (!openFirstFile(args.getSrcInputNames().c_str()))
   {
     fprintf(stderr, "I couldn't open the IRM file to process: %s\n",
-            args.getInputName().c_str());
+            args.getSrcInputNames().c_str());
     return (EXIT_FAILURE);
   }
   const bool & usingTemps = args.getRegAutoAlloc();
