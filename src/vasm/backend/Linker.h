@@ -15,6 +15,8 @@ class Linker {
 
   const AsmArgs & args;
 
+  void checkNoPrototypes() const;
+
   void moveMainToTop();
   void rebuildOffsets();
   void rebuildFunctionOffsets(asm_function & func);

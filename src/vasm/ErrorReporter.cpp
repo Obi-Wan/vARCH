@@ -18,6 +18,20 @@ ErrorReporter::addErrorMsg(const string && msg)
 }
 
 void
+ErrorReporter::addErrorMsg(const YYLTYPE & pos, const string && err)
+{
+  stringstream stream;
+  stream << "ERROR:" << pos.fileNode->printString() << " at Line ";
+  stream.width(4);
+  stream << pos.first_line;
+  stream.width(0);
+  stream << endl << pos.fileNode->printStringStackIncludes() << endl;
+  stream << "--> " << err << endl;
+
+  this->addErrorMsg(stream.str());
+}
+
+void
 ErrorReporter::addErrorMsg(const YYLTYPE & pos, const BasicException & e)
 {
   stringstream stream;

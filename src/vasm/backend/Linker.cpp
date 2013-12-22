@@ -12,10 +12,29 @@
 void
 Linker::link()
 {
+  this->checkNoPrototypes();
+
   this->moveMainToTop();
   this->rebuildOffsets();
   this->exposeGlobalLabels();
   this->assignValuesToLabels();
+}
+
+INLINE void
+Linker::checkNoPrototypes() const
+{
+  ErrorReporter errOut;
+
+  for(const asm_function * func : program.functions)
+  {
+    if (func->stmts.empty()) {
+      errOut.addErrorMsg(func->position,
+          "Undefined reference to function: " + func->name);
+    }
+  }
+  if (errOut.hasErrors()) {
+    errOut.throwError( WrongArgumentException("Errors in linking") );
+  }
 }
 
 INLINE void

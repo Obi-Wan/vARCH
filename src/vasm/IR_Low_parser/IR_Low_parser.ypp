@@ -37,6 +37,7 @@
   class ASTL_StmtAssign * stmtAssign;
 
   class ASTL_FunctionDef * function;
+  class ASTL_FunctionProto * functionProto;
   class ASTL_Param * function_parameter;
 
   list<ASTL_Stmt *> * listOfStatements;
@@ -122,8 +123,10 @@ void yyerror (YYLTYPE *locp, ASTL_Tree & ast_tree, AsmPreprocessor & def, char c
 %type <function> function
 %type <function> function_init_and_body
 %type <function> function_init_all
-%type <function> function_init_params
-%type <function> function_init
+
+%type <functionProto> function_proto
+%type <functionProto> function_init_params
+%type <functionProto> function_init
 
 %type <function_parameter> function_parameter
 
@@ -135,8 +138,9 @@ program
       ;
 
 block
-      : function      { ast_tree.addFunctionDef( $1 ); }
-      | globals       { ast_tree.addGlobalVars( $1 ); delete $1; }
+      : function        { ast_tree.addFunction( $1 ); }
+      | function_proto  { ast_tree.addFunction( $1 ); }
+      | globals         { ast_tree.addGlobalVars( $1 ); delete $1; }
       | define
       | undefine
       | blank_lines
@@ -184,8 +188,12 @@ function_init_all
       : function_init_all locals
                   { $1->addLocals( $2 ); delete $2; $$ = $1; }
       | function_init_params
-                  { $$ = $1; }
+                  { $$ = new ASTL_FunctionDef(* $1); delete $1; }
       ;
+
+function_proto
+      : function_init_params KEYWORD_END
+                  { $1->finalize(); $$ = $1; defines.delDefine("__FUNCTION__"); }
 
 function_init_params
       : function_init_params function_parameter
@@ -196,7 +204,7 @@ function_init_params
 
 function_init
       : KEYWORD_FUNCTION STRING blank_lines
-                  { $$ = new ASTL_FunctionDef( yylloc, move(string($2.text, $2.len)) );
+                  { $$ = new ASTL_FunctionProto( yylloc, move(string($2.text, $2.len)) );
                     defines.addDefine("__FUNCTION__", move(string($2.text, $2.len)) ); }
       ;
 

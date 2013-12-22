@@ -14,11 +14,28 @@ ASTL_FunctionDef::~ASTL_FunctionDef()
 }
 
 void
-ASTL_FunctionDef::finalize()
+ASTL_FunctionProto::copyParameters(const vector<ASTL_Param *> & _params)
+{
+  this->params.reserve(this->params.size() + _params.size());
+  for(const ASTL_Param * param : _params)
+  {
+    this->params.push_back( new ASTL_Param(*param) );
+  }
+}
+
+void
+ASTL_FunctionProto::finalize()
 {
 #ifdef DEBUG
   this->printFunction();
 #endif
+}
+
+void
+ASTL_FunctionProto::printFunction()
+{
+  DebugPrintf(("Line: %03d Function Proto: %s\n", this->pos.first_line,
+                this->name.c_str()));
 }
 
 void

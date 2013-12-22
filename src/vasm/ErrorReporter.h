@@ -21,6 +21,7 @@ class ErrorReporter {
   list<string> listOfErrMsgs;
 public:
   void addErrorMsg(const string && err);
+  void addErrorMsg(const YYLTYPE & pos, const string && err);
   void addErrorMsg(const YYLTYPE & pos, const BasicException & e);
 
   static void printError(const YYLTYPE & pos, const BasicException & e);

@@ -39,12 +39,22 @@ public:
   ASTL_FunctionProto(const YYLTYPE & _pos, const string && _name)
     : ASTL_Node(_pos), name(move(_name))
   { }
+  ASTL_FunctionProto(const YYLTYPE & _pos, const string & _name)
+    : ASTL_Node(_pos), name(_name)
+  { }
+  ASTL_FunctionProto(const ASTL_FunctionProto & old)
+    : ASTL_Node(old.pos), name(old.name)
+  { this->copyParameters(old.params); }
 
   void addParameter(ASTL_Param * const param) { params.push_back(param); }
+  void copyParameters(const vector<ASTL_Param *> & _params);
 
   ~ASTL_FunctionProto() {
     for(ASTL_Param * param : params) { delete param; }
   }
+
+  void finalize();
+  virtual void printFunction();
 };
 
 class ASTL_FunctionDef : public ASTL_FunctionProto {
@@ -57,6 +67,9 @@ public:
   ASTL_FunctionDef(const YYLTYPE & _pos, const string && _name)
     : ASTL_FunctionProto(_pos, move(_name))
   { }
+  ASTL_FunctionDef(const ASTL_FunctionProto & func)
+    : ASTL_FunctionProto(func)
+  { }
 
   ~ASTL_FunctionDef();
 
@@ -66,8 +79,7 @@ public:
     locals.insert(stmts.end(), stmtsList->begin(), stmtsList->end());
   }
 
-  void finalize();
-  void printFunction();
+  virtual void printFunction();
 };
 
 #endif /* AST_LOW_FUNCTION_H_ */

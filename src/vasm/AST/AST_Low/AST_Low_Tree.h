@@ -21,11 +21,16 @@ public:
 
   vector<ASTL_Stmt *> globals;
   vector<ASTL_FunctionDef *> functionDefs;
+  vector<ASTL_FunctionProto *> functionProtos;
 
   ~ASTL_Tree();
 
-  void addFunctionDef(ASTL_FunctionDef * func_def) {
+  void addFunction(ASTL_FunctionDef * func_def) {
     functionDefs.push_back(func_def);
+  }
+
+  void addFunction(ASTL_FunctionProto * func_def) {
+    functionProtos.push_back(func_def);
   }
 
   void addGlobalVars(list<ASTL_Stmt *> * var_decl) {

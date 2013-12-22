@@ -133,6 +133,7 @@ ASTL_Tree::convertStatements(const vector<ASTL_Stmt *> & inStmts) const
 void
 ASTL_Tree::emitAsm(asm_program & program) const
 {
+  // Functions
   for(const ASTL_FunctionDef * func : functionDefs)
   {
     asm_function * destFunc = new asm_function(func->pos, func->name);
@@ -158,6 +159,28 @@ ASTL_Tree::emitAsm(asm_program & program) const
     {
       list<asm_statement *> && tempStmts = this->convertStatements(func->stmts);
       destFunc->addStmts(move(tempStmts));
+    }
+    destFunc->finalize();
+
+    program.functions.push_back(destFunc);
+  }
+
+  // Prototypes
+  for(const ASTL_FunctionProto * func : functionProtos)
+  {
+    asm_function * destFunc = new asm_function(func->pos, func->name);
+
+    // Convert parameters and return
+    for(const ASTL_Param * astParam : func->params)
+    {
+      asm_immediate_arg * srcArg =
+          ArgumentsHandler::getReg( astParam->pos, astParam->srcReg.c_str(),
+                                    BYTE4, REG, REG_NO_ACTION);
+      asm_immediate_arg * destArg =
+          ArgumentsHandler::getReg( astParam->pos, astParam->destId.c_str(),
+                                    BYTE4, REG, REG_NO_ACTION);
+
+      destFunc->addParameter(ParametersHandler::getParam(astParam->pos, srcArg, destArg));
     }
     destFunc->finalize();
 
