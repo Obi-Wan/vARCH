@@ -12,6 +12,7 @@
 #include "RegAllocator.h"
 #include "Optimizer.h"
 #include "Linker.h"
+#include "ObjHandler.h"
 #include "../disassembler/Disassembler.h"
 
 void
@@ -144,6 +145,31 @@ Backend::doRegisterAllocation()
 }
 
 void
+Backend::loadObj(const string & filename)
+{
+  asm_program prog;
+  ObjLoader reader(filename);
+  reader.readObj(prog);
+
+  // Let's merge the two into "this->program"
+  program.functions.insert(program.functions.begin(), prog.functions.begin(),
+      prog.functions.end());
+  program.globals.insert(program.globals.begin(), prog.globals.begin(),
+      prog.globals.end());
+
+  // Let's clear temporary object, so that it doesn't dispose the merged objects
+  prog.functions.clear();
+  prog.globals.clear();
+}
+
+void
+Backend::saveObj(const string & filename)
+{
+  ObjWriter writer(filename);
+  writer.writeObj(this->program);
+}
+
+void
 Backend::emit()
 {
   const bool usingTemps = args.getRegAutoAlloc();
@@ -157,13 +183,24 @@ Backend::emit()
     AsmChecker::ensureTempsUsage(program, usingTemps);
   }
 
-  Linker linker(program, args);
-  linker.link();
+  for(const string & filename : args.getObjInputNames())
+  {
+    this->loadObj(filename);
+  }
 
-  program.assemble( args.getOutputName() );
+  const string & output_name = args.getOutputName();
 
-  if (args.getDisassembleResult()) {
-    Disassembler().disassembleProgram(program);
+  if (args.getOnlyCompile()) {
+    this->saveObj( output_name );
+  } else {
+    Linker linker(program, args);
+    linker.link();
+
+    program.assemble( output_name );
+
+    if (args.getDisassembleResult()) {
+      Disassembler().disassembleProgram(program);
+    }
   }
 
   if (!args.getDebugSymbolsName().empty()) {
