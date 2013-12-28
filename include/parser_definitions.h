@@ -99,9 +99,9 @@ public:
     assignNew("STACK");
     assignNew("PUSH");
     assignNew("POP");
-    assignNew("JSR");
 
-    assignNew("JMP", N_ARGS_ONE + JUMP);
+    assignNew("JSR", N_ARGS_ONE + JUMP);
+    assignNew("JMP");
     assignNew("IFJ", N_ARGS_ONE + JUMP + CONDITIONAL);
     assignNew("IFNJ");
     assignNew("TCJ");

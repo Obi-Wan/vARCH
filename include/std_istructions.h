@@ -159,9 +159,9 @@ enum StdInstructions {
   STACK,
   PUSH,
   POP,
-  JSR,
 
-  JMP           = N_ARGS_ONE + JUMP,
+  JSR           = N_ARGS_ONE + JUMP,
+  JMP,
   IFJ           = N_ARGS_ONE + JUMP + CONDITIONAL,
   IFNJ,
   TCJ,
