@@ -76,13 +76,18 @@ AsmArgs::parse()
     }
   }
 
+  InfoPrintf(("Input filenames (Source): \n"));
 #ifdef INFO
-  string filenames;
-  for(uint32_t nameNum = 0; nameNum < inputFiles.size(); nameNum++) {
-    filenames += " " + inputFiles[nameNum];
+  for (const string & filename : this->getSrcInputNames()) {
+    InfoPrintf(("  - %s\n", filename.c_str()));
   }
 #endif
-  InfoPrintf(("Input filenames: %s\n", filenames.c_str()));
+  InfoPrintf(("Input filenames (Object): \n"));
+#ifdef INFO
+  for (const string & filename : this->getObjInputNames()) {
+    InfoPrintf(("  - %s\n", filename.c_str()));
+  }
+#endif
   InfoPrintf(("Output filename: %s\n", outputName.c_str()));
 #ifdef INFO
   string includes;
@@ -101,6 +106,8 @@ AsmArgs::parse()
                 disassembleResult ? "Enabled" : "Disabled"));
   InfoPrintf(("Only Validating: %s\n",
                 onlyValidate ? "Enabled" : "Disabled"));
+  InfoPrintf(("Only Compiling: %s\n",
+                onlyCompile ? "Enabled" : "Disabled"));
   InfoPrintf(("Omit frame pointer: %s\n\n",
                 omitFramePointer ? "Enabled" : "Disabled"));
 

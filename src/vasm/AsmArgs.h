@@ -48,7 +48,7 @@ public:
     for(const string & str : inputFiles) {
       size_t str_len = str.size();
       CHECK_THROW(str_len >= 2, WrongArgumentException("Filename too short: " + str));
-      if (str.substr(str_len-3, str_len-1).compare(".s")) {
+      if (!str.substr(str_len-2, 2).compare(".s")) {
         tempOut.push_back(str);
       }
     }
@@ -59,7 +59,7 @@ public:
     for(const string & str : inputFiles) {
       size_t str_len = str.size();
       CHECK_THROW(str_len >= 2, WrongArgumentException("Filename too short: " + str));
-      if (str.substr(str_len-3, str_len-1).compare(".o")) {
+      if (!str.substr(str_len-2, 2).compare(".o")) {
         tempOut.push_back(str);
       }
     }
