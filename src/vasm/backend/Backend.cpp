@@ -156,10 +156,13 @@ Backend::loadObj(const string & filename)
       prog.functions.end());
   program.shared_vars.insert(program.shared_vars.begin(), prog.shared_vars.begin(),
       prog.shared_vars.end());
+  program.constants.insert(program.constants.begin(), prog.constants.begin(),
+      prog.constants.end());
 
   // Let's clear temporary object, so that it doesn't dispose the merged objects
   prog.functions.clear();
   prog.shared_vars.clear();
+  prog.constants.clear();
 }
 
 void

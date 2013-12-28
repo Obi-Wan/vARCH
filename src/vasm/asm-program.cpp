@@ -13,6 +13,7 @@ asm_program::~asm_program()
 {
   for(asm_function * func : functions) { delete func; }
   for(asm_data_statement * stmt : shared_vars) { delete stmt; }
+  for(asm_data_statement * stmt : constants) { delete stmt; }
 }
 
 void
