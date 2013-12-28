@@ -4,11 +4,11 @@
   .param    %R1         %T001 ; address of the string to print
 
   .local
-    .const .printCmd:
+    .printCmd: .const
       .i32_t  131072
-    .const .printCmd1:
+    .printCmd1: .const
       .i32_t  131073
-    .const .endChar:
+    .endChar: .const
       .i16_t   0
   .end
 
@@ -25,7 +25,7 @@
 
 .function   "get_end_char"
   .local
-    .const .endChar:
+    .endChar: .const
       .i8_t   0
   .end
 

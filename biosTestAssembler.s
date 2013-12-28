@@ -51,9 +51,9 @@
   .param  %R1         %T001
 
   .local
-    .const .decrement:
+    .decrement: .const
       .i32_t  2
-    .shared .numberOfCalls:
+    .numberOfCalls: .static
       .i32_t  0
     .lowerBound:
       .i32_t  0

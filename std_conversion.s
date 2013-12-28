@@ -12,7 +12,7 @@
   .param  %R3         %T003 ; string length
 
   .local
-    .const .baseAscii0:
+    .baseAscii0: .const
       .i8_t    48
   .end
 

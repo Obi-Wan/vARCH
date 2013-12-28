@@ -80,7 +80,7 @@ void yyerror (YYLTYPE *locp, ASTL_Tree & ast_tree, AsmPreprocessor & def, char c
 %token KEYWORD_I8 KEYWORD_I16 KEYWORD_I32 KEYWORD_I64
 
 %token KEYWORD_REAL KEYWORD_STRING
-%token KEYWORD_CONST KEYWORD_SHARED
+%token KEYWORD_CONST KEYWORD_STATIC
 %token KEYWORD_LOCAL KEYWORD_GLOBAL KEYWORD_FUNCTION KEYWORD_END KEYWORD_PARAM
 
 %token END_LINE
@@ -160,7 +160,7 @@ blank_lines
 
 type_qualifier
       : KEYWORD_CONST     { $$ = ASTL_const; }
-      | KEYWORD_SHARED    { $$ = ASTL_shared; }
+      | KEYWORD_STATIC    { $$ = ASTL_shared; }
       ;
 
 
@@ -241,8 +241,8 @@ stmt
       ;
 
 label_def
-      : type_qualifier label_def
-                  { $$ = $2; $$->addQualifier($1); }
+      : label_def type_qualifier
+                  { $$ = $1; $$->addQualifier($2); }
       | DEF_LABEL { $$ = new ASTL_StmtLabel( yylloc, move(string($1.text, $1.len)) ); }
       ;
 

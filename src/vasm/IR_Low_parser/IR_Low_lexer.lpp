@@ -109,7 +109,7 @@ BITCAST {
 \.string    return KEYWORD_STRING;
 
 \.const     return KEYWORD_CONST;
-\.shared    return KEYWORD_SHARED;
+\.static    return KEYWORD_STATIC;
 
 \.local     return KEYWORD_LOCAL;
 \.global    return KEYWORD_GLOBAL;
