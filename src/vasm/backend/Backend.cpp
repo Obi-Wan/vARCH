@@ -154,12 +154,12 @@ Backend::loadObj(const string & filename)
   // Let's merge the two into "this->program"
   program.functions.insert(program.functions.begin(), prog.functions.begin(),
       prog.functions.end());
-  program.globals.insert(program.globals.begin(), prog.globals.begin(),
-      prog.globals.end());
+  program.shared_vars.insert(program.shared_vars.begin(), prog.shared_vars.begin(),
+      prog.shared_vars.end());
 
   // Let's clear temporary object, so that it doesn't dispose the merged objects
   prog.functions.clear();
-  prog.globals.clear();
+  prog.shared_vars.clear();
 }
 
 void
@@ -176,29 +176,39 @@ Backend::emit()
 
   AsmChecker::checkInstructions(program, usingTemps);
 
-  if (usingTemps) {
+  if (usingTemps)
+  {
     this->assignFunctionParameters();
     this->doRegisterAllocation();
-  } else {
+  }
+  else
+  {
     AsmChecker::ensureTempsUsage(program, usingTemps);
   }
 
+  Linker linker(program, args);
+  linker.prelink();
+
   for(const string & filename : args.getObjInputNames())
   {
+    DebugPrintf(("LOADING: %s\n", filename.c_str()));
     this->loadObj(filename);
   }
 
   const string & output_name = args.getOutputName();
 
-  if (args.getOnlyCompile()) {
+  if (args.getOnlyCompile())
+  {
     this->saveObj( output_name );
-  } else {
-    Linker linker(program, args);
+  }
+  else
+  {
     linker.link();
 
     program.assemble( output_name );
 
-    if (args.getDisassembleResult()) {
+    if (args.getDisassembleResult())
+    {
       Disassembler().disassembleProgram(program);
     }
   }

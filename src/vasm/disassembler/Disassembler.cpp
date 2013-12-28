@@ -109,11 +109,17 @@ Disassembler::disassembleProgram(const asm_program & prog)
     }
     cout << "Stack Locals:" << endl;
     this->printLocals(func->stackLocals, func->functionOffset);
-    cout << "Unique Locals:" << endl;
-    this->printLocals(func->uniqueLocals, func->functionOffset);
 
     cout << "End Function \"" << func->name << "\"" << endl << endl;
   }
+
+  cout << "Shared Variables:" << endl;
+  this->printLocals(prog.shared_vars, 0);
+  cout << "End Shared Variables" << endl << endl;
+
+  cout << "Constants:" << endl;
+  this->printLocals(prog.constants, 0);
+  cout << "End Constants" << endl << endl;
 }
 
 inline void

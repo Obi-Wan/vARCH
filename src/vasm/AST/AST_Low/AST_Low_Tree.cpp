@@ -14,6 +14,85 @@
 
 #include <sstream>
 
+
+void
+ASTL_Tree::convertGlobalVariables(asm_program & prog,
+    const vector<ASTL_Stmt *> &astl_vars)
+const
+{
+  list<asm_data_statement *> && vars = convertVariables(astl_vars);
+
+  bool is_constant = false;
+  bool is_shared = false;
+
+  for(asm_data_statement * stmt : vars)
+  {
+    if (stmt->getType() == ASM_LABEL_STATEMENT)
+    {
+      is_constant = stmt->is_constant;
+      is_shared = stmt->is_shared;
+      ((asm_label_statement *)stmt)->is_global = true;
+    }
+
+    stmt->is_constant = is_constant;
+    stmt->is_shared = is_shared;
+
+    if (is_constant)
+    {
+      prog.addConstant( stmt );
+    }
+    else
+    {
+      prog.addSharedVar( stmt );
+    }
+  }
+}
+
+void
+ASTL_Tree::convertFunctionVariables(asm_program & prog, asm_function & func,
+    const vector<ASTL_Stmt *> & astl_vars) const
+{
+  list<asm_data_statement *> && vars = convertVariables(astl_vars);
+
+  bool is_constant = false;
+  bool is_shared = false;
+
+  for(asm_data_statement * stmt : vars)
+  {
+    if (stmt->getType() == ASM_LABEL_STATEMENT)
+    {
+      if (stmt->isShared())
+      {
+        // Change symbol names!!!! "label" -> "func::label"
+        asm_label_statement * new_stmt =
+            new asm_label_statement(*(asm_label_statement *)stmt, func.name);
+        new_stmt->is_global = false;
+
+        delete stmt;
+        stmt = new_stmt;
+      }
+      is_constant = stmt->is_constant;
+      is_shared = stmt->is_shared;
+    }
+
+    stmt->is_constant = is_constant;
+    stmt->is_shared = is_shared;
+
+    if (is_constant)
+    {
+      prog.addConstant( stmt );
+    }
+    else if (is_shared)
+    {
+      prog.addSharedVar( stmt );
+    }
+    else
+    {
+      func.addStackLocal( stmt );
+    }
+  }
+}
+
 list<asm_data_statement *>
 ASTL_Tree::convertVariables(const vector<ASTL_Stmt *> & variables) const
 {
@@ -24,7 +103,9 @@ ASTL_Tree::convertVariables(const vector<ASTL_Stmt *> & variables) const
     switch (tempStmt->getClass()) {
       case ASTL_STMT_LABEL: {
         ASTL_StmtLabel * stmt = (ASTL_StmtLabel *) tempStmt;
-        asm_label_statement * tempLabel = new asm_label_statement(stmt->pos, stmt->label);
+        asm_label_statement * tempLabel =
+            new asm_label_statement(stmt->pos, stmt->label,
+                atoi(stmt->size.c_str()), atoi(stmt->num.c_str()));
         tempLabel->is_shared = stmt->shared;
         tempLabel->is_constant = stmt->constant;
         destVars.push_back(tempLabel);
@@ -114,7 +195,9 @@ ASTL_Tree::convertStatements(const vector<ASTL_Stmt *> & inStmts) const
       }
       case ASTL_STMT_LABEL: {
         ASTL_StmtLabel * stmt = (ASTL_StmtLabel *) tempStmt;
-        asm_label_statement * asmStmt = new asm_label_statement(stmt->pos, stmt->label);
+        asm_label_statement * asmStmt =
+            new asm_label_statement(stmt->pos, stmt->label,
+                atoi(stmt->size.c_str()), atoi(stmt->num.c_str()));
         /* TODO: remove this forcing to true, and add relative referencing to
          * Program Counter */
         asmStmt->is_constant = stmt->constant || true;
@@ -151,10 +234,8 @@ ASTL_Tree::emitAsm(asm_program & program) const
       destFunc->addParameter(ParametersHandler::getParam(astParam->pos, srcArg, destArg));
     }
     // Convert locals
-    {
-      list<asm_data_statement *> && tempLocals = this->convertVariables(func->locals);
-      destFunc->addLocals(move(tempLocals));
-    }
+    this->convertFunctionVariables(program, *destFunc, func->locals);
+
     // Convert statements
     {
       list<asm_statement *> && tempStmts = this->convertStatements(func->stmts);
@@ -187,11 +268,8 @@ ASTL_Tree::emitAsm(asm_program & program) const
     program.functions.push_back(destFunc);
   }
 
-  // Convert Globals
-  {
-    list<asm_data_statement *> && tempGlobals = this->convertVariables(globals);
-    program.addGlobals(move(tempGlobals));
-  }
+  // Convert Shared Variables and Constants
+  this->convertGlobalVariables(program, globals);
 }
 
 void

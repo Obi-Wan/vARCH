@@ -26,7 +26,6 @@ struct asm_function {
   YYLTYPE position;
 
   ListOfStmts stmts;
-  ListOfDataStmts uniqueLocals;
   ListOfDataStmts stackLocals;
   ListOfParams parameters;
 
@@ -47,19 +46,18 @@ struct asm_function {
 
   void addStmt(asm_statement * stmt) { if (stmt) stmts.push_back(stmt); }
   void addStmts(list<asm_statement *> && stmts);
-  void addLocals(list<asm_data_statement *> && locs);
+
+  void addStackLocal(asm_data_statement * stmt) { if (stmt) stackLocals.push_back(stmt); }
+  void addStackLocals(list<asm_data_statement *> && locs);
   void addParameter(asm_function_param * p) { if (p) parameters.push_back(p); }
 
   size_t getInstrSize() const;
-  size_t getSharedDataSize() const;
 
   size_t getStackedDataSize() const;
 
   size_t getPaddingSize() const;
 
-  size_t getSize() const {
-    return getInstrSize() + getSharedDataSize() + getPaddingSize();
-  }
+  size_t getSize() const { return getInstrSize() + getPaddingSize(); }
 };
 
 inline size_t
@@ -67,14 +65,6 @@ asm_function::getInstrSize() const
 {
   size_t size = 0;
   for(const asm_statement * stmt : stmts) { size += stmt->getSize(); }
-  return size;
-}
-
-inline size_t
-asm_function::getSharedDataSize() const
-{
-  size_t size = 0;
-  for(const asm_data_statement * stmt : uniqueLocals) { size += stmt->getSize(); }
   return size;
 }
 
@@ -96,7 +86,7 @@ asm_function::getStackedDataSize() const
 inline size_t
 asm_function::getPaddingSize() const
 {
-  const size_t rest = ((getInstrSize() + getSharedDataSize()) % 4);
+  const size_t rest = getInstrSize() % 4;
   return (4 - rest) * (rest != 0);
 }
 

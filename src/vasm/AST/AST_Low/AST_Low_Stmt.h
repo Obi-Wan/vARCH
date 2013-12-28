@@ -190,14 +190,20 @@ class ASTL_StmtLabel : public ASTL_Stmt {
 public:
   const string label;
 
+  string size;
+  string num;
+
   bool constant;
   bool shared;
 
   ASTL_StmtLabel(const YYLTYPE & _pos, const string && id)
-    : ASTL_Stmt(_pos), label(move(id)), constant(false), shared(false)
+    : ASTL_Stmt(_pos), label(move(id)), size("0"), num("0"), constant(false)
+    , shared(false)
   { }
+  ASTL_StmtLabel(const ASTL_StmtLabel & old) = default;
+
   virtual const string toString() const {
-    return "(Label stmt: " + label + " ( "
+    return "(Label stmt: " + label + " ( size: " + size + ", num: " + num + ", "
         + (constant ? "const" : "non-const") + ", "
         + (shared ? "shared" : "non-shared") + " ) )";
   }

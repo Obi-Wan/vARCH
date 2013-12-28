@@ -13,7 +13,6 @@ asm_function::~asm_function()
 {
   for(asm_function_param * obj : this->parameters) { delete obj; }
   for(asm_data_statement * obj : this->stackLocals) { delete obj; }
-  for(asm_data_statement * obj : this->uniqueLocals) { delete obj; }
   for(asm_statement * obj : this->stmts) { delete obj; }
 
   for(ArgLabelRecord * ref : this->refs) { delete ref; }
@@ -27,27 +26,9 @@ asm_function::~asm_function()
  * @param locs
  */
 void
-asm_function::addLocals(list<asm_data_statement *> && locs)
+asm_function::addStackLocals(list<asm_data_statement *> && locs)
 {
-  bool is_constant = false;
-  bool is_shared = false;
-
-  for(asm_data_statement * stmt : locs)
-  {
-    if (stmt->getType() == ASM_LABEL_STATEMENT)
-    {
-      is_constant = stmt->is_constant;
-      is_shared = stmt->is_shared;
-    }
-
-    if (is_constant || is_shared) {
-      uniqueLocals.push_back( stmt );
-    } else {
-      stackLocals.push_back( stmt );
-    }
-    stmt->is_constant = is_constant;
-    stmt->is_shared = is_shared;
-  }
+  this->stackLocals.insert(this->stackLocals.end(), locs.begin(), locs.end());
 }
 
 void
@@ -80,11 +61,6 @@ asm_function::finalize()
     } else {
       checkAndAddLabel(stmt);
     }
-  }
-
-  for(asm_data_statement * stmt : uniqueLocals)
-  {
-    checkAndAddLabel(stmt);
   }
 
   for(asm_data_statement * stmt : stackLocals)

@@ -12,23 +12,26 @@
 asm_program::~asm_program()
 {
   for(asm_function * func : functions) { delete func; }
-  for(asm_data_statement * stmt : globals) { delete stmt; }
+  for(asm_data_statement * stmt : shared_vars) { delete stmt; }
 }
 
 void
 asm_program::assemble(const string & outputName)
 {
   Bloat bytecode;
-  bytecode.resize(getFunciontsTotalSize() + getGlobalsTotalSize(), 0);
+  const size_t tot_size = getFunciontsTotalSize()
+      + getSharedVarsTotalSize() + getConstantsTotalSize();
+
+  bytecode.resize(tot_size, 0);
   Bloat::iterator pos = bytecode.begin();
 
   for(asm_function * func : functions)
   {
     for(asm_statement * stmt : func->stmts) { stmt->emitCode(pos); }
-    for(asm_data_statement * stmt : func->uniqueLocals) { stmt->emitCode(pos); }
     pos += func->getPaddingSize();
   }
-  for (asm_data_statement * stmt : globals) { stmt->emitCode(pos); }
+  for (asm_data_statement * stmt : shared_vars) { stmt->emitCode(pos); }
+  for (asm_data_statement * stmt : constants) { stmt->emitCode(pos); }
 
   InfoPrintf(("Size of the generated file: %5u bytes\n",
               (uint32_t)bytecode.size() ));

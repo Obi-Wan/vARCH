@@ -287,32 +287,32 @@ Cpu::instructsOneArg(const int32_t& instr, int32_t& newFlags)
       break;
       
     case IFJ:
-      if (flags & F_ZERO) progCounter = temp;
+      if (flags & F_ZERO) progCounter += temp;
       break;
     case IFNJ:
-      if (! (flags & F_ZERO)) progCounter = temp;
+      if (! (flags & F_ZERO)) progCounter += temp;
       break;
     case JMP:
-      progCounter = temp;
+      progCounter += temp;
       break;
     case JSR:
       sP.push(progCounter);
-      progCounter = temp;
+      progCounter += temp;
       break;
     case TCJ:
-      if (flags & F_CARRY) progCounter = temp;
+      if (flags & F_CARRY) progCounter += temp;
       break;
     case TZJ:
-      if (flags & F_ZERO) progCounter = temp;
+      if (flags & F_ZERO) progCounter += temp;
       break;
     case TOJ:
-      if (flags & F_OVERFLOW) progCounter = temp;
+      if (flags & F_OVERFLOW) progCounter += temp;
       break;
     case TNJ:
-      if (flags & F_NEGATIVE) progCounter = temp;
+      if (flags & F_NEGATIVE) progCounter += temp;
       break;
     case TSJ:
-      if (flags & F_SVISOR) progCounter = temp;
+      if (flags & F_SVISOR) progCounter += temp;
       break;
       
     default:
@@ -486,22 +486,22 @@ Cpu::instructsThreeArg(const int32_t& instr, int32_t& newFlags)
     case BGET:
       break;
     case IFEQJ:
-      if (temp2 == temp3) progCounter = temp1;
+      if (temp2 == temp3) progCounter += temp1;
       break;
     case IFNEQJ:
-      if (temp2 != temp3) progCounter = temp1;
+      if (temp2 != temp3) progCounter += temp1;
       break;
     case IFLOJ:
-      if (temp2 < temp3) progCounter = temp1;
+      if (temp2 < temp3) progCounter += temp1;
       break;
     case IFMOJ:
-      if (temp2 > temp3) progCounter = temp1;
+      if (temp2 > temp3) progCounter += temp1;
       break;
     case IFLEJ:
-      if (temp2 <= temp3) progCounter = temp1;
+      if (temp2 <= temp3) progCounter += temp1;
       break;
     case IFMEJ:
-      if (temp2 >= temp3) progCounter = temp1;
+      if (temp2 >= temp3) progCounter += temp1;
       break;
 
     default:

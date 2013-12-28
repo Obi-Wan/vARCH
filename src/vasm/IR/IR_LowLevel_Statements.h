@@ -67,7 +67,7 @@ struct asm_instruction_statement : asm_statement {
 
   asm_instruction_statement * addArg(asm_arg * newArg) {
     args.push_back(newArg);
-    newArg->relOffset = this->getSize();
+    newArg->relOffset = this->getSize() - newArg->getSize();
     return this;
   }
 
@@ -201,20 +201,36 @@ struct asm_data_statement : asm_statement {
 
 struct asm_label_statement : asm_data_statement {
   const string label;
+  size_t size;
+  size_t num;
   bool is_global;
+  bool is_func;
 
-  asm_label_statement(const YYLTYPE& pos, const string && _label, const bool & _glob = false)
-    : asm_data_statement(pos), label(move(_label)), is_global(_glob)
+  asm_label_statement(const YYLTYPE& pos, const string && _label,
+      const size_t & _size, const size_t & _num, const bool & _glob = false,
+      const bool & _is_func = false)
+    : asm_data_statement(pos), label(move(_label)), size(_size), num(_num)
+    , is_global(_glob), is_func(_is_func)
   { }
-  asm_label_statement(const YYLTYPE& pos, const string & _label, const bool & _glob = false)
-    : asm_data_statement(pos), label(_label), is_global(_glob)
+  asm_label_statement(const YYLTYPE& pos, const string & _label,
+      const size_t & _size, const size_t & _num, const bool & _glob = false,
+      const bool & _is_func = false)
+    : asm_data_statement(pos), label(_label), size(_size), num(_num), is_global(_glob)
+    , is_func(_is_func)
+  { }
+  asm_label_statement(const asm_label_statement & old, const string & prefix)
+    : asm_data_statement(old), label(prefix + "::" + old.label)
+    , size(old.size), num(old.num), is_global(old.is_global)
+    , is_func(old.is_func)
   { }
   asm_label_statement(const asm_label_statement &) = default;
 
   const string toString() const { return string("(label: '") + label + "')"; }
   const ObjType getType() const throw() { return ASM_LABEL_STATEMENT; }
 
+  const string & getLabel() const { return this->label; }
   const bool & isGlobal() const { return this->is_global; }
+  const bool & isFunction() const { return this->is_func; }
 
   virtual asm_statement * getCopy() const { return new asm_label_statement(*this); }
 };

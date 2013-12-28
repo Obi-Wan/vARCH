@@ -16,18 +16,12 @@
 
 struct asm_program {
   deque<asm_function *> functions;
-  vector<asm_data_statement *> globals;
+  vector<asm_data_statement *> shared_vars;
+  vector<asm_data_statement *> constants;
 
   TableOfSymbols globalSymbols;
 
 public:
-  asm_program(list<asm_function *> * _funcs,
-              list<asm_data_statement *> * _globals)
-  {
-    /* Now let's copy them, and the data */
-    functions.insert(functions.begin(), _funcs->begin(), _funcs->end());
-    globals.insert(globals.begin(), _globals->begin(), _globals->end());
-  }
   asm_program() = default;
   ~asm_program();
 
@@ -38,11 +32,18 @@ public:
     functions.insert(functions.end(), _funcs->begin(), _funcs->end());
   }
 
-  void addGlobal(asm_data_statement * _global) {
-    globals.insert(globals.end(), _global);
+  void addSharedVar(asm_data_statement * _var) {
+    shared_vars.insert(shared_vars.end(), _var);
   }
-  void addGlobals(list<asm_data_statement *> && _globals) {
-    globals.insert(globals.end(), _globals.begin(), _globals.end());
+  void addSharedVars(list<asm_data_statement *> && _vars) {
+    shared_vars.insert(shared_vars.end(), _vars.begin(), _vars.end());
+  }
+
+  void addConstant(asm_data_statement * _var) {
+    constants.insert(constants.end(), _var);
+  }
+  void addConstants(list<asm_data_statement *> && _vars) {
+    constants.insert(constants.end(), _vars.begin(), _vars.end());
   }
 
   size_t getFunciontsTotalSize() const {
@@ -50,9 +51,14 @@ public:
     for(asm_function * func : functions) { totSize += func->getSize(); }
     return totSize;
   }
-  size_t getGlobalsTotalSize() const {
+  size_t getSharedVarsTotalSize() const {
     size_t totSize = 0;
-    for(asm_data_statement * stmt : globals) { totSize += stmt->getSize(); }
+    for(asm_data_statement * stmt : shared_vars) { totSize += stmt->getSize(); }
+    return totSize;
+  }
+  size_t getConstantsTotalSize() const {
+    size_t totSize = 0;
+    for(asm_data_statement * stmt : constants) { totSize += stmt->getSize(); }
     return totSize;
   }
 

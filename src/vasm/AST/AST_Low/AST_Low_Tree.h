@@ -16,6 +16,10 @@ class ASTL_Tree {
       const;
   list<asm_statement *> convertStatements(const vector<ASTL_Stmt *> &) const;
 
+  void convertGlobalVariables(asm_program & prog, const vector<ASTL_Stmt *> &) const;
+  void convertFunctionVariables(asm_program & prog, asm_function & func,
+      const vector<ASTL_Stmt *> &) const;
+
 public:
   EnvSymbols globalSymbols;
 

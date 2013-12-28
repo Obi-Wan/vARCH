@@ -110,6 +110,8 @@ BITCAST {
 
 \.const     return KEYWORD_CONST;
 \.static    return KEYWORD_STATIC;
+\.size      return KEYWORD_SIZE;
+\.num       return KEYWORD_NUM;
 
 \.local     return KEYWORD_LOCAL;
 \.global    return KEYWORD_GLOBAL;

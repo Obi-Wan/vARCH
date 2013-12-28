@@ -41,8 +41,15 @@ public:
     } else return NULL;
   }
 
+  asm_label_statement * getStmt( const string & name, const string & prefix) const
+  {
+    return this->getStmt(prefix + "::" + name);
+  }
+
   string emitDebugSymbols() const;
   string emitXMLDebugSymbols() const;
+
+  const LabelsMap & getLabels() const throw() { return defLabels; }
 };
 
 struct ArgLabelRecord {

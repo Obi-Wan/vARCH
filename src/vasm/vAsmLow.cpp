@@ -99,20 +99,20 @@ printAssembler(const asm_program & program)
       DebugPrintf((" Line: %03d %s\n", stmt->position.first_line,
                     stmt->toString().c_str()));
     }
-    for(asm_data_statement * stmt : func->uniqueLocals)
-    {
-      DebugPrintf((" Line: %03d Local: %s\n",
-          stmt->position.first_line, stmt->toString().c_str()));
-    }
     for(asm_data_statement * stmt : func->stackLocals)
     {
       DebugPrintf((" Line: %03d Local: %s\n",
           stmt->position.first_line, stmt->toString().c_str()));
     }
   }
-  for(asm_data_statement * stmt : program.globals)
+  for(asm_data_statement * stmt : program.shared_vars)
   {
-    DebugPrintf(("Line: %03d Global: %s\n",
+    DebugPrintf(("Line: %03d Shared Variable: %s\n",
+        stmt->position.first_line, stmt->toString().c_str()));
+  }
+  for(asm_data_statement * stmt : program.constants)
+  {
+    DebugPrintf(("Line: %03d Constant: %s\n",
         stmt->position.first_line, stmt->toString().c_str()));
   }
   DebugPrintf(("-- Terminated Dumping Parsed Code --\n\n"));

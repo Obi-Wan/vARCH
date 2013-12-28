@@ -20,14 +20,16 @@ class EnvSymbols {
   struct SymbolRecord {
     ScaleOfArgument type;
     YYLTYPE pos;
+    size_t size;
   };
 
   typedef map<string, SymbolRecord> MapOfSymbols;
 
 public:
-  void put(const string & name, const ScaleOfArgument & type,
-      const YYLTYPE & pos);
+  void put(const string & name, const YYLTYPE & pos,
+      const ScaleOfArgument & type, const size_t & size);
   const ScaleOfArgument & getType(const string & name) const;
+  const size_t & getSize(const string & name) const;
 };
 
 class ASTL_FunctionProto : public ASTL_Node {
