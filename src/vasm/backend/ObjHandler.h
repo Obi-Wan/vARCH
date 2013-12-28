@@ -8,25 +8,32 @@
 #ifndef OBJHANDLER_H_
 #define OBJHANDLER_H_
 
-#include "../../FileHandler.h"
 #include "../asm-program.h"
 
-class ObjLoader : public FileHandler {
+class ObjHandler {
+protected:
+  string filename;
+
+  ObjHandler(const char * _filename) : filename(_filename) { }
+  ObjHandler(const string & _filename) : filename(_filename) { }
+};
+
+class ObjLoader : public ObjHandler {
 public:
-  ObjLoader(const char * filename)
-    : FileHandler(filename, ios_base::in) { }
-  ObjLoader(const string & filename)
-    : FileHandler(filename, ios_base::in) { }
+  ObjLoader(const char * _filename)
+    : ObjHandler(_filename) { }
+  ObjLoader(const string & _filename)
+    : ObjHandler(_filename) { }
 
   void readObj(asm_program & prog);
 };
 
-class ObjWriter : public FileHandler {
+class ObjWriter : public ObjHandler {
 public:
-  ObjWriter(const char * filename)
-      : FileHandler(filename, ios_base::out | ios_base::trunc ) { }
-  ObjWriter(const string & filename)
-      : FileHandler(filename.c_str(), ios_base::out | ios_base::trunc ) { }
+  ObjWriter(const char * _filename)
+      : ObjHandler(_filename) { }
+  ObjWriter(const string & _filename)
+      : ObjHandler(_filename) { }
 
   void writeObj(const asm_program & prog);
 };

@@ -20,6 +20,10 @@ CXXFLAGS="${CXXFLAGS=}"
 AC_SUBST([CFLAGS],["${CFLAGS} -Wall"])
 AC_SUBST([CXXFLAGS],["${CXXFLAGS} -Wall -std=c++0x -stdlib=libc++"])
 
+AC_LANG_PUSH([C++])
+AC_CHECK_HEADER([elfio/elfio.hpp], [], [AC_MSG_ERROR([Please install ELFIO library])], [#include <string>])
+AC_LANG_POP([C++])
+
 ###############################################################################
 # Debug builds
 AC_ARG_WITH(messaging,
