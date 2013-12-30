@@ -24,19 +24,17 @@ using namespace std;
 struct asm_arg {
   enum TypeOfArgument type;
   enum ScaleOfArgument scale;
-  enum ModifierOfArgument regModType;
+
   size_t relOffset;
 
   YYLTYPE position;
 
   asm_arg(const YYLTYPE& pos, const TypeOfArgument& _type,
-          const ScaleOfArgument & _scale,
-          const ModifierOfArgument & _rmt)
-    : type(_type), scale(_scale), regModType(_rmt), relOffset(0), position(pos)
+          const ScaleOfArgument & _scale)
+    : type(_type), scale(_scale), relOffset(0), position(pos)
   { }
   asm_arg(const YYLTYPE& pos)
-    : type(IMMED), scale(BYTE4), regModType(REG_NO_ACTION), relOffset(0)
-    , position(pos)
+    : type(IMMED), scale(BYTE4), relOffset(0), position(pos)
   { }
   asm_arg(const asm_arg &) = default;
 
@@ -54,6 +52,7 @@ struct asm_arg {
 };
 
 struct asm_immediate_arg : asm_arg {
+  enum ModifierOfArgument regModType;
   union {
     enum Registers regNum;
     uint32_t tempUID;
@@ -68,8 +67,8 @@ struct asm_immediate_arg : asm_arg {
   bool isIndexTemp;
 
   asm_immediate_arg(const YYLTYPE & pos)
-    : asm_arg(pos), isTemp(false), displacement(0), index(0)
-    , isIndexTemp(false)
+    : asm_arg(pos), regModType(REG_NO_ACTION), isTemp(false), displacement(0)
+    , index(0), isIndexTemp(false)
   {
     content.val = 0;
   }
@@ -77,14 +76,14 @@ struct asm_immediate_arg : asm_arg {
                     const TypeOfArgument & type, const ScaleOfArgument & scale,
                     const ModifierOfArgument & rmt,
                     const bool & _isTemp = false)
-    : asm_arg(pos, type, scale, rmt), isTemp(_isTemp), displacement(0)
-    , index(0), isIndexTemp(false)
+    : asm_arg(pos, type, scale), regModType(rmt), isTemp(_isTemp)
+    , displacement(0), index(0), isIndexTemp(false)
   {
     content.val = _val;
   }
   asm_immediate_arg(const YYLTYPE & pos, const float & _fval)
-    : asm_arg(pos, IMMED, BYTE4, REG_NO_ACTION), isTemp(false), displacement(0)
-    , index(0), isIndexTemp(false)
+    : asm_arg(pos, IMMED, BYTE4), regModType(REG_NO_ACTION), isTemp(false)
+    , displacement(0), index(0), isIndexTemp(false)
   {
     content.fval = _fval;
   }
@@ -105,7 +104,7 @@ struct asm_function_param : asm_arg {
   asm_arg * source, * destination;
 
   asm_function_param(const YYLTYPE& pos, asm_arg * const _source, asm_arg * const _dest)
-    : asm_arg(pos, REG, BYTE4, REG_NO_ACTION)
+    : asm_arg(pos, REG, BYTE4)
     , source(_source), destination(_dest)
   { }
   asm_function_param(const asm_function_param &) = default;
