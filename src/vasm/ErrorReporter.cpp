@@ -25,7 +25,10 @@ ErrorReporter::addErrorMsg(const YYLTYPE & pos, const string && err)
   stream.width(4);
   stream << pos.first_line;
   stream.width(0);
-  stream << endl << pos.fileNode->printStringStackIncludes() << endl;
+  if (pos.fileNode)
+  {
+    stream << endl << pos.fileNode->printStringStackIncludes() << endl;
+  }
   stream << "--> " << err << endl;
 
   this->addErrorMsg(stream.str());
