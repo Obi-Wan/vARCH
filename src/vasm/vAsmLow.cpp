@@ -123,7 +123,7 @@ void
 printDefines(const AsmPreprocessor & defs)
 {
   const DefineType & d = defs.getDefines();
-  DebugPrintf(("Num of Defines %u\n", d.size()));
+  DebugPrintf(("Num of Defines %lu\n", d.size()));
   for(const auto entry : d) {
     string argsDescr;
     for(const string param : entry.second.parameters) {

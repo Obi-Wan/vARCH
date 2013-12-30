@@ -216,7 +216,7 @@ BITCAST {
             string newFileName(yytext+1, yyleng-2);
             if (!newFileName.size()) {
               fprintf( stderr,
-                       "Line %4d include filename too long (%4d chars): %s\n",
+                       "Line %4d include filename too long (%4lu chars): %s\n",
                        yylloc->first_line, yyleng-2, yytext+1 );
               includesTree->printStderrCurrent();
               includesTree->printStderrStackIncludes();
