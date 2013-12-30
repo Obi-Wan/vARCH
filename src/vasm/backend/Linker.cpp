@@ -14,6 +14,7 @@ Linker::prelink()
 {
   this->rebuildOffsets(true);
   this->exposeGlobalLabels();
+  this->assignValuesToLocalLabels();
 }
 
 void
@@ -182,6 +183,68 @@ Linker::updateFunctionLabels()
   }
   if (errOut.hasErrors()) {
     errOut.throwError( WrongArgumentException("Errors in function labels update") );
+  }
+}
+
+INLINE void
+Linker::assignValuesToLocalLabels()
+{
+  bool error = false;
+
+  DebugPrintf(("-- Assign Local labels - Phase --\n"));
+
+  for(asm_function * func : program.functions)
+  {
+    DebugPrintf((" - Processing references of function: %s\n",
+                  func->name.c_str()));
+    for(ArgLabelRecord * ref : func->refs)
+    {
+      asm_label_arg & argument = *(ref->arg);
+      const string & labelName = argument.label;
+
+      DebugPrintf(("  - Processing label: %s\n", labelName.c_str()));
+      asm_label_statement * localLabel = func->localSymbols.getStmt(labelName);
+
+      if (localLabel)
+      {
+        DebugPrintf(("    It is local, with position (in the program): %3u\n"
+                      "      is const: %5s, is shared: %5s\n",
+                      (uint32_t)localLabel->offset,
+                      localLabel->is_constant ? "true" : "false",
+                      localLabel->is_shared ? "true" : "false"));
+
+        if (localLabel->isConst())
+        {
+          argument.type = ref->arg->type;
+          if (argument.type == IMMED && ref->parent->isInstruction()
+              && (((asm_instruction_statement *)ref->parent)->instruction & JUMP) == JUMP)
+          {
+            argument.content.val = int64_t(localLabel->offset)
+                  - int64_t(ref->parent->getSize()) - int64_t(ref->parent->offset);
+          }
+          else
+          {
+            // Should never happen ?
+            argument.content.tempUID = uint32_t(localLabel->offset);
+          }
+        }
+        else
+        {
+          argument.type = DISPLACED;
+          if (args.getOmitFramePointer()) {
+            argument.content.regNum = STACK_POINTER;
+            argument.displacement = (int32_t)(func->getStackedDataSize() - localLabel->offset);
+          } else {
+            argument.content.regNum = REG_ADDR_8;
+            argument.displacement = - int32_t(localLabel->offset);
+          }
+        }
+      }
+    }
+  }
+  DebugPrintf(("-- Terminated: Assign labels - Phase --\n\n"));
+  if (error) {
+    throw WrongArgumentException("Errors in labels assignment");
   }
 }
 

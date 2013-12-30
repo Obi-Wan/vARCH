@@ -20,8 +20,11 @@ class Linker {
   void moveMainToTop();
   void rebuildOffsets(const bool & is_obj = false);
   void rebuildFunctionOffsets(asm_function & func);
+
   void exposeGlobalLabels();
   void updateFunctionLabels();
+
+  void assignValuesToLocalLabels();
   void assignValuesToLabels();
 public:
   Linker(asm_program & _prog, const AsmArgs & _args)
