@@ -18,12 +18,12 @@
 
 using namespace std;
 
-
-typedef map<string, int> NameToValue;
-typedef map<int, string> ValueToName;
-
+template<typename NameType = string, typename ValueType = int32_t>
 class DoubleCorrelationMap {
 protected:
+  typedef map<NameType, ValueType> NameToValue;
+  typedef map<ValueType, NameType> ValueToName;
+
   NameToValue nameToValue;
   ValueToName valueToName;
 
@@ -32,14 +32,20 @@ protected:
   const string errorMsgName;
   const string errorMsgValue;
 
-  void assignNew(const string& name) {
-    nameToValue.insert(NameToValue::value_type(name, currValue));
-    valueToName.insert(ValueToName::value_type(currValue, name));
+  void assignNew(const NameType& name) {
+    nameToValue.insert(typename NameToValue::value_type(name, currValue));
+    valueToName.insert(typename ValueToName::value_type(currValue, name));
     currValue++;
   }
-  void assignNew(const string& name, const int& newCurrVal) {
+  void assignNew(const NameType& name, const ValueType & newCurrVal) {
     currValue = newCurrVal;
     assignNew(name);
+  }
+  void throwErrorName(const NameType & name) const {
+    throw WrongInstructionException(errorMsgName + name);
+  }
+  void throwErrorValue(const ValueType & value) const {
+    throw WrongInstructionException(errorMsgValue + to_string(value));
   }
 
 public:
@@ -49,37 +55,29 @@ public:
     , errorMsgValue(_errorMsgVal)
   { }
 
-  const int& getItem(const char * name) const {
-    NameToValue::const_iterator istr = nameToValue.find(string(name));
-    if (istr == nameToValue.end()) {
-      throw WrongInstructionException(errorMsgName + name);
+  const ValueType & getItem(const NameType & name) const
+  {
+    typename NameToValue::const_iterator value = nameToValue.find(name);
+    if (value == nameToValue.end()) {
+      this->throwErrorName(name);
     }
-
-    return istr->second;
+    return value->second;
   }
-  const int& getItem(const string& name) const {
-    NameToValue::const_iterator istr = nameToValue.find(name);
-    if (istr == nameToValue.end()) {
-      throw WrongInstructionException(errorMsgName + name);
+  const NameType & getItem(const ValueType & value) const
+  {
+    typename ValueToName::const_iterator name = valueToName.find(value);
+    if (name == valueToName.end()) {
+      this->throwErrorValue(value);
     }
-
-    return istr->second;
-  }
-  const string& getItem(const int& value) const {
-    ValueToName::const_iterator istr = valueToName.find(value);
-    if (istr == valueToName.end()) {
-      throw WrongInstructionException(errorMsgValue);
-    }
-
-    return istr->second;
+    return name->second;
   }
 };
 
-static class IstructionSet : public DoubleCorrelationMap {
+static class IstructionSet : public DoubleCorrelationMap<> {
 public:
   IstructionSet()
     : DoubleCorrelationMap(0, "No instruction called: ",
-        "No such instruction value exists")
+        "No such instruction value: ")
   {
     assignNew("SLEEP",N_ARGS_ZERO);
     assignNew("PUSHA");
@@ -153,18 +151,17 @@ public:
     assignNew("FSUB");
     assignNew("FDIV");
     assignNew("FQUOT");
-
   }
 
-  const int& getInstr(const char * name) const { return getItem(name); }
-  const int& getInstr(const string& name) const { return getItem(name); }
-  const string& getInstr(const int& value) const { return getItem(value); }
+  const int32_t & getInstr(const char * name) const { return getItem(name); }
+  const int32_t & getInstr(const string & name) const { return getItem(name); }
+  const string & getInstr(const int32_t & value) const { return getItem(value); }
 } ISet;
 
-static class ArgsTypeSet : public DoubleCorrelationMap {
+static class ArgsTypeSet : public DoubleCorrelationMap<> {
 public:
   ArgsTypeSet()
-    : DoubleCorrelationMap(0, "No such type", "No such enum type arg")
+    : DoubleCorrelationMap(0, "No such type: ", "No such enum type arg: ")
   {
     /* Immediate */
     assignNew("IMMED", 0);               // 000
@@ -182,41 +179,38 @@ public:
     assignNew("INDEXED");                // 110
     /* Indexed + Displaced addressing */
     assignNew("INDX_DISP");              // 111
-
   }
 } ATypeSet;
 
-static class ModsTypeSet : public DoubleCorrelationMap {
+static class ModsTypeSet : public DoubleCorrelationMap<> {
 public:
   ModsTypeSet()
-    : DoubleCorrelationMap(0, "No such modifier", "No such enum modifier arg")
+    : DoubleCorrelationMap(0, "No such modifier: ", "No such enum modifier arg: ")
   {
     assignNew("REG_NO_ACTION", 0);       // 000
     assignNew("REG_PRE_INCR", (1 << 2)); // 100
     assignNew("REG_PRE_DECR");           // 101
     assignNew("REG_POST_INCR");          // 110
     assignNew("REG_POST_DECR");          // 111
-
   }
 } MTypeSet;
 
-static class ScalesTypeSet : public DoubleCorrelationMap {
+static class ScalesTypeSet : public DoubleCorrelationMap<> {
 public:
   ScalesTypeSet()
-    : DoubleCorrelationMap(0, "No such modifier", "No such enum scale arg")
+    : DoubleCorrelationMap(0, "No such scale: ", "No such enum scale arg: ")
   {
     assignNew("BYTE1", 0);               // 00
     assignNew("BYTE2");                  // 01
     assignNew("BYTE4");                  // 10
     assignNew("BYTE8");                  // 11
-
   }
 } STypeSet;
 
-static class RegsTypeSet : public DoubleCorrelationMap {
+static class RegsTypeSet : public DoubleCorrelationMap<> {
 public:
   RegsTypeSet()
-    : DoubleCorrelationMap(0, "No such type", "No such enum register arg")
+    : DoubleCorrelationMap(0, "No such register: ", "No such enum register arg: ")
   {
     assignNew("R0", NUM_REGS * DATA_REGS);
     assignNew("R1");
