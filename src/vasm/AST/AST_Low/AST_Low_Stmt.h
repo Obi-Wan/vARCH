@@ -73,10 +73,12 @@ public:
 
 class ASTL_Arg : public ASTL_Node {
 public:
+  TypeOfArgument type;
   ScaleOfArgument scale;
 
-  ASTL_Arg(const YYLTYPE & _pos, const ScaleOfArgument & _scale = BYTE4)
-    : ASTL_Node(_pos), scale(_scale)
+  ASTL_Arg(const YYLTYPE & _pos, const TypeOfArgument & _type = IMMED,
+      const ScaleOfArgument & _scale = BYTE4)
+    : ASTL_Node(_pos), type(_type), scale(_scale)
   { }
   virtual const string toString() const { return ""; }
   virtual const ASTL_Class getClass() const throw() { return ASTL_ARG; }
@@ -85,11 +87,10 @@ public:
 class ASTL_ArgLabel : public ASTL_Arg {
 public:
   const string label;
-  const TypeOfArgument type;
 
   ASTL_ArgLabel(const YYLTYPE & _pos, const string && id, const TypeOfArgument & _type,
       const ScaleOfArgument & _scale = BYTE4)
-    : ASTL_Arg(_pos, _scale), label(move(id)), type(_type)
+    : ASTL_Arg(_pos, _type, _scale), label(move(id))
   { }
 
   virtual const string toString() const {
@@ -102,12 +103,11 @@ public:
 class ASTL_ArgNumber : public ASTL_Arg {
 public:
   const string number;
-  const TypeOfArgument type;
 
   ASTL_ArgNumber( const YYLTYPE & _pos, const string && _num,
                   const TypeOfArgument & _type = IMMED,
                   const ScaleOfArgument & _scale = BYTE4)
-    : ASTL_Arg(_pos, _scale), number(move(_num)), type(_type)
+    : ASTL_Arg(_pos, _type, _scale), number(move(_num))
   { }
   virtual const string toString() const {
     return "(Number Arg: " + number + " : "
@@ -119,7 +119,6 @@ public:
 class ASTL_ArgRegister : public ASTL_Arg {
 public:
   const string id;
-  TypeOfArgument kind;
 
   ModifierOfArgument modif;
 
@@ -128,7 +127,7 @@ public:
 
   ASTL_ArgRegister(const YYLTYPE & _pos, const string && _id,
       const ScaleOfArgument & _scale = BYTE4)
-    : ASTL_Arg(_pos, _scale), id(move(_id)), kind(REG), modif(REG_NO_ACTION)
+    : ASTL_Arg(_pos, REG, _scale), id(move(_id)), modif(REG_NO_ACTION)
     , displ(NULL), index(NULL)
   { }
   ~ASTL_ArgRegister();
@@ -149,7 +148,7 @@ public:
 
   ASTL_ArgSpecialRegister(const YYLTYPE & _pos, const Registers & reg,
       const ScaleOfArgument & _scale = BYTE4)
-    : ASTL_ArgRegister(_pos, getRegisterID(reg), _scale), regNum(reg)
+    : ASTL_ArgRegister(_pos, getSpecialRegisterID(reg), _scale), regNum(reg)
   { }
   virtual const string toString() const {
     return string("(Special Register Arg: ") + id + " : "
@@ -159,7 +158,7 @@ public:
 
   bool isTemp() const { return false; }
 
-  const string getRegisterID(const Registers & _reg_num) const {
+  const string getSpecialRegisterID(const Registers & _reg_num) const {
     switch (_reg_num) {
       case PROGRAM_COUNTER:
         return string("PC");

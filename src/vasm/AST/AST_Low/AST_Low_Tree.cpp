@@ -170,11 +170,11 @@ ASTL_Tree::convertStatements(const vector<ASTL_Stmt *> & inStmts) const
               finalArg = ArgumentsHandler::getReg(arg);
 
               asm_immediate_arg * tempFinalArg = (asm_immediate_arg *) finalArg;
-              if ((arg->kind & DISPLACED) == DISPLACED) {
+              if ((arg->type & DISPLACED) == DISPLACED) {
                 DebugPrintf(("        & Displaced\n"));
                 tempFinalArg->displacement = atoi(arg->displ->number.c_str());
               }
-              if ((arg->kind & INDEXED) == INDEXED) {
+              if ((arg->type & INDEXED) == INDEXED) {
                 DebugPrintf(("        & Indexed\n"));
                 asm_immediate_arg * tempIndex = ArgumentsHandler::getReg(arg);
                 tempFinalArg->index = tempIndex->content.tempUID;

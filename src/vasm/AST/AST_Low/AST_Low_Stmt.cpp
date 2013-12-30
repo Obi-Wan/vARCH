@@ -9,10 +9,10 @@
 
 ASTL_ArgRegister::~ASTL_ArgRegister()
 {
-  if ((this->kind & INDEXED) == INDEXED) {
+  if ((this->type & INDEXED) == INDEXED) {
     delete this->index;
   }
-  if ((this->kind & DISPLACED) == DISPLACED) {
+  if ((this->type & DISPLACED) == DISPLACED) {
     delete this->displ;
   }
 }
