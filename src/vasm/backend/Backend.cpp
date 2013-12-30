@@ -159,6 +159,8 @@ Backend::loadObj(const string & filename)
   program.constants.insert(program.constants.begin(), prog.constants.begin(),
       prog.constants.end());
 
+  program.globalSymbols.importLabels(prog.globalSymbols);
+
   // Let's clear temporary object, so that it doesn't dispose the merged objects
   prog.functions.clear();
   prog.shared_vars.clear();

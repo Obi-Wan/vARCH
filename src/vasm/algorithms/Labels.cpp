@@ -36,6 +36,15 @@ TableOfSymbols::addLabel(asm_label_statement * lab)
   }
 }
 
+void
+TableOfSymbols::importLabels(const TableOfSymbols & o)
+{
+  for (LabelsMap::value_type tuple : o.defLabels)
+  {
+    this->addLabel(tuple.second);
+  }
+}
+
 string
 TableOfSymbols::emitDebugSymbols() const
 {

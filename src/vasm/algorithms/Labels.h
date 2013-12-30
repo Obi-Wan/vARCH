@@ -25,6 +25,8 @@ class TableOfSymbols {
 public:
   void addLabel(asm_label_statement* lab);
 
+  void importLabels(const TableOfSymbols & o);
+
   int getPositionOfLabel(const string & name) const
   {
     LabelsMap::const_iterator iter = defLabels.find(name);
