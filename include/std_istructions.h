@@ -9,6 +9,7 @@
 #define	_STDISTRUCTIONS_H
 
 #include "CpuDefinitions.h"
+#include "macros.h"
 
 #define N_ARGS_ZERO   0
 #define N_ARGS_ONE    (1 << 30)
@@ -134,6 +135,58 @@ enum Registers {
   FIRST_TEMPORARY
 };
 
+union ArgumentValue {
+  int32_t immed;
+
+  struct {
+    Registers reg_id : 5;
+    ModifierOfArgument reg_mod : 3;
+    int32_t : 24;
+  } reg;
+
+  uint32_t direct;
+
+  struct {
+    Registers reg_id : 5;
+    ModifierOfArgument reg_mod : 3;
+    int32_t : 24;
+  } reg_indir;
+
+  struct {
+    Registers reg_id : 5;
+    ModifierOfArgument reg_mod : 3;
+    int32_t : 24;
+  } mem_indir;
+
+  struct {
+    Registers reg_id : 5;
+    ModifierOfArgument reg_mod : 3;
+
+    int32_t disp : 24;
+  } displaced;
+
+  struct {
+    Registers reg_id : 5;
+    ModifierOfArgument reg_mod : 3;
+
+    Registers indx_id : 5;
+    ModifierOfArgument indx_mod : 3;
+
+    int16_t : 16;
+  } indexed;
+
+  struct {
+    Registers reg_id : 5;
+    ModifierOfArgument reg_mod : 3;
+
+    Registers indx_id : 5;
+    ModifierOfArgument indx_mod : 3;
+
+    int16_t disp : 16;
+  } indx_disp;
+
+  int8_t bytes[4];
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 /// STD Instructions

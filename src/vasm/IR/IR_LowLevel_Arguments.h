@@ -131,6 +131,9 @@ struct asm_label_arg : asm_immediate_arg {
       , const TypeOfArgument& _type, const ScaleOfArgument & _scale = BYTE4)
     : asm_immediate_arg(pos, 0, _type, _scale, REG_NO_ACTION, false), label(_lab)
   { }
+  asm_label_arg(const asm_immediate_arg & old, const string & _lab)
+    : asm_immediate_arg(old), label(_lab)
+  { }
   asm_label_arg(const asm_label_arg &) = default;
 
   const string toString() const { return string("(label: '") + label + "')"; }

@@ -48,6 +48,15 @@ public:
     return this->getStmt(prefix + "::" + name);
   }
 
+  bool isLabel(const string & name) const
+  {
+    return defLabels.find(name) != defLabels.end();
+  }
+  bool isLabel(const string & name, const string & prefix) const
+  {
+    return this->isLabel(prefix + "::" + name);
+  }
+
   string emitDebugSymbols() const;
   string emitXMLDebugSymbols() const;
 

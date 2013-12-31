@@ -65,42 +65,54 @@ asm_immediate_arg::emitCode(Bloat::iterator & codeIt) const
             "No such kind of scale for IMMED argument");
     }
   } else {
-    int32_t tempVal = 0;
+    ArgumentValue tempVal;
     switch (type) {
-      case REG:
-      case REG_INDIR:
+      case REG: {
+        tempVal.reg.reg_id = content.regNum;
+        tempVal.reg.reg_mod = regModType;
+        break;
+      }
+      case REG_INDIR: {
+        tempVal.reg_indir.reg_id = content.regNum;
+        tempVal.reg_indir.reg_mod = regModType;
+        break;
+      }
       case MEM_INDIR: {
-        tempVal = content.regNum | BUILD_PRE_POST_MOD(regModType);
+        tempVal.mem_indir.reg_id = content.regNum;
+        tempVal.mem_indir.reg_mod = regModType;
         break;
       }
       case DIRECT: {
         // Because it is an unsigned
-        tempVal = this->content.tempUID;
+        tempVal.direct = content.tempUID;
         break;
       }
       case DISPLACED: {
-        tempVal = BUILD_BIG_DISPL(displacement)
-            | BUILD_FIRST_REG(content.regNum | BUILD_PRE_POST_MOD(regModType));
+        tempVal.displaced.disp = displacement;
+        tempVal.displaced.reg_id = content.regNum;
+        tempVal.displaced.reg_mod = regModType;
         break;
       }
       case INDEXED: {
-        tempVal = BUILD_INDEX_REG(index | BUILD_PRE_POST_MOD(regModType))
-            | BUILD_FIRST_REG(content.regNum);
+        tempVal.indexed.reg_id = content.regNum;
+        tempVal.indexed.indx_id = (Registers)index;
+        tempVal.indexed.indx_mod = regModType;
         break;
       }
       case INDX_DISP: {
-        tempVal = BUILD_INDEX_DISPL(displacement)
-            | BUILD_INDEX_REG(index | BUILD_PRE_POST_MOD(regModType))
-            | BUILD_FIRST_REG(content.regNum);
+        tempVal.indx_disp.disp = displacement;
+        tempVal.indx_disp.reg_id = content.regNum;
+        tempVal.indx_disp.indx_id = (Registers)index;
+        tempVal.indx_disp.indx_mod = regModType;
         break;
       }
       default: {
-        throw WrongArgumentException("getCode() No such kind of argument");
+        throw WrongArgumentException(string(__PRETTY_FUNCTION__)
+            + " No such kind of argument: " + to_string(type));
       }
     }
-    const int8_t chunks[4] = DEAL_BWORDS_FROM_SWORD(tempVal);
     for(size_t count = 0; count < 4; count++) {
-      *(codeIt++) = chunks[count];
+      *(codeIt++) = tempVal.bytes[count];
     }
   }
 }

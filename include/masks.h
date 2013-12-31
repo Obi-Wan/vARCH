@@ -46,12 +46,12 @@ inline Type DEAL_HWORD_FROM_BWORDS(pointer & x)
 template<typename Type = int32_t, typename pointer>
 inline Type DEAL_SWORD_FROM_BWORDS(pointer & x)
 {
-  Type temp = 0;
-  temp += (((Type)(*x++) & BWORD) <<  0);
-  temp += (((Type)(*x++) & BWORD) <<  8);
-  temp += (((Type)(*x++) & BWORD) << 16);
-  temp += (((Type)(*x++) & BWORD) << 24);
-  return temp;
+  union { int8_t bytes[4]; int32_t sword; } temp;
+  for(size_t num = 0; num < 4; num++)
+  {
+    temp.bytes[num] = *x++;
+  }
+  return (Type)temp.sword;
 }
 
 template<typename Type = int64_t, typename pointer>
