@@ -1,8 +1,8 @@
 AM_YFLAGS = -d
 #AM_LFLAGS = --header-file=$(<:.lpp=.h)
 
-bin_PROGRAMS = vasm_low
-#vasm_mid
+bin_PROGRAMS = vasm
+#vir
 
 COMMON_ASM_SRC = \
 		  IncludesTree.cpp \
@@ -27,19 +27,19 @@ COMMON_ASM_SRC = \
 		  disassembler/Disassembler.cpp \
 		  preprocessor/AsmPreprocessor.cpp
 
-vasm_low_SOURCES = \
+vasm_SOURCES = \
 		  ${COMMON_ASM_SRC} \
 		  IR_Low_parser/IR_Low_parser.ypp \
 		  IR_Low_parser/IR_Low_lexer.lpp \
 		  AST/AST_Low/AST_Low_Tree.cpp \
 		  AST/AST_Low/AST_Low_Function.cpp \
 		  AST/AST_Low/AST_Low_Stmt.cpp \
-		  vAsmLow.cpp
+		  vAsm.cpp
 
-#vasm_mid_SOURCES = \
+#vir_SOURCES = \
 #		  ${COMMON_ASM_SRC} \
 #		  IR_Mid_parser/IR_Mid_parser.ypp \
 #		  IR_Mid_parser/IR_Mid_lexer.lpp \
 #		  AST/AST_Mid/AST_Mid_Tree.cpp \
-#		  vAsmMid.cpp
+#		  vIR.cpp
 
