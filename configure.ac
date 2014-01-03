@@ -18,10 +18,43 @@ AC_CONFIG_FILES([
 CFLAGS="${CFLAGS=}"
 CXXFLAGS="${CXXFLAGS=}"
 AC_SUBST([CFLAGS],["${CFLAGS} -Wall"])
-AC_SUBST([CXXFLAGS],["${CXXFLAGS} -Wall -std=c++0x -stdlib=libc++"])
+AC_SUBST([CXXFLAGS],["${CXXFLAGS} -Wall"])
 
 AC_LANG_PUSH([C++])
+###############################################################################
+# Check for C++11 flag
+my_save_cflags="$CXXFLAGS"
+CXXFLAGS="-std=c++11"
+AC_MSG_CHECKING([whether CC supports the flag -std=c++11])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
+    [AC_MSG_RESULT([yes])]
+    [CXX_11_FLAG=-std=c++11],
+    [AC_MSG_RESULT([no])]
+    [CXX_11_FLAG=-std=c++0x]
+)
+CXXFLAGS="$my_save_cflags"
+AC_SUBST([CXXFLAGS],["${CXXFLAGS} ${CXX_11_FLAG}"])
+
+###############################################################################
+# Check if -stdlib=libc++ is needed
+my_save_cflags="$CXXFLAGS"
+CXXFLAGS="${CXX_11_FLAG} -stdlib=libc++"
+AC_MSG_CHECKING([whether CC accepts the flag -stdlib=libc++])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
+    [AC_MSG_RESULT([yes])]
+    [LIBCXX_FLAG=-stdlib=libc++],
+    [AC_MSG_RESULT([no])]
+    [LIBCXX_FLAG=]
+)
+CXXFLAGS="$my_save_cflags"
+AC_SUBST([CXXFLAGS],["${CXXFLAGS} ${LIBCXX_FLAG}"])
+
+
+###############################################################################
+# Check for ELFIO library
 AC_CHECK_HEADER([elfio/elfio.hpp], [], [AC_MSG_ERROR([Please install ELFIO library])], [#include <string>])
+
+###############################################################################
 AC_LANG_POP([C++])
 
 ###############################################################################
@@ -75,10 +108,9 @@ dnl
 dnl Output the features included
 dnl
 echo ""
-echo "        CFLAGS:          $CFLAGS"
+echo "        Compiler:        $CXX"
 echo "        CXXFLAGS:        $CXXFLAGS"
 echo ""
 echo "        Verbosity level: $messaging"
-
 echo ""
 echo ""
