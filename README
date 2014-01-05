@@ -6,33 +6,33 @@ Index
   3.2 SUBROUTINES
   3.3 CONSTANTS
   3.4 PREPROCESSOR
-4. NEW DEVELOPMENT
+4. LATEST DEVELOPMENTS
   4.1 TEMORARIES / Registers Auto-allocation
   4.2 CALLING CONVENTIONS
-  4.3 SAMPLE FILES
+  4.2 ELF Object FILES
+  4.4 SAMPLE FILES
 
 --------------------------------------------------------------------------------
 1. COMPILE / INSTALL
 
-Before trying to compile it, remeber to run autoreconf.
+Before trying to compile it, remember to run autoreconf.
 
-Then it will be sufficient to type
+It will then be enough to type:
 ./configure
 make
 
-I'm not providing a predefined install way right now. It's more like a toy, than
-a tool.
+I'm not providing a predefined way to install right now. It's more like a toy,
+than a tool.
 
 --------------------------------------------------------------------------------
 2. WHAT IS IT
 
 vARCH is a virtual machine / interpreter of bytecode for a virtual architecture
 that I invented for learning purposes.
-It's not intended for performance or flexibility use cases. It's just a simple
+It is not intended for performance or flexibility use cases. It's just a simple
 and easy to learn architecture.
 
-For the ease of development I also created a simple assembler and it should
-offer some facility, over the "directly write binary code" :)
+For the ease of development I also created a simple assembler.
 Explanation on how to write the asm code is aided by some practical examples.
 
 If you want to contribute to vARCH, you should ask for documentation/answers to
@@ -40,120 +40,160 @@ me directly, because it is a spare time project and I don't have much time for
 documentation.
 
 What I will report here are samples of the Asm language: they need to be
-assembled and then either moved to the name "bios.bin" or soft link the binary
-to that name.
+assembled and then either moved to the name "bios.bin" or soft linked to that
+name.
 
 --------------------------------------------------------------------------------
 3. ASSEMBLY
 
 The first example is a simple program for calculating the first n factorials.
-The "main" function is a special one that is always put at the beginning of the
-binary
+The "main" function is special in the sense that is always put at the beginning
+of the generated executable.
 
+----------------
 biosFactorial.s
 ----------------
 
 ; calculate the factorial by definition of the first 5 numbers
 .function "main"
 .init:
-    MOV	  $1    %R8
+    MOV,   $1 ,   %R8
 .start:
 ; the counter is post incremented after the copy
-    MOV   %R8+  %R1
-    MOV   $1    %R2
+    MOV,   %R8+ , %R1
+    MOV,   $1 ,   %R2
 .iter:
-    MULT  %R1-  %R2
-    MO    %R1   $1
-    IFNJ  @save
-    JMP   @iter
+    MULT,  %R1- , %R2
+    MO,    %R1 ,  $1
+    IFNJ,  @save
+    JMP,   @iter
 .save:
-    PUSH  %R2
-    MO    %R8   .maxnum
-    IFJ   @end
-    JMP   @start
+    PUSH,  %R2
+    MO,    %R8 ,  .maxnum
+    IFJ,   @end
+    JMP,   @start
 .end:
     HALT
 .end
 
 .global
   .maxnum:
-    .int  $12
+    .i32_t  $12
 .end
 
 --------------------------------
 Another simple program that shows how to give shape to subroutines.
-Arguments passing is quite broken, but it's not the purpose of the example.
 It also exploits a missing feature to ease the work of outputting text: it
 should launch the signal to the peripheral and than wait for the ready state,
 before sending another character to display, but it's just pretending that a
-terminal can work syncronously with the cpu.
+terminal can work synchronously with the cpu.
 
 ----------------
-biosSubroutine.s
+biosTestAssembler.s
 ----------------
 
-#include "biosGlobals.s"
+#include "std_conversion.s"
 
 .function   "main"
-.local
-.end
 .init:
-    MOV     @string1    %R1
-; prepare destination comand
-    MOV     .printCmd   %R2
-    ADD     $1          %R2
-.testCond:
-    EQ      (R1)        .endChar
-    IFJ     @end
-; push the char to print on the stack
-    PUSH    (R1)
+  MOV,     @string1 ,   %T001
+  MOV,     4 ,          %R6
 ; call the printing subroutine
-    JSR     @print
-; rebase stack pointer, since the pushed value is no more useful
-    SUB     $1          %SP
-    ADD     $1          %R1
-    JMP     @testCond
-.end:
-    HALT
+  JSR,     @print ,     %T001
+; call recursive subroutine
+  MOV,     4 ,          %T002
+  MOV,     %T002 ,      %T012
+  MOV,     %T012 ,      %T013
+  MOV,     %T013 ,      %T014
+  JSR,     @recursive , %T014
+; call conversion subroutine
+  MOV,     @bufferEnd , %T003
+  SUB,     @buffer ,    %T003
+  MOV,     15234 ,      %T004
+  MOV,     @buffer ,    %T005
+  JSR,     @integerToString , %T004 , %T005 , %T003
+; Verify result
+  MOV,     %R0 ,        %T008
+  EQ,      %T008 ,      0
+  IFJ,     @error
+  MOV,     @buffer ,    %T007
+  JSR,     @print ,     %T007
+  HALT
+.error:
+  MOV,     @stringError , %T001
+  JSR,     @print ,       %T001
+  HALT
+.end
+
+.global
+  ; string to write
+  .string1:
+    .string     "test: yeah"
+    .i8_t      10           ; '\n'
+    .i8_t      0
+  .stringError:
+    .string     "Error"
+    .i8_t      0
+.end
+
+.function   "recursive"
+  .param  %R1         %T001
+
+  .local
+    .decrement: .const
+      .i32_t  2
+    .numberOfCalls: .static
+      .i32_t  0
+    .lowerBound:
+      .i32_t  0
+    .stateRegister:
+      .i32_t  0
+    .localString:
+      .string "local_string"
+      .i8_t  0
+  .end
+
+  SUB,     .decrement , %T001
+  INCR,    .numberOfCalls
+  LO,      %T001 ,      .lowerBound
+  IFJ,     @exit
+  JSR,     @recursive , %T001
+.exit:
+  MOV,     %SR ,        .stateRegister
+  RET
 .end
 
 .global
   .uselessGlobal:
-    .int        $4
+    .i32_t        $4
 .end
+
+----------------
+std_io.s
+----------------
 
 ; subroutine to call
 .function   "print"
-.local
-  .stckPosArg:
-    .int    $3
-.end
-; let's push the regs we're going to use
-    PUSH    %R1
-; get the stack pointer
-    MOV     %SP         %R1
-; point to the argument passed on the stack
-    SUB     .stckPosArg %R1
-    PUT     (R1)        %R2
-; pop regs back
-    POP     %R1
-    RET
-.end
+  .param    %R1         %T001 ; address of the string to print
 
-----------------
-biosGlobals.s
-----------------
+  .local
+    .printCmd: .const
+      .i32_t  131072
+    .printCmd1: .const
+      .i32_t  131073
+    .endChar: .const
+      .i16_t   0
+  .end
 
-.global
-  .printCmd:
-    .int        $131072
-  ; string to write
-  .string1:
-    .string     "prova yeah"
-    .int        $10
-    .int        $13
-  .endChar:
-    .int        $13
+  MOV,    0 ,    %T002
+.test:
+  EQ,     (%T001) : .i8_t,    .endChar : .i16_t
+  IFJ,    @exit
+  PUT,    (%T001)+ : .i8_t,   .printCmd1
+  INCR,   %T002
+  JMP,    @test
+.exit:
+  RET,    %T002
 .end
 
 -----------------------------------
@@ -165,27 +205,47 @@ and USP for the priviledged executor that wants to access unprivileged stack
 pointer. (Issuing SP when privileged, an issuing SP when unprivileged gives two
 different stack pointers)
 
-As noted here before, there are two kinds of execution: privileged and
-unprivileged. The bit identifying this is in the status register ( SR ).
-This is inspired to M68k.
+There is another kind of registers, Tn, where n is any number, which is the set
+of temporaries, which are later assigned and optimized by the register
+allocation logics.
+
+As noted before, there are two kinds of execution: privileged and unprivileged.
+The bit identifying this is in the status register ( SR ). This was inspired by
+Motorola 68k family.
 
 Accessing data and registers is achieved in many ways with different meanings:
 
-- prefixing registers with % (eg. %R1, %A3, %SP ..) which accessed the content
-of the registers.
+Addressing registers and memory is again very similar to the way it's done for
+M68k asm, so the arguments of the instructions can be:
 
-- surrounding registers with round parenthesis ( and ), (eg. (A1), (SP) ..)
-which accesses the address in memory, pointed by the content of the register.
+- IMMEDIATE: prefixing constants with $ which uses those as numerical constants,
+or using @ (at) prefixed labels which accesses the pointer to the label.
 
-- using . (dot) prefixed labels which accesses the content of the address in
-memory marked by the label.
+- REGISTER: prefixing registers with % (eg. %R1, %A3, %SP ..) which accessed the
+content of the registers.
 
-- using @ (at) prefixed labels which accesses the pointer to the label.
+- DIRECT: where the explicit address of a memory location is used, either using
+. (dot) prefixed labels which accesses the content of the address in memory
+marked by the label, or prefixing constants with > which uses them as addresses
+(and addresses the memory address pointed by the constant).
 
-- prefixing constants with $ which uses those as numerical constants
+- REGISTER INDIRECT: surrounding registers with round parenthesis ( and ), (e.g.
+(A1), (SP) ..) which accesses the address in memory, pointed by the content of
+the register.
 
-- prefixing constants with > which uses them as addresses (and addresses the
-memory address pointed by the constant)
+- REGISTER MEMORY INDIRECT: it accesses memory using the address contained in a
+location in memory pointed by an address into a register, and this is achieved
+by the double parenthesis operator: ((A1)), ((SP)), etc.
+
+- DISPLACED: applies a displacement to the address contained into a register and
+accesses to the result, e.g. -20(SP), 3(A1), etc. Displacement is a 24bit signed
+integer.
+
+- INDEXED: uses one register as base address to a given location, and then
+another register as index for accessing elements in an array, e.g. (A1)[R1]
+
+- DISPLACED+INDEXED: same as the two together, but displacement in this case is
+a 16bit signed integer.
 
 There are then other useful methods for reducing code size and speeding up
 execution with a compact code:
@@ -197,31 +257,35 @@ increments or decrements the accessed data:
      of the pointed data)
   + if doing this on (address), data pointed by the address will be modified
 
-- putting a lowercase  r  before registers access, and if present, after pre
-increment/decrement signs (eg. right: r%R2 , r(A5), +r(R4) .. , wrong: r+(A2),
-%rR1, .. ), which refers the addresses or numbers as relative to the stack
-pointer position. 
-
 ------------------
 Some words about SUBROUTINES:
 
-I implemented a specific way of instructing the assembler about subroutines, you
-need to specify subroutine name after the  .function  marker, and specify end of
-the subroutine with  .end  marker. The name of the subroutine needs to be
-enclosed in double quotes, like a normal string.
+Subroutines have a simple but strict syntax. You have to specify subroutine name
+after the  .function  marker, and identify the end of the subroutine using the
+.end  marker.
+The name of the subroutine needs to be enclosed in double quotes, like a normal
+string.
 
 There is no possibility to use free code, outside of subroutines, since the main
 subroutine serves as entry point for the binary.
 
 Subroutines, when assembled do export their name as a global label and they can
-be accessed through . and @ facilities.
+be accessed through . and @ semantics.
 To call a subroutine just issue a
 
-	JSR	@name_of_subroutine
+	JSR	@name_of_subroutine [arguments...]
 Since JSR stands for "Jump to SubRoutine".
 
+The subroutine calling conventions are managed by the assembler. This gives the
+freedom to the programmer to specify the arguments (expressed as temporaries) on
+the very same line of the function call.
+
+Functions and subroutines can also be recursive and have local variables which
+are allocated on the stack each time that the functions are called.
+The stack allocation is automatically managed by the assembler.
+
 ------------------
-Some words about VARIABLES and CONSTANTS:
+Some words about VARIABLES, CONSTANTS and their attributes:
 
 The  .global  marker opens the area where global/public constants should be
 located. This area is terminated with an  .end  marker.
@@ -231,14 +295,19 @@ It's possible to specify local/private constants for function calls only after
 the marker  .local  which is terminated by the  .end  marker, just like
 functions and globals.
 To specify access to these memory locations, it is also possible to use the
-.shared  specifier, which behaves exactly like in C.
+.static  specifier, which behaves exactly like in C.
 To optimize things,  .const  declared memory locations, are allocated like
-shared variables, to prevent stack allocation at every function call.
+static variables, to prevent stack allocations at every function call.
 
 Local variables on the stack are supported just with the register
 auto-allocation logic, because it requires some code transformation.
 
 Labels make data visible and easily callable from outside.
+
+Finally labels can also receive attributes like  .size  and  .num  .
+While  .num  is not fully used now (tells how many times  .size  is repeated),
+and will extensively used for arrays,  .size  gives the size of the size, in
+bytes, of the data reached through the label.
 
 ------------------
 Some words about PREPROCESSOR:
@@ -250,13 +319,12 @@ If any error happens in the included files, it will be reported in which file
 and at which line the error took place.
 
 ------------------
-4. THINGS BEING IMPLEMENTED (WORK IN PROGRESS)
+4. ADDITIONAL FEATURES
 
 4.1 - TEMPORARIES
 
-The edge of development is now on register auto-allocation logics.
-There is going to be a new kind of registers: T[0-9]* which serve as temporaries
-for successive elaboration by the allocation logics.
+There is, as noted before, a new kind of registers: T[0-9]* which serve as
+temporaries for successive elaboration by the allocation logics.
 
 Avoiding explicit register use, for temporaries, frees the programmer from one
 of the most bothering tasks, letting the assembler decide which register
@@ -264,12 +332,6 @@ allocation to use.
 
 For maximum performance, the programmer can still use direct register assignment
 when needed, while letting the assembler manage all the rest.
-
-To let the assembler manage arguments to functions and returned elements, syntax
-was enhanced, to introduce such directives.
-
-There is also a pending enhancement of the preprocessor, in order to add extra
-functionalities like macro definitions and other directives.
 
 4.2 - CALLING CONVENTIONS
 
@@ -279,7 +341,14 @@ While the returned (if returned) element is always in register R1.
 Caller-save registers are R[1-5] and A[1-5], while callee-save registers are
 R[6-8] and A[6-8].
 
-4.3 - SAMPLE FILES
+4.3 - WRITING ELF OBJECT FILES
+
+Compiling with "-c" flag now outputs an object file which respects the ELF file
+format. This object file can then be linked against other object files, to
+generate proper executables, using the very same syntax of many other famous
+compilers.
+
+4.4 - SAMPLE FILES
 
 Some sample .s files are in the main folder:
  testNewAssembler.s
