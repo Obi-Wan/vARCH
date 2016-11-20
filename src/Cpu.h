@@ -78,8 +78,8 @@ private:
   //|//////////////////////|//
   //|  Functions           |//
   //|//////////////////////|//
-  int32_t instructsOneArg(const int32_t& instr, int32_t& newFlags);
   int32_t instructsZeroArg(const int32_t& instr, int32_t& newFlags);
+  int32_t instructsOneArg(const int32_t& instr, int32_t& newFlags);
   int32_t instructsTwoArg(const int32_t& instr, int32_t& newFlags);
   int32_t instructsThreeArg(const int32_t& instr, int32_t& newFlags);
 
