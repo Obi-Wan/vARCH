@@ -85,10 +85,10 @@ AS_IF([test "x$messaging" == xinfo],
   [AC_DEFINE([INFO], [1],
         [Define if you want a build with information])
    ])
-AS_IF([test "x$messaging" != xdebug],
-      [ AC_SUBST([CFLAGS],["${CFLAGS} -fomit-frame-pointer -fforce-addr"])
-        AC_SUBST([CXXFLAGS],["${CXXFLAGS} -fomit-frame-pointer -fforce-addr"])
-       ])
+#AS_IF([test "x$messaging" != xdebug],
+#      [ AC_SUBST([CFLAGS],["${CFLAGS} -fomit-frame-pointer -fforce-addr"])
+#        AC_SUBST([CXXFLAGS],["${CXXFLAGS} -fomit-frame-pointer -fforce-addr"])
+#       ])
 ###############################################################################
 
 AC_OUTPUT
