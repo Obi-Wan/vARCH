@@ -11,15 +11,13 @@
 
 #include <elfio/elfio.hpp>
 
-using namespace ELFIO;
-
 ////////////////////////////////////////////////////////////////////////////////
 /// READ OBJ
 
 void
 ObjLoader::readObj(asm_program & prog)
 {
-  elfio elf_reader;
+  ELFIO::elfio elf_reader;
   SymbolsTempLookup<> lookup_position_func;
   SymbolsTempLookup<> lookup_position_shared;
   SymbolsTempLookup<> lookup_position_const;
@@ -40,50 +38,50 @@ ObjLoader::readObj(asm_program & prog)
     WrongFileException("File: '" + this->filename + "' is not Little-endian");
   }
 
-  section * sec_text = elf_reader.sections[".text"];
+  ELFIO::section * sec_text = elf_reader.sections[".text"];
   if (!sec_text)
   {
     WrongFileException("File: '" + this->filename + "' does not contain a '.text' section");
   }
-  section * sec_data = elf_reader.sections[".data"];
+  ELFIO::section * sec_data = elf_reader.sections[".data"];
   if (!sec_data)
   {
     WrongFileException("File: '" + this->filename + "' does not contain a '.data' section");
   }
-  section * sec_rodata = elf_reader.sections[".rodata"];
+  ELFIO::section * sec_rodata = elf_reader.sections[".rodata"];
   if (!sec_rodata)
   {
     WrongFileException("File: '" + this->filename + "' does not contain a '.rodata' section");
   }
-  section * sec_strings = elf_reader.sections[".strtab"];
+  ELFIO::section * sec_strings = elf_reader.sections[".strtab"];
   if (!sec_strings)
   {
     WrongFileException("File: '" + this->filename + "' does not contain a '.strtab' section");
   }
-  section * sec_symbols = elf_reader.sections[".symtab"];
+  ELFIO::section * sec_symbols = elf_reader.sections[".symtab"];
   if (!sec_symbols)
   {
     WrongFileException("File: '" + this->filename + "' does not contain a '.symtab' section");
   }
-  section * sec_rel_text = elf_reader.sections[".rel.text"];
+  ELFIO::section * sec_rel_text = elf_reader.sections[".rel.text"];
   if (!sec_rel_text)
   {
     WrongFileException("File: '" + this->filename + "' does not contain a '.rel.text' section");
   }
 
   {
-    symbol_section_accessor accessor_sym(elf_reader, sec_symbols);
+    ELFIO::symbol_section_accessor accessor_sym(elf_reader, sec_symbols);
     // Let's load symbols
     DebugPrintf(("\nSymbol Section size: %lu\n", accessor_sym.get_symbols_num()-1));
-    for (Elf_Half indx = 1; indx < accessor_sym.get_symbols_num(); indx++)
+    for (ELFIO::Elf_Half indx = 1; indx < accessor_sym.get_symbols_num(); indx++)
     {
-      std::string name;
-      Elf64_Addr value;
-      Elf_Xword size;
-      unsigned char bind;
-      unsigned char type;
-      Elf_Half section_index;
-      unsigned char other;
+      std::string name = "";
+      ELFIO::Elf64_Addr value = 0;
+      ELFIO::Elf_Xword size = 0;
+      unsigned char bind = 0;
+      unsigned char type = 0;
+      ELFIO::Elf_Half section_index = 0;
+      unsigned char other = 0;
 
       accessor_sym.get_symbol( indx, name, value, size, bind, type,
           section_index, other );
@@ -119,17 +117,17 @@ ObjLoader::readObj(asm_program & prog)
 
   // Let's load relocation symbols
   {
-    relocation_section_accessor accessor_rel(elf_reader, sec_rel_text);
+    ELFIO::relocation_section_accessor accessor_rel(elf_reader, sec_rel_text);
     DebugPrintf(("\nRelocation Section size: %lu\n", accessor_rel.get_entries_num()));
-    for (Elf_Xword indx = 0; indx < accessor_rel.get_entries_num(); indx++)
+    for (ELFIO::Elf_Xword indx = 0; indx < accessor_rel.get_entries_num(); indx++)
     {
-      Elf64_Addr offset;
-      Elf64_Addr value;
+      ELFIO::Elf64_Addr offset;
+      ELFIO::Elf64_Addr value;
       std::string sym_name;
 
-      Elf_Word type;
-      Elf_Sxword dummy1;
-      Elf_Sxword dummy2;
+      ELFIO::Elf_Word type;
+      ELFIO::Elf_Sxword dummy1;
+      ELFIO::Elf_Sxword dummy2;
 
       accessor_rel.get_entry(indx, offset, value, sym_name, type, dummy1, dummy2);
 
@@ -238,7 +236,7 @@ ObjLoader::readObj(asm_program & prog)
 void
 ObjWriter::writeObj(const asm_program & prog)
 {
-  elfio elf_writer;
+  ELFIO::elfio elf_writer;
   SymbolsTempLookup<> lookup_string;
   SymbolsTempLookup<> lookup_symbol;
 
@@ -249,32 +247,32 @@ ObjWriter::writeObj(const asm_program & prog)
   elf_writer.set_machine( EM_NONE );
 
   // Create Instructions Section
-  section * sec_text = elf_writer.sections.add(".text");
+  ELFIO::section * sec_text = elf_writer.sections.add(".text");
   sec_text->set_type( SHT_PROGBITS );
   sec_text->set_flags( SHF_ALLOC | SHF_EXECINSTR );
   sec_text->set_addr_align( 0x04 );
 
   // Create Data Section
-  section * sec_data = elf_writer.sections.add(".data");
+  ELFIO::section * sec_data = elf_writer.sections.add(".data");
   sec_data->set_type( SHT_PROGBITS );
   sec_data->set_flags( SHF_ALLOC | SHF_WRITE );
   sec_data->set_addr_align( 0x04 );
 
   // Create Read-Only Data Section
-  section * sec_rodata = elf_writer.sections.add(".rodata");
+  ELFIO::section * sec_rodata = elf_writer.sections.add(".rodata");
   sec_rodata->set_type( SHT_PROGBITS );
   sec_rodata->set_flags( SHF_ALLOC );
   sec_rodata->set_addr_align( 0x04 );
 
   // Create Strings Table
-  section * sec_strings = elf_writer.sections.add(".strtab");
+  ELFIO::section * sec_strings = elf_writer.sections.add(".strtab");
   sec_strings->set_type( SHT_STRTAB );
   sec_strings->set_flags( SHF_ALLOC );
 
-  string_section_accessor accessor_str(sec_strings);
+  ELFIO::string_section_accessor accessor_str(sec_strings);
 
   // Create Table of Symbols
-  section * sec_symbols = elf_writer.sections.add(".symtab");
+  ELFIO::section * sec_symbols = elf_writer.sections.add(".symtab");
   sec_symbols->set_type( SHT_SYMTAB );
   sec_symbols->set_flags( SHF_ALLOC );
   sec_symbols->set_info( 2 );
@@ -282,17 +280,17 @@ ObjWriter::writeObj(const asm_program & prog)
   sec_symbols->set_entry_size( elf_writer.get_default_entry_size( SHT_SYMTAB ) );
   sec_symbols->set_link( sec_strings->get_index() );
 
-  symbol_section_accessor accessor_sym(elf_writer, sec_symbols);
+  ELFIO::symbol_section_accessor accessor_sym(elf_writer, sec_symbols);
 
   // Create References Section
-  section * sec_rel_text = elf_writer.sections.add(".rel.text");
+  ELFIO::section * sec_rel_text = elf_writer.sections.add(".rel.text");
   sec_rel_text->set_type( SHT_REL );
   sec_rel_text->set_info( sec_text->get_index() );
   sec_rel_text->set_addr_align( 0x4 );
   sec_rel_text->set_entry_size( elf_writer.get_default_entry_size( SHT_REL ) );
   sec_rel_text->set_link( sec_symbols->get_index() );
 
-  relocation_section_accessor accessor_rel(elf_writer, sec_rel_text);
+  ELFIO::relocation_section_accessor accessor_rel(elf_writer, sec_rel_text);
 
   // Write strings (symbol names) in Stings Table
   for (LabelsMap::value_type label_pair : prog.globalSymbols.getLabels())
@@ -300,7 +298,7 @@ ObjWriter::writeObj(const asm_program & prog)
     const asm_label_statement * label_stmt = label_pair.second;
 
     // Adding String
-    Elf_Word sym_name = accessor_str.add_string(label_stmt->label);
+    ELFIO::Elf_Word sym_name = accessor_str.add_string(label_stmt->label);
     lookup_string.addSymbol(label_stmt->label, sym_name);
   }
 
@@ -308,21 +306,21 @@ ObjWriter::writeObj(const asm_program & prog)
   for (LabelsMap::value_type label_pair : prog.globalSymbols.getLabels())
   {
     const asm_label_statement * label_stmt = label_pair.second;
-    Elf_Word sym_name = lookup_string.getSymbol(label_stmt->label);
+    ELFIO::Elf_Word sym_name = lookup_string.getSymbol(label_stmt->label);
 
-    Elf_Half label_section_index = label_stmt->is_func
+    ELFIO::Elf_Half label_section_index = label_stmt->is_func
         ? sec_text->get_index()
         : (label_stmt->is_constant ? sec_rodata->get_index() : sec_data->get_index());
 
     unsigned char label_visib = label_stmt->is_global ? STB_GLOBAL : STB_LOCAL;
     unsigned char label_type = label_stmt->is_func ? STT_FUNC : STT_OBJECT;
 
-    const Elf_Xword label_size = label_stmt->size * label_stmt->num;
+    const ELFIO::Elf_Xword label_size = label_stmt->size * label_stmt->num;
 
     DebugPrintf(("Added string: 0x%02x '%s'\n", sym_name, label_stmt->label.c_str()));
 
     // Adding Symbol
-    Elf_Word sym = accessor_sym.add_symbol(sym_name, label_stmt->offset,
+    ELFIO::Elf_Word sym = accessor_sym.add_symbol(sym_name, label_stmt->offset,
         label_size, label_visib, label_type, 0, label_section_index);
     lookup_symbol.addSymbol(label_stmt->label, sym);
 
@@ -352,8 +350,8 @@ ObjWriter::writeObj(const asm_program & prog)
 
       if (l_stmt)
       {
-        Elf_Word sym = lookup_symbol.getSymbol(l_stmt->label);
-        Elf64_Addr offset = ref->arg->relOffset + ref->parent->offset + func->functionOffset;
+        ELFIO::Elf_Word sym = lookup_symbol.getSymbol(l_stmt->label);
+        ELFIO::Elf64_Addr offset = ref->arg->relOffset + ref->parent->offset + func->functionOffset;
 
         DebugPrintf(("Reference to symbol: sym 0x%02x, '%s', offset 0x%04lx (%04lu)\n",
             sym, l_stmt->label.c_str(), offset, offset));
