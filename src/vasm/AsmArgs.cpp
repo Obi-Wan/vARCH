@@ -7,21 +7,23 @@
 
 #include "AsmArgs.h"
 
+#include <cstdio>
 #include <iostream>
-#include <cstdlib>
-
-using namespace std;
 
 void
 AsmArgs::parse()
 {
   for(int32_t argNum = 1; argNum < argc; argNum++)
   {
-    const string tempArg(argv[argNum]);
+    const std::string tempArg(argv[argNum]);
 
     if (!tempArg.compare("-c"))
     {
       onlyCompile = true;
+    }
+    else if (!tempArg.compare("-v") || !tempArg.compare("--verbose"))
+    {
+      verbose = true;
     }
     else if (!tempArg.compare("-o"))
     {
@@ -50,11 +52,11 @@ AsmArgs::parse()
           WrongArgumentException(
               "Optimization Level should be between 0 and 3") );
     }
-    else if (!tempArg.compare("-reg-auto-alloc"))
+    else if (!tempArg.compare("--reg-auto-alloc"))
     {
       regAutoAlloc = true;
     }
-    else if (!tempArg.compare("-reg-coalesce"))
+    else if (!tempArg.compare("--reg-coalesce"))
     {
       regCoalesce = true;
     }
@@ -68,11 +70,11 @@ AsmArgs::parse()
               "You didn't specify the Debug Symbols file name") );
       debugSymbolsName.assign(argv[argNum]);
     }
-    else if (!tempArg.compare("-only-validate"))
+    else if (!tempArg.compare("--only-validate"))
     {
       onlyValidate = true;
     }
-    else if (!tempArg.compare("-disassemble-result"))
+    else if (!tempArg.compare("--disassemble-result"))
     {
       disassembleResult = true;
 
@@ -91,43 +93,40 @@ AsmArgs::parse()
     }
   }
 
-  InfoPrintf(("Input filenames (Source): \n"));
-#ifdef INFO
-  for (const string & filename : this->getSrcInputNames())
+  if (this->verbose)
   {
-    InfoPrintf(("  - %s\n", filename.c_str()));
+    std::printf("Input filenames (Source): \n");
+    for (const std::string & filename : this->getSrcInputNames())
+    {
+      std::printf("  - %s\n", filename.c_str());
+    }
+    std::printf("Input filenames (Object): \n");
+    for (const std::string & filename : this->getObjInputNames())
+    {
+      std::printf("  - %s\n", filename.c_str());
+    }
+    std::printf("Output filename: %s\n", outputName.c_str());
+    std::string includes;
+    for(uint32_t inclNum = 0; inclNum < includeDirs.size(); inclNum++)
+    {
+      includes += " " + includeDirs[inclNum];
+    }
+    std::printf("DebugSymbols filename: %s\n", debugSymbolsName.c_str());
+    std::printf("Included directories: %s\n", includes.c_str());
+    std::printf("Optimization Level: %u\n", optimLevel);
+    std::printf("Register auto allocation: %s\n",
+                  regAutoAlloc ? "Enabled" : "Disabled");
+    std::printf("Register Coalescing: %s\n",
+                  regCoalesce ? "Enabled" : "Disabled");
+    std::printf("Disassembling result: %s\n",
+                  disassembleResult ? "Enabled" : "Disabled");
+    std::printf("Only Validating: %s\n",
+                  onlyValidate ? "Enabled" : "Disabled");
+    std::printf("Only Compiling: %s\n",
+                  onlyCompile ? "Enabled" : "Disabled");
+    std::printf("Omit frame pointer: %s\n\n",
+                  omitFramePointer ? "Enabled" : "Disabled");
   }
-#endif
-  InfoPrintf(("Input filenames (Object): \n"));
-#ifdef INFO
-  for (const string & filename : this->getObjInputNames())
-  {
-    InfoPrintf(("  - %s\n", filename.c_str()));
-  }
-#endif
-  InfoPrintf(("Output filename: %s\n", outputName.c_str()));
-#ifdef INFO
-  string includes;
-  for(uint32_t inclNum = 0; inclNum < includeDirs.size(); inclNum++)
-  {
-    includes += " " + includeDirs[inclNum];
-  }
-#endif
-  InfoPrintf(("DebugSymbols filename: %s\n", debugSymbolsName.c_str()));
-  InfoPrintf(("Include dirs: %s\n", includes.c_str()));
-  InfoPrintf(("Optimization Level: %u\n", optimLevel));
-  InfoPrintf(("Register auto allocation: %s\n",
-                regAutoAlloc ? "Enabled" : "Disabled"));
-  InfoPrintf(("Register Coalescing: %s\n",
-                regCoalesce ? "Enabled" : "Disabled"));
-  InfoPrintf(("Disassembling result: %s\n",
-                disassembleResult ? "Enabled" : "Disabled"));
-  InfoPrintf(("Only Validating: %s\n",
-                onlyValidate ? "Enabled" : "Disabled"));
-  InfoPrintf(("Only Compiling: %s\n",
-                onlyCompile ? "Enabled" : "Disabled"));
-  InfoPrintf(("Omit frame pointer: %s\n\n",
-                omitFramePointer ? "Enabled" : "Disabled"));
 
   CHECK_THROW( !inputFiles.empty(),
           WrongArgumentException("You didn't specify any input file") );
@@ -139,14 +138,15 @@ void
 AsmArgs::printHelp() const throw()
 {
   cout << "Syntax is: 'vasm <input_files> -o <output_file> [options]'" << endl;
-  cout << " -only-validate : only parse, without emitting code" << endl;
+  cout << " --only-validate : only parse, without emitting code" << endl;
+  cout << " -v : Verbose mode, giving extra information" << endl;
   cout << " -c : Just compiles, and output a static object file" << endl;
   cout << " -I<include_path> : adds an include path" << endl;
   cout << " -d <output_file> : generates debug symbols file "
         << "(if extension is .xml, an XML file will be generated)" << endl;
-  cout << " -reg-auto-alloc : Lets the assembler auto allocate registers" << endl;
-  cout << " -reg-coalesce : (if -reg-auto-alloc) coalesces registers" << endl;
-  cout << " -disassemble-result : outputs the disassembled code" << endl;
+  cout << " --reg-auto-alloc : Lets the assembler auto allocate registers" << endl;
+  cout << " --reg-coalesce : (if --reg-auto-alloc) coalesces registers" << endl;
+  cout << " --disassemble-result : outputs the disassembled code" << endl;
   cout << " -O<optimization_level> : between 0 and 3, enables different "
         << "optimization levels" << endl;
   cout << " -fomit-frame-pointer : omits frame pointer (not working, yet)" << endl;

@@ -45,10 +45,6 @@
 #endif
 
 #if defined(DEBUG) || defined(WARNING) || defined(INFO)
-# include <cstdio>
-# include <iostream>
-using namespace std;
-
 # ifndef __PRETTY_FUNCTION__
 #   define __PRETTY_FUNCTION__ __FUNCTION__
 # endif
