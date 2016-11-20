@@ -73,12 +73,12 @@ public:
 
 class ASTL_Arg : public ASTL_Node {
 public:
-  TypeOfArgument type;
+  TypeOfArgument kind;
   ScaleOfArgument scale;
 
   ASTL_Arg(const YYLTYPE & _pos, const TypeOfArgument & _type = IMMED,
       const ScaleOfArgument & _scale = BYTE4)
-    : ASTL_Node(_pos), type(_type), scale(_scale)
+    : ASTL_Node(_pos), kind(_type), scale(_scale)
   { }
   virtual const string toString() const { return ""; }
   virtual const ASTL_Class getClass() const throw() { return ASTL_ARG; }

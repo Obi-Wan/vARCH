@@ -39,10 +39,10 @@ ArgumentsHandler::getReg(const ASTL_ArgRegister * const arg)
   if (arg->getClass() == ASTL_ARG_SPECIAL_REGISTER) {
     const ASTL_ArgSpecialRegister * const sarg = (const ASTL_ArgSpecialRegister *) arg;
     return ArgumentsHandler::getSpecialReg(sarg->pos, sarg->regNum, sarg->scale,
-        sarg->type, sarg->modif);
+        sarg->kind, sarg->modif);
   } else {
     return ArgumentsHandler::getReg(arg->pos, arg->id.c_str(), arg->scale,
-        arg->type, arg->modif);
+        arg->kind, arg->modif);
   }
 }
 

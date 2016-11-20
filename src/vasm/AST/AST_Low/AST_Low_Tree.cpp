@@ -155,13 +155,13 @@ ASTL_Tree::convertStatements(const vector<ASTL_Stmt *> & inStmts) const
           switch (t_arg->getClass()) {
             case ASTL_ARG_LABEL: {
               ASTL_ArgLabel * arg = (ASTL_ArgLabel *) t_arg;
-              finalArg = new asm_label_arg(arg->pos, arg->label, arg->type, arg->scale);
+              finalArg = new asm_label_arg(arg->pos, arg->label, arg->kind, arg->scale);
               break;
             }
             case ASTL_ARG_NUMBER: {
               ASTL_ArgNumber * arg = (ASTL_ArgNumber *) t_arg;
               finalArg = new asm_immediate_arg(arg->pos,
-                  atoi(arg->number.c_str()), arg->type, arg->scale, REG_NO_ACTION);
+                  atoi(arg->number.c_str()), arg->kind, arg->scale, REG_NO_ACTION);
               break;
             }
             case ASTL_ARG_SPECIAL_REGISTER:
@@ -170,11 +170,11 @@ ASTL_Tree::convertStatements(const vector<ASTL_Stmt *> & inStmts) const
               finalArg = ArgumentsHandler::getReg(arg);
 
               asm_immediate_arg * tempFinalArg = (asm_immediate_arg *) finalArg;
-              if ((arg->type & DISPLACED) == DISPLACED) {
+              if ((arg->kind & DISPLACED) == DISPLACED) {
                 DebugPrintf(("        & Displaced\n"));
                 tempFinalArg->displacement = atoi(arg->displ->number.c_str());
               }
-              if ((arg->type & INDEXED) == INDEXED) {
+              if ((arg->kind & INDEXED) == INDEXED) {
                 DebugPrintf(("        & Indexed\n"));
                 asm_immediate_arg * tempIndex = ArgumentsHandler::getReg(arg);
                 tempFinalArg->index = tempIndex->content.tempUID;
