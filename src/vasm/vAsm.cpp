@@ -11,8 +11,6 @@
 #include "IR_Low_parser.h"
 #include "backend/Backend.h"
 
-using namespace std;
-
 void
 printAssembler(const asm_program & program);
 
@@ -27,7 +25,7 @@ main(int argc, char** argv)
 {
   AsmArgs args(argc, argv);
   AsmPreprocessor defines;
-  defines.addDefine(string("VASM_VERSION"), VERSION);
+  defines.addDefine(std::string("VASM_VERSION"), VERSION);
 
   try {
     args.parse();
@@ -46,7 +44,7 @@ main(int argc, char** argv)
   try {
     Backend backend(args);
 
-    for(const string & filename : args.getSrcInputNames()) {
+    for(const std::string & filename : args.getSrcInputNames()) {
       if (!openFirstFile(filename.c_str()))
       {
         fprintf(stderr, "I couldn't open the ASM file to process: %s\n",
@@ -125,8 +123,8 @@ printDefines(const AsmPreprocessor & defs)
   const DefineType & d = defs.getDefines();
   DebugPrintf(("Num of Defines %lu\n", d.size()));
   for(const auto entry : d) {
-    string argsDescr;
-    for(const string param : entry.second.parameters) {
+    std::string argsDescr;
+    for(const std::string param : entry.second.parameters) {
       argsDescr += " ";
       argsDescr += param;
     }

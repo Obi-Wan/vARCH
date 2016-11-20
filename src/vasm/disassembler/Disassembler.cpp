@@ -22,7 +22,7 @@ Disassembler::disassembleBytecode(asm_program & prog, const int8_t * data,
 {
   for(size_t indx = 0; indx < size;)
   {
-    const string & func_name = lookup_func.getString(indx);
+    const std::string & func_name = lookup_func.getString(indx);
     DebugPrintf(("Loading function at: 0x%04lx (%04lu), '%s'\n", indx, indx,
         func_name.c_str()));
 
@@ -36,8 +36,8 @@ Disassembler::disassembleBytecode(asm_program & prog, const int8_t * data,
     for(const int8_t * code_p = func_data; code_p < code_p_end;)
     {
       int32_t instr;
-      vector<TypeOfArgument> type_args;
-      vector<ScaleOfArgument> scale_args;
+      std::vector<TypeOfArgument> type_args;
+      std::vector<ScaleOfArgument> scale_args;
 
       decodeInstruction(code_p, instr, type_args, scale_args);
 
@@ -63,7 +63,7 @@ Disassembler::disassembleBytecode(asm_program & prog, const int8_t * data,
 
         if (lookup_rel.isOffset(arg_offset))
         {
-          const string & label_name = lookup_rel.getString(arg_offset);
+          const std::string & label_name = lookup_rel.getString(arg_offset);
           asm_label_arg * label_ref = new asm_label_arg(
               *(asm_immediate_arg *)arg_struct, label_name);
 
@@ -157,11 +157,11 @@ void
 Disassembler::printArg(const TypeOfArgument & typeArg,
     const ScaleOfArgument & scaleArg, const ArgumentValue & arg)
 {
-  cout << "       Type: ";
-  cout.width(12);
-  cout << ATypeSet.getItem(typeArg);
-  cout.width(0);
-  stringstream argString;
+  std::cout << "       Type: ";
+  std::cout.width(12);
+  std::cout << ATypeSet.getItem(typeArg);
+  std::cout.width(0);
+  std::stringstream argString;
   switch (typeArg) {
     case IMMED: {
       argString << arg.immed;
@@ -200,38 +200,38 @@ Disassembler::printArg(const TypeOfArgument & typeArg,
       break;
     }
   }
-  cout << ", Arg: ";
-  cout.width(10);
-  cout << argString.str();
-  cout.width(0);
-  cout << ", Scale: " << STypeSet.getItem(scaleArg);
+  std::cout << ", Arg: ";
+  std::cout.width(10);
+  std::cout << argString.str();
+  std::cout.width(0);
+  std::cout << ", Scale: " << STypeSet.getItem(scaleArg);
   switch (typeArg) {
     case REG: {
-      cout << ", Reg Mod: " << MTypeSet.getItem(arg.reg.reg_mod) << endl;
+      std::cout << ", Reg Mod: " << MTypeSet.getItem(arg.reg.reg_mod) << std::endl;
       break;
     }
     case REG_INDIR: {
-      cout << ", Reg Mod: " << MTypeSet.getItem(arg.reg_indir.reg_mod) << endl;
+      std::cout << ", Reg Mod: " << MTypeSet.getItem(arg.reg_indir.reg_mod) << std::endl;
       break;
     }
     case MEM_INDIR: {
-      cout << ", Reg Mod: " << MTypeSet.getItem(arg.mem_indir.reg_mod) << endl;
+      std::cout << ", Reg Mod: " << MTypeSet.getItem(arg.mem_indir.reg_mod) << std::endl;
       break;
     }
     case DISPLACED: {
-      cout << ", Reg Mod: " << MTypeSet.getItem(arg.displaced.reg_mod) << endl;
+      std::cout << ", Reg Mod: " << MTypeSet.getItem(arg.displaced.reg_mod) << std::endl;
       break;
     }
     case INDEXED: {
-      cout << ", Reg Mod: " << MTypeSet.getItem(arg.indexed.indx_mod) << endl;
+      std::cout << ", Reg Mod: " << MTypeSet.getItem(arg.indexed.indx_mod) << std::endl;
       break;
     }
     case INDX_DISP: {
-      cout << ", Reg Mod: " << MTypeSet.getItem(arg.indx_disp.indx_mod) << endl;
+      std::cout << ", Reg Mod: " << MTypeSet.getItem(arg.indx_disp.indx_mod) << std::endl;
       break;
     }
     default: {
-      cout << endl;
+      std::cout << std::endl;
       break;
     }
   }
@@ -244,26 +244,26 @@ Disassembler::disassembleProgram(const asm_program & prog)
   bytecode.reserve(5);
   for(const asm_function * func : prog.functions)
   {
-    cout << "Function: \"" << func->name << "\"" << endl << "Statements:" << endl;
+    std::cout << "Function: \"" << func->name << "\"" << std::endl << "Statements:" << std::endl;
     for(asm_statement * stmt : func->stmts)
     {
-      cout.width(4);
-      cout.fill('0');
-      cout << stmt->offset;
-      cout.width(0);
-      cout.fill(' ');
-      cout << ":";
+      std::cout.width(4);
+      std::cout.fill('0');
+      std::cout << stmt->offset;
+      std::cout.width(0);
+      std::cout.fill(' ');
+      std::cout << ":";
       if (stmt->getType() == ASM_LABEL_STATEMENT) {
         asm_label_statement * l_stmt = (asm_label_statement *) stmt;
-        cout << "." << l_stmt->label << ": (position: ";
+        std::cout << "." << l_stmt->label << ": (position: ";
         if (l_stmt->isGlobal()) {
-          cout << "global " << l_stmt->offset;
+          std::cout << "global " << l_stmt->offset;
         } else {
-          cout << "internal "
+          std::cout << "internal "
                 << l_stmt->offset << ", total "
                 << l_stmt->offset + func->functionOffset;
         }
-        cout << ")" << endl;
+        std::cout << ")" << std::endl;
       } else {
         bytecode.resize(stmt->getSize());
         Bloat::iterator it = bytecode.begin();
@@ -271,19 +271,19 @@ Disassembler::disassembleProgram(const asm_program & prog)
         disassembleAndPrint(bytecode);
       }
     }
-    cout << "Stack Locals:" << endl;
+    std::cout << "Stack Locals:" << std::endl;
     this->printLocals(func->stackLocals, func->functionOffset);
 
-    cout << "End Function \"" << func->name << "\"" << endl << endl;
+    std::cout << "End Function \"" << func->name << "\"" << std::endl << std::endl;
   }
 
-  cout << "Shared Variables (size: " << prog.getSharedVarsTotalSize() << "):" << endl;
+  std::cout << "Shared Variables (size: " << prog.getSharedVarsTotalSize() << "):" << std::endl;
   this->printLocals(prog.shared_vars, 0);
-  cout << "End Shared Variables" << endl << endl;
+  std::cout << "End Shared Variables" << std::endl << std::endl;
 
-  cout << "Constants (size: " << prog.getConstantsTotalSize() << "):" << endl;
+  std::cout << "Constants (size: " << prog.getConstantsTotalSize() << "):" << std::endl;
   this->printLocals(prog.constants, 0);
-  cout << "End Constants" << endl << endl;
+  std::cout << "End Constants" << std::endl << std::endl;
 }
 
 inline void
@@ -294,27 +294,27 @@ Disassembler::printLocals(const ListOfDataStmts & locals, const size_t & funcOff
   {
     if (stmt->getType() == ASM_LABEL_STATEMENT) {
       const asm_label_statement * l_stmt = (const asm_label_statement *) stmt;
-      cout << "." << l_stmt->label << ": (position: ";
+      std::cout << "." << l_stmt->label << ": (position: ";
       if (l_stmt->isGlobal()) {
-        cout << "global " << l_stmt->offset;
+        std::cout << "global " << l_stmt->offset;
       } else {
-        cout << "internal "
+        std::cout << "internal "
               << l_stmt->offset << ", total "
               << l_stmt->offset + funcOffset;
       }
-      cout << ")" << endl;
+      std::cout << ")" << std::endl;
     } else {
       bytecode.resize(stmt->getSize());
       Bloat::iterator it = bytecode.begin();
       stmt->emitCode(it);
       for(const int8_t & num : bytecode)
       {
-        cout << " ";
-        cout.width(3);
-        cout << int32_t(num);
-        cout.width(0);
+        std::cout << " ";
+        std::cout.width(3);
+        std::cout << int32_t(num);
+        std::cout.width(0);
       }
-      cout << endl;
+      std::cout << std::endl;
     }
   }
 }
@@ -326,12 +326,12 @@ Disassembler::fetchArg(const TypeOfArgument & typeArg,
 {
   size_t numOfBytes = (typeArg == IMMED) ? (1 << scaleArg) : 4;
   if (codeIt > (endIt - numOfBytes)) {
-    stringstream stream;
+    std::stringstream stream;
     stream << __PRETTY_FUNCTION__ << ": Overcame bytecode limit by "
-            << codeIt - (endIt - numOfBytes) << " bytes." << endl;
-    stream << "Pointer position: " << hex << reinterpret_cast<uint64_t>(&*codeIt)
-            << " Ending position: " << hex << reinterpret_cast<uint64_t>(&*endIt)
-            << " Number of bytes to read: " << numOfBytes << endl;
+            << codeIt - (endIt - numOfBytes) << " bytes." << std::endl;
+    stream << "Pointer position: " << std::hex << reinterpret_cast<uint64_t>(&*codeIt)
+            << " Ending position: " << std::hex << reinterpret_cast<uint64_t>(&*endIt)
+            << " Number of bytes to read: " << numOfBytes << std::endl;
     throw WrongArgumentException(stream.str());
   }
 
@@ -343,8 +343,8 @@ Disassembler::fetchArg(const TypeOfArgument & typeArg,
 //      return DEAL_DWORD_FROM_BWORDS<int64_t>(codeIt);
 //    }
     default:
-      throw WrongArgumentException(string(__PRETTY_FUNCTION__)
-          + ": Unknown byte scale: " + to_string(numOfBytes));
+      throw WrongArgumentException(std::string(__PRETTY_FUNCTION__)
+          + ": Unknown byte scale: " + std::to_string(numOfBytes));
   }
 
   ArgumentValue temp_arg;
@@ -357,7 +357,7 @@ Disassembler::fetchArg(const TypeOfArgument & typeArg,
 
 void
 Disassembler::decodeInstruction(const int8_t *& data, int32_t & instr,
-    vector<TypeOfArgument> & type_args, vector<ScaleOfArgument> & scale_args)
+    std::vector<TypeOfArgument> & type_args, std::vector<ScaleOfArgument> & scale_args)
 {
   instr = DEAL_SWORD_FROM_BWORDS(data);
 
@@ -379,12 +379,12 @@ Disassembler::disassembleAndPrint(const Bloat & bytecode)
   for(const int8_t * code_p = &*bytecode.begin(); code_p < code_p_end;)
   {
     int32_t instr;
-    vector<TypeOfArgument> type_args;
-    vector<ScaleOfArgument> scale_args;
+    std::vector<TypeOfArgument> type_args;
+    std::vector<ScaleOfArgument> scale_args;
 
     decodeInstruction(code_p, instr, type_args, scale_args);
 
-    cout << " " << ISet.getInstr(instr) << endl;
+    std::cout << " " << ISet.getInstr(instr) << std::endl;
     for (size_t arg_num = 0; arg_num < type_args.size(); arg_num++)
     {
       const TypeOfArgument & type_arg = type_args[arg_num];

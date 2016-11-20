@@ -14,7 +14,7 @@ ASTL_FunctionDef::~ASTL_FunctionDef()
 }
 
 void
-ASTL_FunctionProto::copyParameters(const vector<ASTL_Param *> & _params)
+ASTL_FunctionProto::copyParameters(const std::vector<ASTL_Param *> & _params)
 {
   this->params.reserve(this->params.size() + _params.size());
   for(const ASTL_Param * param : _params)

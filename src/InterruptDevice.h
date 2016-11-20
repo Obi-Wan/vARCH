@@ -11,57 +11,61 @@
 #include <queue>
 #include <map>
 
-using namespace std;
-
 class InterruptHandler {
 public:
-  class InterruptsRecord : public pair<int,int> {
+  class InterruptsRecord : public std::pair<int32_t, int32_t> {
   public:
-    InterruptsRecord(const int& _priority, const int& _device_id) :
-        pair<int,int>(_priority, _device_id) { }
+    InterruptsRecord(const int& _priority, const int32_t & _device_id) :
+        std::pair<int32_t, int32_t>(_priority, _device_id) { }
 
     int getPriority() const { return first; }
     int getDeviceId() const { return second; }
 
     bool operator<(const InterruptsRecord& o) const { return first < o.first; }
   };
-  typedef priority_queue<InterruptsRecord> InterruptsQueue;
+  typedef std::priority_queue<InterruptsRecord> InterruptsQueue;
 
 private:
   struct DeviceRecord {
-    int priority;
+    int32_t priority;
     bool enabled;
 
-    DeviceRecord(const int& _pr, const bool& _en) :
+    DeviceRecord(const int32_t & _pr, const bool & _en) :
                         priority(_pr), enabled(_en) { }
   };
-  typedef map<int,DeviceRecord> InterruptDevicesMap;
+  typedef std::map<int32_t, DeviceRecord> InterruptDevicesMap;
 
   InterruptDevicesMap interruptDevicesMap;
   InterruptsQueue interruptsQueue;
 
 public:
-  void interruptSignal(const int& device_id) {
+  void interruptSignal(const int& device_id)
+  {
     // Add the give interrupt to the queue of interruptions, just if it's enabled
     InterruptDevicesMap::iterator device = interruptDevicesMap.find(device_id);
-    if ( (device != interruptDevicesMap.end()) && device->second.enabled ) {
+    if ( (device != interruptDevicesMap.end()) && device->second.enabled )
+    {
       interruptsQueue.push( InterruptsRecord(device->second.priority, device_id) );
     }
   }
 
-  void registerDevice(const int& device_id, const int& priority,
-                      const bool& enabled) {
-    if (interruptDevicesMap.find(device_id) != interruptDevicesMap.end()) {
+  void registerDevice(const int32_t & device_id, const int32_t & priority,
+                      const bool & enabled)
+  {
+    if (interruptDevicesMap.find(device_id) != interruptDevicesMap.end())
+    {
       interruptDevicesMap.insert(
           InterruptDevicesMap::value_type(device_id,
                                           DeviceRecord(priority,enabled)));
-    } else {
+    }
+    else
+    {
       // signal error
     }
   }
 
   bool hasInterruptReady() const { return !interruptsQueue.empty(); }
-  const InterruptsRecord &getTopInterrupt() const { return interruptsQueue.top(); }
+  const InterruptsRecord & getTopInterrupt() const { return interruptsQueue.top(); }
   void topInterruptServed() { interruptsQueue.pop(); }
 };
 
@@ -71,15 +75,17 @@ public:
 //  InterruptDevice(const InterruptDevice& orig);
 //  virtual ~InterruptDevice();
 
-  void initInterrupts(const int& priority, const int& id,
-                      InterruptHandler *_interruptHandler) {
+  void initInterrupts(const int32_t & priority, const int32_t & id,
+                      InterruptHandler *_interruptHandler)
+  {
     interruptPriority = priority;
     interruptId = id;
     interruptHandler = _interruptHandler;
-    interruptHandler->registerDevice(interruptId,interruptPriority,true);
+    interruptHandler->registerDevice(interruptId, interruptPriority, true);
   }
 
   virtual void checkInterruptEvents() { }
+  virtual ~InterruptDevice() { }
 protected:
 
   int interruptId;

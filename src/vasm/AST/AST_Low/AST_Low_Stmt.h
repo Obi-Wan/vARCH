@@ -16,8 +16,6 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 enum ASTL_TypeQualifiers {
   ASTL_stacked,
   ASTL_const,
@@ -53,10 +51,10 @@ public:
   ASTL_Node(const YYLTYPE & _pos) : pos(_pos) { }
   virtual ~ASTL_Node() { }
 
-  virtual const string toString() const { return ""; }
+  virtual const std::string toString() const { return ""; }
   virtual const ASTL_Class getClass() const throw() { return ASTL_NODE; }
 
-  const string getTypeString(const ScaleOfArgument & type) const {
+  const std::string getTypeString(const ScaleOfArgument & type) const {
     switch (type) {
       case BYTE8: return "i64_t";
       case BYTE4: return "i32_t";
@@ -80,21 +78,21 @@ public:
       const ScaleOfArgument & _scale = BYTE4)
     : ASTL_Node(_pos), kind(_type), scale(_scale)
   { }
-  virtual const string toString() const { return ""; }
+  virtual const std::string toString() const { return ""; }
   virtual const ASTL_Class getClass() const throw() { return ASTL_ARG; }
 };
 
 class ASTL_ArgLabel : public ASTL_Arg {
 public:
-  const string label;
+  const std::string label;
 
-  ASTL_ArgLabel(const YYLTYPE & _pos, const string && id, const TypeOfArgument & _type,
+  ASTL_ArgLabel(const YYLTYPE & _pos, const std::string && id, const TypeOfArgument & _type,
       const ScaleOfArgument & _scale = BYTE4)
     : ASTL_Arg(_pos, _type, _scale), label(move(id))
   { }
 
-  virtual const string toString() const {
-    return string("(Label Arg: ") + label + " : "
+  virtual const std::string toString() const {
+    return std::string("(Label Arg: ") + label + " : "
         + this->getTypeString(scale) + ")";
   }
   virtual const ASTL_Class getClass() const throw() { return ASTL_ARG_LABEL; }
@@ -102,14 +100,14 @@ public:
 
 class ASTL_ArgNumber : public ASTL_Arg {
 public:
-  const string number;
+  const std::string number;
 
-  ASTL_ArgNumber( const YYLTYPE & _pos, const string && _num,
+  ASTL_ArgNumber( const YYLTYPE & _pos, const std::string && _num,
                   const TypeOfArgument & _type = IMMED,
                   const ScaleOfArgument & _scale = BYTE4)
     : ASTL_Arg(_pos, _type, _scale), number(move(_num))
   { }
-  virtual const string toString() const {
+  virtual const std::string toString() const {
     return "(Number Arg: " + number + " : "
         + this->getTypeString(scale) + ")";
   }
@@ -118,27 +116,27 @@ public:
 
 class ASTL_ArgRegister : public ASTL_Arg {
 public:
-  const string id;
+  const std::string id;
 
   ModifierOfArgument modif;
 
   ASTL_ArgNumber * displ;
   ASTL_ArgRegister * index;
 
-  ASTL_ArgRegister(const YYLTYPE & _pos, const string && _id,
+  ASTL_ArgRegister(const YYLTYPE & _pos, const std::string && _id,
       const ScaleOfArgument & _scale = BYTE4)
     : ASTL_Arg(_pos, REG, _scale), id(move(_id)), modif(REG_NO_ACTION)
     , displ(NULL), index(NULL)
   { }
   ~ASTL_ArgRegister();
 
-  virtual const string toString() const {
-    return string("(Register Arg: ") + id + " : "
+  virtual const std::string toString() const {
+    return std::string("(Register Arg: ") + id + " : "
         + this->getTypeString(scale) + ")";
   }
   virtual const ASTL_Class getClass() const throw() { return ASTL_ARG_REGISTER;}
 
-  const string & getRegisterID() const { return id; }
+  const std::string & getRegisterID() const { return id; }
   bool isTemp() const { return (id[0] == 'T'); }
 };
 
@@ -150,26 +148,26 @@ public:
       const ScaleOfArgument & _scale = BYTE4)
     : ASTL_ArgRegister(_pos, getSpecialRegisterID(reg), _scale), regNum(reg)
   { }
-  virtual const string toString() const {
-    return string("(Special Register Arg: ") + id + " : "
+  virtual const std::string toString() const {
+    return std::string("(Special Register Arg: ") + id + " : "
         + this->getTypeString(scale) + ")";
   }
   virtual const ASTL_Class getClass() const throw() { return ASTL_ARG_SPECIAL_REGISTER;}
 
   bool isTemp() const { return false; }
 
-  const string getSpecialRegisterID(const Registers & _reg_num) const {
+  const std::string getSpecialRegisterID(const Registers & _reg_num) const {
     switch (_reg_num) {
       case PROGRAM_COUNTER:
-        return string("PC");
+        return std::string("PC");
       case STATE_REGISTER:
-        return string("SR");
+        return std::string("SR");
       case STACK_POINTER:
-        return string("SP");
+        return std::string("SP");
       case USER_STACK_POINTER:
-        return string("USP");
+        return std::string("USP");
       default:
-        throw WrongArgumentException(string(__FUNCTION__) + ": Unexpected Special Register Number");
+        throw WrongArgumentException(std::string(__FUNCTION__) + ": Unexpected Special Register Number");
     }
   }
 };
@@ -182,26 +180,26 @@ class ASTL_Stmt : public ASTL_Node {
 public:
   ASTL_Stmt(const YYLTYPE & _pos) : ASTL_Node(_pos) { }
   virtual const ASTL_Class getClass() const throw() { return ASTL_STMT; }
-  virtual const string toString() const { return ""; }
+  virtual const std::string toString() const { return ""; }
 };
 
 class ASTL_StmtLabel : public ASTL_Stmt {
 public:
-  const string label;
+  const std::string label;
 
-  string size;
-  string num;
+  std::string size;
+  std::string num;
 
   bool constant;
   bool shared;
 
-  ASTL_StmtLabel(const YYLTYPE & _pos, const string && id)
+  ASTL_StmtLabel(const YYLTYPE & _pos, const std::string && id)
     : ASTL_Stmt(_pos), label(move(id)), size("0"), num("0"), constant(false)
     , shared(false)
   { }
   ASTL_StmtLabel(const ASTL_StmtLabel & old) = default;
 
-  virtual const string toString() const {
+  virtual const std::string toString() const {
     return "(Label stmt: " + label + " ( size: " + size + ", num: " + num + ", "
         + (constant ? "const" : "non-const") + ", "
         + (shared ? "shared" : "non-shared") + " ) )";
@@ -230,7 +228,7 @@ public:
   ASTL_StmtBase(const YYLTYPE & _pos, const int32_t & _instr)
     : ASTL_Stmt(_pos), instruction(_instr)
   { }
-  virtual const string toString() const {
+  virtual const std::string toString() const {
     return "(Base stmt: " + ISet.getInstr(instruction) + ")";
   }
   virtual const ASTL_Class getClass() const throw() { return ASTL_STMT_BASE; }
@@ -238,7 +236,7 @@ public:
 
 class ASTL_StmtExp : public ASTL_StmtBase {
 public:
-  vector<ASTL_Arg *> args;
+  std::vector<ASTL_Arg *> args;
 
   ASTL_StmtExp(const YYLTYPE & _pos, const int32_t & _instr)
     : ASTL_StmtBase(_pos, _instr)
@@ -250,8 +248,8 @@ public:
 
   void addArg(ASTL_Arg * const arg) { args.push_back(arg); }
 
-  virtual const string toString() const {
-    string tempOut = "(Base stmt: " + ISet.getInstr(instruction) + " ";
+  virtual const std::string toString() const {
+    std::string tempOut = "(Base stmt: " + ISet.getInstr(instruction) + " ";
     for(const ASTL_Arg * const arg : args) { arg->toString(); }
     tempOut += " )";
     return tempOut;
@@ -267,7 +265,7 @@ public:
     : ASTL_Stmt(_pos), scale(_type)
   { }
 
-  virtual const string toString() const { return "(Var decl : "
+  virtual const std::string toString() const { return "(Var decl : "
       + this->getTypeString(scale) + " )"; }
   virtual const ASTL_Class getClass() const throw() { return ASTL_STMT_DECL; }
 };
@@ -282,7 +280,7 @@ public:
   { }
   ~ASTL_VarDeclNumber();
 
-  virtual const string toString() const { return "(Numberic Var decl : "
+  virtual const std::string toString() const { return "(Numberic Var decl : "
       + this->getTypeString(scale) + " )"; }
   virtual const ASTL_Class getClass() const throw() { return ASTL_STMT_DECL_NUM; }
 };
@@ -296,20 +294,20 @@ public:
   { }
   ~ASTL_VarDeclFloat();
 
-  virtual const string toString() const { return "(Float Var decl : "
+  virtual const std::string toString() const { return "(Float Var decl : "
       + this->getTypeString(scale) + " )"; }
   virtual const ASTL_Class getClass() const throw() { return ASTL_STMT_DECL_FLOAT; }
 };
 
 class ASTL_VarDeclString : public ASTL_VarDecl {
 public:
-  const string text;
+  const std::string text;
 
-  ASTL_VarDeclString(const YYLTYPE & _pos, const string && _text)
+  ASTL_VarDeclString(const YYLTYPE & _pos, const std::string && _text)
     : ASTL_VarDecl(_pos, BYTE1), text(move(_text))
   { }
 
-  virtual const string toString() const { return "(String Var decl : "
+  virtual const std::string toString() const { return "(String Var decl : "
       + this->getTypeString(scale) + " -> \"" + this->text + "\" )"; }
   virtual const ASTL_Class getClass() const throw() { return ASTL_STMT_DECL_STRING; }
 };
@@ -320,14 +318,14 @@ public:
 
 class ASTL_Param : public ASTL_Node {
 public:
-  const string srcReg;
-  const string destId;
+  const std::string srcReg;
+  const std::string destId;
 
-  ASTL_Param(const YYLTYPE & _pos, const string && _src, const string && _dest)
+  ASTL_Param(const YYLTYPE & _pos, const std::string && _src, const std::string && _dest)
     : ASTL_Node(_pos), srcReg(move(_src)), destId(move(_dest))
   { }
 
-  virtual const string toString() const { return "(Param " + srcReg + " -> " + destId + ")"; }
+  virtual const std::string toString() const { return "(Param " + srcReg + " -> " + destId + ")"; }
   virtual const ASTL_Class getClass() const throw() { return ASTL_PARAM_DECL; }
 };
 

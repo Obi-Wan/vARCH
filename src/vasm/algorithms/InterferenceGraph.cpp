@@ -25,7 +25,7 @@ InterferenceGraph::InterferenceGraph(const InterferenceGraph & other)
       predIt != other.moves.getPreds().end();
       predIt++)
   {
-    const string & fromLabel = predIt->first->label;
+    const std::string & fromLabel = predIt->first->label;
     const NodeSetType & toSet = predIt->second;
     for(ns_c_iterator succIt = toSet.begin(); succIt != toSet.end(); succIt++)
     {
@@ -45,50 +45,50 @@ InterferenceGraph::printInterferenceGraph() const
       nodeIt != getListOfNodes().end(); nodeIt++)
   {
     const NodeType * const node = &*nodeIt;
-    cout << "Node - pointer: " << node << ", label: " << node->label
-          << ", pre-colored: " << boolalpha << node->isPrecolored;
+    std::cout << "Node - pointer: " << node << ", label: " << node->label
+          << ", pre-colored: " << std::boolalpha << node->isPrecolored;
 
     CHECK_THROW((this->preds.count(node) != 0),
         WrongArgumentException("Node: " + node->label + " not in preds"));
     CHECK_THROW((this->succs.count(node) != 0),
         WrongArgumentException("Node: " + node->label + " not in succs"));
 
-    cout << "\n  Preds:";
+    std::cout << "\n  Preds:";
     const NodeSetType & nodePreds = this->preds.find(node)->second;
     for(ns_c_iterator predIt = nodePreds.begin(); predIt != nodePreds.end();
         predIt++)
     {
-      cout << " " << *predIt;
+      std::cout << " " << *predIt;
     }
-    cout << "\n  Succs:";
+    std::cout << "\n  Succs:";
     const NodeSetType & nodeSuccs = this->succs.find(node)->second;
     for(ns_c_iterator succIt = nodeSuccs.begin(); succIt != nodeSuccs.end();
         succIt++)
     {
-      cout << " " << *succIt;
+      std::cout << " " << *succIt;
     }
     {
       const MovesMap::NodeType * const moveNode
                                             = moves.checkLabel(node->label, "");
 
-      cout << "\n  Incoming Moves:";
+      std::cout << "\n  Incoming Moves:";
       const MovesMap::NodeSetType & inMoves
                                       = moves.getPreds().find(moveNode)->second;
       for(MovesMap::ns_c_iterator inIt = inMoves.begin(); inIt != inMoves.end();
           inIt++)
       {
-        cout << " " << *inIt;
+        std::cout << " " << *inIt;
       }
-      cout << "\n  Outgoing Moves:";
+      std::cout << "\n  Outgoing Moves:";
       const MovesMap::NodeSetType & outMoves
                                       = moves.getSuccs().find(moveNode)->second;
       for(MovesMap::ns_c_iterator outIt = outMoves.begin();
           outIt != outMoves.end(); outIt++)
       {
-        cout << " " << *outIt;
+        std::cout << " " << *outIt;
       }
     }
-    cout << endl;
+    std::cout << std::endl;
   }
   DebugPrintf(("Map of labels\n"));
   for(nm_c_iterator mapIter = getMapOfNodes().begin();
@@ -204,7 +204,7 @@ InterferenceGraph::coalesce(const NodeType * const final,
 }
 
 void
-InterferenceGraph::coalesce(const string & final, const string & alias)
+InterferenceGraph::coalesce(const std::string & final, const std::string & alias)
 {
 
   moves.coalesce(final, alias);

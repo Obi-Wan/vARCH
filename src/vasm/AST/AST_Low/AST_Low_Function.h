@@ -13,8 +13,6 @@
 #include <map>
 #include <list>
 
-using namespace std;
-
 class EnvSymbols {
 
   struct SymbolRecord {
@@ -23,25 +21,25 @@ class EnvSymbols {
     size_t size;
   };
 
-  typedef map<string, SymbolRecord> MapOfSymbols;
+  typedef std::map<std::string, SymbolRecord> MapOfSymbols;
 
 public:
-  void put(const string & name, const YYLTYPE & pos,
+  void put(const std::string & name, const YYLTYPE & pos,
       const ScaleOfArgument & type, const size_t & size);
-  const ScaleOfArgument & getType(const string & name) const;
-  const size_t & getSize(const string & name) const;
+  const ScaleOfArgument & getType(const std::string & name) const;
+  const size_t & getSize(const std::string & name) const;
 };
 
 class ASTL_FunctionProto : public ASTL_Node {
 public:
-  const string name;
+  const std::string name;
 
-  vector<ASTL_Param *> params;
+  std::vector<ASTL_Param *> params;
 
-  ASTL_FunctionProto(const YYLTYPE & _pos, const string && _name)
+  ASTL_FunctionProto(const YYLTYPE & _pos, const std::string && _name)
     : ASTL_Node(_pos), name(move(_name))
   { }
-  ASTL_FunctionProto(const YYLTYPE & _pos, const string & _name)
+  ASTL_FunctionProto(const YYLTYPE & _pos, const std::string & _name)
     : ASTL_Node(_pos), name(_name)
   { }
   ASTL_FunctionProto(const ASTL_FunctionProto & old)
@@ -49,7 +47,7 @@ public:
   { this->copyParameters(old.params); }
 
   void addParameter(ASTL_Param * const param) { params.push_back(param); }
-  void copyParameters(const vector<ASTL_Param *> & _params);
+  void copyParameters(const std::vector<ASTL_Param *> & _params);
 
   ~ASTL_FunctionProto() {
     for(ASTL_Param * param : params) { delete param; }
@@ -63,10 +61,10 @@ class ASTL_FunctionDef : public ASTL_FunctionProto {
 public:
   EnvSymbols symbols;
 
-  vector<ASTL_Stmt *> locals;
-  vector<ASTL_Stmt *> stmts;
+  std::vector<ASTL_Stmt *> locals;
+  std::vector<ASTL_Stmt *> stmts;
 
-  ASTL_FunctionDef(const YYLTYPE & _pos, const string && _name)
+  ASTL_FunctionDef(const YYLTYPE & _pos, const std::string && _name)
     : ASTL_FunctionProto(_pos, move(_name))
   { }
   ASTL_FunctionDef(const ASTL_FunctionProto & func)
@@ -77,7 +75,7 @@ public:
 
   void addStmt(ASTL_Stmt * const stmt) { stmts.push_back(stmt); }
 
-  void addLocals(list<ASTL_Stmt *> * const stmtsList) {
+  void addLocals(std::list<ASTL_Stmt *> * const stmtsList) {
     locals.insert(stmts.end(), stmtsList->begin(), stmtsList->end());
   }
 

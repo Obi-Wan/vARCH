@@ -24,12 +24,12 @@ BinLoader::getBinFileContent() {
   return bloat;
 }
 
-string
+std::string
 TextLoader::getTextFileContent() {
   char line[256];
-  stringstream stream;
+  std::stringstream stream;
   while (file.getline(line, 256)) {
-    stream << line << endl;
+    stream << line << std::endl;
   }
   return stream.str();
 }

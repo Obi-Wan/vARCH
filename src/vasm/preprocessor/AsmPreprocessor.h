@@ -12,43 +12,41 @@
 #include <list>
 #include <map>
 
-using namespace std;
-
 struct PreprocessorDefine {
-  list<string> parameters;
-  string content;
+  std::list<std::string> parameters;
+  std::string content;
 
   PreprocessorDefine() = default;
   PreprocessorDefine(PreprocessorDefine &&) = default;
   PreprocessorDefine(const PreprocessorDefine &) = default;
-  PreprocessorDefine(const list<string> &, const string &);
-  PreprocessorDefine(const list<string> &&, const string &&);
+  PreprocessorDefine(const std::list<std::string> &, const std::string &);
+  PreprocessorDefine(const std::list<std::string> &&, const std::string &&);
 };
 
-typedef map<string, PreprocessorDefine> DefineType;
+typedef std::map<std::string, PreprocessorDefine> DefineType;
 
 class AsmPreprocessor {
   DefineType defines;
 public:
   AsmPreprocessor() = default;
 
-  void addDefine(const string && _name, const string && _value);
-  void addDefine(const string && _name, const string && _value, list<string> * params);
-  void delDefine(const string && _name) {
+  void addDefine(const std::string && _name, const std::string && _value);
+  void addDefine(const std::string && _name, const std::string && _value, std::list<std::string> * params);
+  void delDefine(const std::string && _name) {
     defines.erase(_name);
   }
 
-  bool isDefined(const string & _name) const {
+  bool isDefined(const std::string & _name) const {
     const DefineType::const_iterator result = defines.find(_name);
     return (result != defines.end());
   }
 
-  size_t getDefineParameter(const string & _name, const string & id) const {
+  size_t getDefineParameter(const std::string & _name, const std::string & id) const {
     const DefineType::const_iterator result = defines.find(_name);
-    const list<string> & params = result->second.parameters;
+    const std::list<std::string> & params = result->second.parameters;
 
     size_t count = 0;
-    for (const string & param : params) {
+    for (const std::string & param : params) {
       if (!id.compare(param)) {
         return count+1;
       }

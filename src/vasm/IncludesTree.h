@@ -13,14 +13,12 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 class IncludesNode {
-  const string filepath;
-  const string filename;
+  const std::string filepath;
+  const std::string filename;
   const YYLTYPE parent;
 
-  vector<IncludesNode *> included;
+  std::vector<IncludesNode *> included;
 
   void clean() {
     for(size_t child = 0; child != included.size(); child++)
@@ -51,8 +49,8 @@ public:
 
   void printStderr() const;
   void printStderrStackIncludes() const;
-  string printString() const;
-  string printStringStackIncludes() const;
+  std::string printString() const;
+  std::string printStringStackIncludes() const;
 };
 
 class IncludesTree {

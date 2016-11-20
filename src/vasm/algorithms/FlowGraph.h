@@ -25,8 +25,8 @@ template<typename DataType>
 struct LiveMap {
   typedef class NodeGraph<DataType> NodeType;
 
-  typedef class set<uint32_t> UIDSetType;
-  typedef class map<const NodeType *, UIDSetType> UIDsMap;
+  typedef class std::set<uint32_t> UIDSetType;
+  typedef class std::map<const NodeType *, UIDSetType> UIDsMap;
 
   typedef typename UIDSetType::const_iterator us_c_iterator;
   typedef typename UIDSetType::iterator       us_iterator;
@@ -58,8 +58,8 @@ public:
   typedef typename Graph<DataType, NodeFlowGraph>::am_iterator    am_iterator;
 
   // Newly Defined Types
-  typedef class multiset<uint32_t> UIDMultiSetType;
-  typedef class map<const NodeType *, UIDMultiSetType> UIDsMSMap;
+  typedef class std::multiset<uint32_t> UIDMultiSetType;
+  typedef class std::map<const NodeType *, UIDMultiSetType> UIDsMSMap;
 
   typedef typename UIDMultiSetType::iterator        us_iterator;
   typedef typename UIDMultiSetType::const_iterator  us_c_iterator;
@@ -83,18 +83,18 @@ public:
 //  FlowGraph(const FlowGraph<DataType> & other);
   virtual ~FlowGraph() { }
 
-  virtual NodeType * addNewNode(const string & _label, DataType _data);
-  virtual void removeNode(const string & _label);
+  virtual NodeType * addNewNode(const std::string & _label, DataType _data);
+  virtual void removeNode(const std::string & _label);
   virtual void removeNode(const NodeType * const node);
 
   virtual void clear();
 
 //  size_t numUses(const uint32_t & uid) const;
-//  size_t numUses(const uint32_t & uid, const string & _node) const;
+//  size_t numUses(const uint32_t & uid, const std::string & _node) const;
 //  size_t numUses(const uint32_t & uid, const NodeType * const node) const;
 //
 //  size_t numDefs(const uint32_t & uid) const;
-//  size_t numDefs(const uint32_t & uid, const string & _node) const;
+//  size_t numDefs(const uint32_t & uid, const std::string & _node) const;
 //  size_t numDefs(const uint32_t & uid, const NodeType * const node) const;
 
   void populateLiveMap(LiveMap<DataType> & liveMap);
@@ -123,20 +123,20 @@ LiveMap<DataType>::printLiveMap() const
   for(; live_in != end_live_in && live_out != end_live_out;
       live_in++, live_out++)
   {
-    cout << "Node " << live_in->first->label << endl << "   live-in  (num: "
+    std::cout << "Node " << live_in->first->label << std::endl << "   live-in  (num: "
         << live_in->second.size() << "):";
     for(us_iterator ins = live_in->second.begin(); ins != live_in->second.end();
         ins++)
     {
-      cout << " T" << *ins;
+      std::cout << " T" << *ins;
     }
-    cout << "\n   live-out (num: " << live_out->second.size() << "):";
+    std::cout << "\n   live-out (num: " << live_out->second.size() << "):";
     for(us_iterator outs = live_out->second.begin();
         outs != live_out->second.end(); outs++)
     {
-      cout << " T" << *outs;
+      std::cout << " T" << *outs;
     }
-    cout << endl;
+    std::cout << std::endl;
   }
 }
 
@@ -212,7 +212,7 @@ FlowGraph<DataType>::_numDefs(const uint32_t & uid) const
 
 template<typename DataType>
 typename FlowGraph<DataType>::NodeType *
-FlowGraph<DataType>::addNewNode(const string & _label, DataType _data)
+FlowGraph<DataType>::addNewNode(const std::string & _label, DataType _data)
 {
   NodeType * const node =
                       Graph<DataType, NodeFlowGraph>::addNewNode(_label, _data);
@@ -233,7 +233,7 @@ FlowGraph<DataType>::removeNode(const NodeType * const node)
 
 template<typename DataType>
 void
-FlowGraph<DataType>::removeNode(const string & _label)
+FlowGraph<DataType>::removeNode(const std::string & _label)
 {
   NodeType * const node =
       this->checkLabel( _label,
@@ -256,11 +256,11 @@ template<typename DataType>
 void
 FlowGraph<DataType>::populateLiveMap(LiveMap<DataType> & liveMap)
 {
-  typedef typename deque<const NodeType *>::iterator        nd_iterator;
-  typedef typename deque<const NodeType *>::const_iterator  nd_c_iterator;
+  typedef typename std::deque<const NodeType *>::iterator        nd_iterator;
+  typedef typename std::deque<const NodeType *>::const_iterator  nd_c_iterator;
 
-  typedef class set<uint32_t> UIDSetType;
-  typedef class map<const NodeType *, UIDSetType> UIDsMap;
+  typedef class std::set<uint32_t> UIDSetType;
+  typedef class std::map<const NodeType *, UIDSetType> UIDsMap;
 
   // Reset live map
   liveMap.liveIn.clear();
@@ -278,8 +278,8 @@ FlowGraph<DataType>::populateLiveMap(LiveMap<DataType> & liveMap)
         typename UIDsMap::value_type(node, UIDSetType()) );
   }
 
-  deque<const NodeType *> visitList;
-  map<const NodeType *, bool> visited;
+  std::deque<const NodeType *> visitList;
+  std::map<const NodeType *, bool> visited;
 
   this->makeVisitList(visitList, visited);
 
@@ -344,37 +344,37 @@ FlowGraph<DataType>::printFlowGraph() const
       nodeIt != this->getListOfNodes().end(); nodeIt++)
   {
     const NodeType * const node = &*nodeIt;
-    cout << "Node - pointer: " << node << "\n  label: " << node->label
-        << "\n  isMove: " << boolalpha << node->isMove;
-    cout << "\n  Preds:";
+    std::cout << "Node - pointer: " << node << "\n  label: " << node->label
+        << "\n  isMove: " << std::boolalpha << node->isMove;
+    std::cout << "\n  Preds:";
     const NodeSetType & nodePreds = this->preds.find(node)->second;
     for(ns_c_iterator predIt = nodePreds.begin(); predIt != nodePreds.end();
         predIt++)
     {
-      cout << " " << *predIt;
+      std::cout << " " << *predIt;
     }
-    cout << "\n  Succs:";
+    std::cout << "\n  Succs:";
     const NodeSetType & nodeSuccs = this->succs.find(node)->second;
     for(ns_c_iterator succIt = nodeSuccs.begin(); succIt != nodeSuccs.end();
         succIt++)
     {
-      cout << " " << *succIt;
+      std::cout << " " << *succIt;
     }
-    cout << "\n  Uses:";
+    std::cout << "\n  Uses:";
     const UIDMultiSetType & nodeUses = uses.find(node)->second;
     for(us_c_iterator useIt = nodeUses.begin(); useIt != nodeUses.end();
         useIt++)
     {
-      cout << " T" << *useIt;
+      std::cout << " T" << *useIt;
     }
-    cout << "\n  Defs:";
+    std::cout << "\n  Defs:";
     const UIDMultiSetType & nodeDefs = defs.find(node)->second;
     for(us_c_iterator defIt = nodeDefs.begin(); defIt != nodeDefs.end();
         defIt++)
     {
-      cout << " T" << *defIt;
+      std::cout << " T" << *defIt;
     }
-    cout << endl;
+    std::cout << std::endl;
   }
   DebugPrintf(("Map of labels\n"));
   for(nm_c_iterator mapIter = this->getMapOfNodes().begin();

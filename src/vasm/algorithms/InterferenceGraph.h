@@ -36,8 +36,8 @@ public:
   InterferenceGraph();
   InterferenceGraph(const InterferenceGraph & other);
 
-  virtual NodeType * addNewNode(const string & _label, uint32_t _data);
-  virtual void removeNode(const string & _label);
+  virtual NodeType * addNewNode(const std::string & _label, uint32_t _data);
+  virtual void removeNode(const std::string & _label);
   virtual void removeNode(const NodeType * const node);
 
   template<typename DataType>
@@ -55,7 +55,7 @@ public:
       const NodeType *& alias);
 
   void coalesce(const NodeType * const final, const NodeType * const alias);
-  void coalesce(const string & final, const string & alias);
+  void coalesce(const std::string & final, const std::string & alias);
 
   void fixCoalesce();
 
@@ -83,7 +83,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 
 inline InterferenceGraph::NodeType *
-InterferenceGraph::addNewNode(const string & _label, uint32_t _data)
+InterferenceGraph::addNewNode(const std::string & _label, uint32_t _data)
 {
 
   NodeType * node = Graph<uint32_t, NodeInterfGraph>::addNewNode(_label, _data);
@@ -96,7 +96,7 @@ InterferenceGraph::addNewNode(const string & _label, uint32_t _data)
 }
 
 inline void
-InterferenceGraph::removeNode(const string & _label)
+InterferenceGraph::removeNode(const std::string & _label)
 {
   const NodeType * const node =
       checkLabel(_label, "Trying to remove a node that is not in the graph");
@@ -150,7 +150,7 @@ InterferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
                                                  tempsMap.getLabelTable().end();
   TempsMap::LabelToUID::const_iterator itMap = tempsMap.getLabelTable().begin();
   for(; itMap != endMap; itMap++) {
-    const string & tempLabel = itMap->first;
+    const std::string & tempLabel = itMap->first;
     if (!this->getMapOfNodes().count(tempLabel)) {
       this->addNewNode(tempLabel, itMap->second);
     }
@@ -205,8 +205,8 @@ InterferenceGraph::populateGraph(const FlowGraph<DataType> & flowGraph,
 //                    "interference graph\n"));
       const UIDMultiSetType & nodeDefs = flowGraph.getDefs().find(node)->second;
       const UIDMultiSetType & nodeUses = flowGraph.getUses().find(node)->second;
-      const string & nodeDlabel = tempsMap.getLabel(*nodeDefs.begin());
-      const string & nodeUlabel = tempsMap.getLabel(*nodeUses.begin());
+      const std::string & nodeDlabel = tempsMap.getLabel(*nodeDefs.begin());
+      const std::string & nodeUlabel = tempsMap.getLabel(*nodeUses.begin());
       const NodeType * const nodeD = checkLabel(nodeDlabel, "");
       const NodeType * const nodeU = checkLabel(nodeUlabel, "");
 

@@ -12,8 +12,6 @@
 
 #include <vector>
 
-using namespace std;
-
-typedef vector<int8_t> Bloat;
+typedef std::vector<int8_t> Bloat;
 
 #endif /* BINARYVECTORS_H_ */

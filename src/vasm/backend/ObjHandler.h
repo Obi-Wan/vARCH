@@ -12,17 +12,17 @@
 
 class ObjHandler {
 protected:
-  string filename;
+  std::string filename;
 
   ObjHandler(const char * _filename) : filename(_filename) { }
-  ObjHandler(const string & _filename) : filename(_filename) { }
+  ObjHandler(const std::string & _filename) : filename(_filename) { }
 };
 
 class ObjLoader : public ObjHandler {
 public:
   ObjLoader(const char * _filename)
     : ObjHandler(_filename) { }
-  ObjLoader(const string & _filename)
+  ObjLoader(const std::string & _filename)
     : ObjHandler(_filename) { }
 
   void readObj(asm_program & prog);
@@ -32,7 +32,7 @@ class ObjWriter : public ObjHandler {
 public:
   ObjWriter(const char * _filename)
       : ObjHandler(_filename) { }
-  ObjWriter(const string & _filename)
+  ObjWriter(const std::string & _filename)
       : ObjHandler(_filename) { }
 
   void writeObj(const asm_program & prog);

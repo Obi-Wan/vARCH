@@ -14,8 +14,6 @@
 #include <iostream>
 #include <sstream>
 
-using namespace std;
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Class TempsMap
 ///
@@ -23,7 +21,7 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 
 void
-TempsMap::putTemp(const string && label, const uint32_t & uid,
+TempsMap::putTemp(const std::string && label, const uint32_t & uid,
     const bool & ignoreDups)
 {
   if (!ignoreDups) {
@@ -44,7 +42,7 @@ TempsMap::putTemp(const string && label, const uint32_t & uid,
 void
 TempsMap::putTemp(const uint32_t & uid, const bool & ignoreDups)
 {
-  stringstream stream;
+  std::stringstream stream;
   stream.fill('0');
   switch (uid) {
     case 1 ... 8: {
@@ -92,12 +90,12 @@ TempsMap::clear()
   labelToUID.clear();
 }
 
-const string &
+const std::string &
 TempsMap::getLabel(const uint32_t & uid) const
 {
   UIDToLabel::const_iterator label = uidToLabel.find(uid);
   if (label == uidToLabel.end()) {
-    stringstream stream;
+    std::stringstream stream;
     stream << "UID: " << uid << " not in Temporary List";
     throw WrongArgumentException(stream.str());
   }
@@ -105,7 +103,7 @@ TempsMap::getLabel(const uint32_t & uid) const
 }
 
 const uint32_t &
-TempsMap::getUID(const string & label) const
+TempsMap::getUID(const std::string & label) const
 {
   LabelToUID::const_iterator uid = labelToUID.find(label);
   if (uid == labelToUID.end()) {
@@ -134,34 +132,34 @@ AliasMap::getFinal(const uint32_t & alias) const
 void
 AliasMap::print() const
 {
-  cout << "Printing Aliases Map:" << endl;
+  std::cout << "Printing Aliases Map:" << std::endl;
   for(const_iterator it = this->begin(); it != this->end(); it++)
   {
-    cout << "  - " << it->second << " <- " << it->first << endl;
+    std::cout << "  - " << it->second << " <- " << it->first << std::endl;
   }
-  cout << "Printed Aliases Map" << endl << endl;
+  std::cout << "Printed Aliases Map" << std::endl << std::endl;
 }
 
 void
 ReverseAliasMap::add(const uint32_t & alias, const uint32_t & final,
     AliasMap & aliasMap)
 {
-  typedef set<uint32_t>::const_iterator sa_c_iterator;
+  typedef std::set<uint32_t>::const_iterator sa_c_iterator;
 
   iterator finalIt = this->find(final);
 
   /* If destination is not in ReverseMap yet, let's create an entry */
   if (finalIt == this->end()) {
-    finalIt = insert(value_type(final, set<uint32_t>())).first;
+    finalIt = insert(value_type(final, std::set<uint32_t>())).first;
   }
   /* Let's add the reverse relation */
-  set<uint32_t> & finalAliases = finalIt->second;
+  std::set<uint32_t> & finalAliases = finalIt->second;
   finalAliases.insert(alias);
 
   /* Let's see if alias was a 'final', and in case move all the aliases */
   iterator aliasIt = find(alias);
   if (aliasIt != end()) {
-    const set<uint32_t> & aliases = aliasIt->second;
+    const std::set<uint32_t> & aliases = aliasIt->second;
 
     /* Copy the aliases to the new final (In the Alias Map) */
     for(const uint32_t & al : aliases)
@@ -182,16 +180,16 @@ ReverseAliasMap::add(const uint32_t & alias, const uint32_t & final,
 void
 ReverseAliasMap::print() const
 {
-  cout << "--> Printing Reverse Aliases Map: <--" << endl;
+  std::cout << "--> Printing Reverse Aliases Map: <--" << std::endl;
   for(const_iterator it = this->begin(); it != this->end(); it++)
   {
-    cout << "  - " << it->first << " -> \"";
+    std::cout << "  - " << it->first << " -> \"";
 
     for(const uint32_t & alias : it->second)
     {
-      cout << " " << alias;
+      std::cout << " " << alias;
     }
-    cout << " \"" << endl;
+    std::cout << " \"" << std::endl;
   }
-  cout << "--> Printed Reverse Aliases Map <--" << endl << endl;
+  std::cout << "--> Printed Reverse Aliases Map <--" << std::endl << std::endl;
 }

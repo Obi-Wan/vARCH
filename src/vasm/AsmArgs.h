@@ -19,10 +19,10 @@ class AsmArgs {
 
   bool verbose;
 
-  std::vector<string> inputFiles;
-  string outputName;
-  string debugSymbolsName;
-  std::vector<string> includeDirs;
+  std::vector<std::string> inputFiles;
+  std::string outputName;
+  std::string debugSymbolsName;
+  std::vector<std::string> includeDirs;
 
   uint32_t optimLevel;
 
@@ -45,9 +45,9 @@ public:
 
   void printHelp() const throw();
 
-  const std::vector<string> getSrcInputNames() const {
-    std::vector<string> tempOut;
-    for(const string & str : inputFiles) {
+  const std::vector<std::string> getSrcInputNames() const {
+    std::vector<std::string> tempOut;
+    for(const std::string & str : inputFiles) {
       size_t str_len = str.size();
       CHECK_THROW(str_len >= 2, WrongArgumentException("Filename too short: " + str));
       if (!str.substr(str_len-2, 2).compare(".s")) {
@@ -56,9 +56,9 @@ public:
     }
     return tempOut;
   }
-  const std::vector<string> getObjInputNames() const {
-    std::vector<string> tempOut;
-    for(const string & str : inputFiles) {
+  const std::vector<std::string> getObjInputNames() const {
+    std::vector<std::string> tempOut;
+    for(const std::string & str : inputFiles) {
       size_t str_len = str.size();
       CHECK_THROW(str_len >= 2, WrongArgumentException("Filename too short: " + str));
       if (!str.substr(str_len-2, 2).compare(".o")) {
@@ -67,9 +67,9 @@ public:
     }
     return tempOut;
   }
-  const string &getOutputName() const throw() { return outputName; }
-  const string &getDebugSymbolsName() const throw() { return debugSymbolsName; }
-  const std::vector<string> &getIncludeDirs() const throw() { return includeDirs; }
+  const std::string &getOutputName() const throw() { return outputName; }
+  const std::string &getDebugSymbolsName() const throw() { return debugSymbolsName; }
+  const std::vector<std::string> &getIncludeDirs() const throw() { return includeDirs; }
   const uint32_t &getOptimizationLevel() const throw() { return optimLevel; }
   const bool &getRegAutoAlloc() const throw() { return regAutoAlloc; }
   const bool &getRegCoalesce() const throw() { return regCoalesce; }

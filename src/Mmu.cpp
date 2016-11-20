@@ -35,7 +35,7 @@ Mmu::storeToMem(const DoubleWord & data, const uint32_t & addr,
     const uint8_t & size)
 {
   if ((addr + (1 << size)) >= limit) {
-    stringstream errorMess(string(""));
+    std::stringstream errorMess(std::string(""));
     errorMess << "LoadFromMem Failed, wrong addr: " << addr
               << " size: " << (1 << size)
               << " upper limit: " << limit << "\n";
@@ -107,7 +107,7 @@ Mmu::storeToMem(const DoubleWord & data, const uint32_t & addr,
       throw MmuException("We shouldn't get here");
     }
     default:
-      stringstream errorMess(string(""));
+      std::stringstream errorMess(std::string(""));
       errorMess << "Size of " << (1 << size)
                 << " bytes not supported (just 1, 2, 4)\n";
       throw MmuException(errorMess.str());
@@ -128,7 +128,7 @@ Mmu::loadFromMem(DoubleWord & data, const uint32_t & addr, const uint8_t & size)
   const
 {
   if ((addr + (1 << size) ) > limit) {
-    stringstream errorMess(string(""));
+    std::stringstream errorMess(std::string(""));
     errorMess << "LoadFromMem Failed, wrong addr: " << addr
               << ", size: " << (1 << size)
               << ", upper limit: " << limit << "\n";
@@ -201,7 +201,7 @@ Mmu::loadFromMem(DoubleWord & data, const uint32_t & addr, const uint8_t & size)
       throw MmuException("We shouldn't get here");
     }
     default:
-      stringstream errorMess(string(""));
+      std::stringstream errorMess(std::string(""));
       errorMess << "Size of " << (1 << size)
                 << " bytes not supported (just 1, 2, 4)\n";
       throw MmuException(errorMess.str());
@@ -221,7 +221,7 @@ Mmu::resetLimits(const uint32_t & base_new, const uint32_t & limit_new)
   if ( (base_new > maxMem) || (limit_new > maxMem)
        || ((base_new + limit_new) > maxMem))
   {
-    stringstream errorMess(string(""));
+    std::stringstream errorMess(std::string(""));
     errorMess << "ReseLimits failed: Wrong Base or Limit. Base: " << base_new
               << " Limit: " << limit_new << " HardLimit: " << maxMem << "\n";
     throw MmuException(errorMess.str());

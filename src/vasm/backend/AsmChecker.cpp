@@ -12,22 +12,20 @@
 
 #include <sstream>
 
-using namespace std;
-
 void
 AsmChecker::checkArgs(const asm_instruction_statement & stmt)
 {
   // Check size
   size_t instrNumOfArgs = (stmt.instruction >> 30 ) & 3;
   if (instrNumOfArgs != stmt.args.size()) {
-    stringstream stream;
+    std::stringstream stream;
     stream  << "Wrong number of arguments for instruction '"
               << ISet.getInstr(stmt.instruction)
-              << "' (" << stmt.instruction << ") at position:" << endl
+              << "' (" << stmt.instruction << ") at position:" << std::endl
             << stmt.position.fileNode->printString()
-              << " Line: " << stmt.position.first_line << endl
+              << " Line: " << stmt.position.first_line << std::endl
             << " - Arguments expected: " << instrNumOfArgs
-              << ", passed: " << stmt.args.size() << endl;
+              << ", passed: " << stmt.args.size() << std::endl;
     throw WrongArgumentException(stream.str());
   }
 
@@ -40,12 +38,12 @@ AsmChecker::checkArgs(const asm_instruction_statement & stmt)
     case LSH:
     case RSH: {
       if (stmt.args[0]->type == IMMED) {
-        stringstream stream;
+        std::stringstream stream;
         stream  << "Expected non constant argument for unary instruction '"
                   << ISet.getInstr(stmt.instruction)
-                  << "' (" << stmt.instruction << ") at position:" << endl
+                  << "' (" << stmt.instruction << ") at position:" << std::endl
                 << stmt.position.fileNode->printString()
-                  << " Line: " << stmt.position.first_line << endl;
+                  << " Line: " << stmt.position.first_line << std::endl;
         throw WrongArgumentException(stream.str());
       }
       break;
@@ -60,12 +58,12 @@ AsmChecker::checkArgs(const asm_instruction_statement & stmt)
     case XOR:
     case GET: {
       if (stmt.args[1]->type == IMMED) {
-        stringstream stream;
+        std::stringstream stream;
         stream  << "Expected non constant destination argument for binary "
                   << "instruction '" << ISet.getInstr(stmt.instruction)
-                  << "' (" << stmt.instruction << ") at position:" << endl
+                  << "' (" << stmt.instruction << ") at position:" << std::endl
                 << stmt.position.fileNode->printString()
-                  << " Line: " << stmt.position.first_line << endl;
+                  << " Line: " << stmt.position.first_line << std::endl;
         throw WrongArgumentException(stream.str());
       }
       break;
@@ -79,19 +77,19 @@ void
 AsmChecker::checkArgs(const asm_function_call & stmt)
 {
   if (stmt.args.size() < 1) {
-    stringstream stream;
-    stream  << "Not enough arguments for function call at position:" << endl
+    std::stringstream stream;
+    stream  << "Not enough arguments for function call at position:" << std::endl
             << stmt.position.fileNode->printString()
-              << " Line: " << stmt.position.first_line << endl
-            << " - At least the function label needs to be specified " << endl;
+              << " Line: " << stmt.position.first_line << std::endl
+            << " - At least the function label needs to be specified " << std::endl;
     throw WrongArgumentException(stream.str());
   }
   if (stmt.args[0]->getType() != ASM_LABEL_ARG) {
-    stringstream stream;
+    std::stringstream stream;
     stream  << "Expected label as first argument of function call at position:"
-              << endl
+              << std::endl
             << stmt.position.fileNode->printString()
-              << " Line: " << stmt.position.first_line << endl;
+              << " Line: " << stmt.position.first_line << std::endl;
     throw WrongArgumentException(stream.str());
   }
 }
@@ -100,33 +98,33 @@ void
 AsmChecker::checkArgs(const asm_return_statement & stmt)
 {
   if (stmt.args.size() > 1) {
-    stringstream stream;
-    stream  << "Too many arguments for return statement at:" << endl
+    std::stringstream stream;
+    stream  << "Too many arguments for return statement at:" << std::endl
             << stmt.position.fileNode->printString()
-              << " Line: " << stmt.position.first_line << endl
-            << " - At most, you should specify a returned value" << endl;
+              << " Line: " << stmt.position.first_line << std::endl
+            << " - At most, you should specify a returned value" << std::endl;
     throw WrongArgumentException(stream.str());
   }
 }
 
 void
 AsmChecker::checkCallParameters(const asm_function_call & stmt,
-    const deque<asm_function *> & functions)
+    const std::deque<asm_function *> & functions)
 {
-  const vector<asm_arg *> & args = stmt.args;
-  const string & f_name = ((const asm_label_arg *)args[0])->label;
+  const std::vector<asm_arg *> & args = stmt.args;
+  const std::string & f_name = ((const asm_label_arg *)args[0])->label;
   for(size_t funcNum = 0; funcNum < functions.size(); funcNum++)
   {
     const asm_function & func = *(functions[funcNum]);
     if (func.name == f_name) {
       if (func.parameters.size() != (args.size() -1)) {
-        stringstream stream;
+        std::stringstream stream;
         stream  << "Not enough arguments for function call at:"
-                << endl << stmt.position.fileNode->printString()
-                  << " Line: " << stmt.position.first_line << endl
+                << std::endl << stmt.position.fileNode->printString()
+                  << " Line: " << stmt.position.first_line << std::endl
                 << " - Function '" << f_name << "' requires "
                   << func.parameters.size() << " parameters, while "
-                  << (args.size() -1) << " were provided." << endl;
+                  << (args.size() -1) << " were provided." << std::endl;
         throw WrongArgumentException(stream.str());
       }
       break;

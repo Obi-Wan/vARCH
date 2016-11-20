@@ -9,7 +9,7 @@
 
 int yyparse(ASTM_Tree * ast_tree);
 
-void setIncludeDirs(const vector<string> * _dirs);
+void setIncludeDirs(const vector<std::string> * _dirs);
 bool openFirstFile(const char * const _filename);
 bool openIncludeFile(const char * const _filename, const YYLTYPE * loc);
 bool closeIncludeFile(YYLTYPE * loc);
@@ -203,19 +203,19 @@ params_list
 
 param
       : ID ':' type
-                  { $$ = new ASTM_Param( yylloc, $3, string($1.text,$1.len) ); }
+                  { $$ = new ASTM_Param( yylloc, $3, std::string($1.text,$1.len) ); }
       ;
 
 function_decl
       : type ASSIGN_ARROW ID decl_params ';'
                   { $$ = new ASTM_FunctionProto( yylloc, $1,
-                                                 string($3.text, $3.len), $4); }
+                                                 std::string($3.text, $3.len), $4); }
       ;
 
 function_def
       : type ASSIGN_ARROW ID decl_params stmt_block
                   { $$ = new ASTM_FunctionDef( yylloc, $1,
-                                             string($3.text, $3.len), $4, $5); }
+                                             std::string($3.text, $3.len), $4, $5); }
       ;
 
 stmt
@@ -223,7 +223,7 @@ stmt
       | assign_stmt ';'       { $$ = $1; }
       | instruction_stmt ';'  { $$ = $1; }
       | DEF_LABEL             
-                  { $$ = new ASTM_StmtLabel( yylloc, string($1.text, $1.len)); }
+                  { $$ = new ASTM_StmtLabel( yylloc, std::string($1.text, $1.len)); }
       ;
 
 decl_stmt
@@ -236,20 +236,20 @@ decl_stmt
 
 assign_stmt
       : ID ASSIGN_ARROW instruction_stmt
-                  { $$ = new ASTM_StmtAssign( yylloc, string($1.text, $1.len), $3); }
+                  { $$ = new ASTM_StmtAssign( yylloc, std::string($1.text, $1.len), $3); }
       | ID ASSIGN_ARROW special_stmt
-                  { $$ = new ASTM_StmtAssign( yylloc, string($1.text, $1.len), $3); }
+                  { $$ = new ASTM_StmtAssign( yylloc, std::string($1.text, $1.len), $3); }
       | ID ASSIGN_ARROW arg
-                  { $$ = new ASTM_StmtAssign( yylloc, string($1.text, $1.len), $3); }
+                  { $$ = new ASTM_StmtAssign( yylloc, std::string($1.text, $1.len), $3); }
       ;
 
 arg
       : NUMBER    ':' type
-                  { $$ = new ASTM_ArgNumber( yylloc, string($1.text, $1.len), $3 ); }
+                  { $$ = new ASTM_ArgNumber( yylloc, std::string($1.text, $1.len), $3 ); }
       | REF_LABEL ':' KEYWORD_RELATIVE
-                  { $$ = new ASTM_ArgLabel( yylloc, string($1.text, $1.len), true ); }
+                  { $$ = new ASTM_ArgLabel( yylloc, std::string($1.text, $1.len), true ); }
       | REF_LABEL
-                  { $$ = new ASTM_ArgLabel( yylloc, string($1.text, $1.len) ); }
+                  { $$ = new ASTM_ArgLabel( yylloc, std::string($1.text, $1.len) ); }
       | register
                   { $$ = $1; }
       ;

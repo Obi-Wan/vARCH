@@ -16,15 +16,13 @@
 #include <sstream>
 #include <algorithm>
 
-using namespace std;
-
 /**
  * Algorithmic class, which finds and stores uninitialized temporaries
  */
 class VerifyUninitialized {
-  vector<uint32_t> & uninit;
+  std::vector<uint32_t> & uninit;
 public:
-  VerifyUninitialized(vector<uint32_t> & ui) : uninit(ui) { }
+  VerifyUninitialized(std::vector<uint32_t> & ui) : uninit(ui) { }
 
   void operator() (const uint32_t & temp) {
     if (temp >= (FIRST_TEMPORARY+1)) {
@@ -38,18 +36,18 @@ public:
  * prints it a given stream
  */
 class ReportUninitialized {
-  stringstream & stream;
+  std::stringstream & stream;
   const TempsMap & tm;
   const AssemFlowGraph & fg;
 public:
-  ReportUninitialized(stringstream & _ss, const TempsMap & _tm,
+  ReportUninitialized(std::stringstream & _ss, const TempsMap & _tm,
       const AssemFlowGraph & _fg)
     : stream(_ss), tm(_tm), fg(_fg)
   { }
 
   void operator() (const uint32_t & temp) {
     stream << "  Temporary: " << tm.getLabel(temp)
-              << " was used uninitialized at:" << endl;
+              << " was used uninitialized at:" << std::endl;
     for(AssemFlowGraph::nl_c_iterator nodeIt = fg.getListOfNodes().begin();
         nodeIt != fg.getListOfNodes().end(); nodeIt++)
     {
@@ -61,7 +59,7 @@ public:
         stream << "  - " << node->data->position.fileNode->printString()
               << " Line: " << node->data->position.first_line << ".\n"
               << node->data->position.fileNode->printStringStackIncludes()
-              << endl;
+              << std::endl;
       }
       // If then it is defined, let's stop searching
       const AssemFlowGraph::UIDMultiSetType & nodeDefs =
@@ -72,11 +70,11 @@ public:
   }
 };
 
-inline string
+inline std::string
 AssemFlowGraph::buildStmtLabel(const asm_statement * const stmt,
     const uint32_t & progr) const
 {
-  stringstream stream;
+  std::stringstream stream;
   stream.width(10);
   stream.fill('0');
   stream << progr;
@@ -184,7 +182,7 @@ AssemFlowGraph::_addToSet(UIDMultiSetType & nodeSet, const uint32_t &shiftedUID)
 }
 
 inline bool
-AssemFlowGraph::_moveInstr(const vector<asm_arg *> & args,
+AssemFlowGraph::_moveInstr(const std::vector<asm_arg *> & args,
     UIDMultiSetType & nodeUses, UIDMultiSetType & nodeDefs)
 {
   const bool arg0_temp = args[0]->isTemporary();
@@ -424,17 +422,17 @@ AssemFlowGraph::checkTempsUsedUndefined(const asm_function & func,
   const LiveMap<asm_statement *>::UIDSetType & usedUndef = liveIns->second;
   /// The unwanted
 
-  vector<uint32_t> uninit;
+  std::vector<uint32_t> uninit;
   VerifyUninitialized  verifier(uninit);
   for_each(usedUndef.begin(), usedUndef.end(), verifier );
 
   if (!uninit.empty()) {
-    stringstream stream;
+    std::stringstream stream;
 
     ReportUninitialized reporter(stream, tempsMap, *this);
 
     stream << "Found temporaries used without being initialized, in "
-            << "function: " << func.name << endl;
+            << "function: " << func.name << std::endl;
     for_each(uninit.begin(), uninit.end(), reporter);
 
     throw WrongArgumentException(stream.str());

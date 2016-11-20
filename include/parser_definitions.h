@@ -16,21 +16,19 @@
 #include <map>
 #include <sstream>
 
-using namespace std;
-
-template<typename NameType = string, typename ValueType = int32_t>
+template<typename NameType = std::string, typename ValueType = int32_t>
 class DoubleCorrelationMap {
 protected:
-  typedef map<NameType, ValueType> NameToValue;
-  typedef map<ValueType, NameType> ValueToName;
+  typedef std::map<NameType, ValueType> NameToValue;
+  typedef std::map<ValueType, NameType> ValueToName;
 
   NameToValue nameToValue;
   ValueToName valueToName;
 
   int32_t currValue;
 
-  const string errorMsgName;
-  const string errorMsgValue;
+  const std::string errorMsgName;
+  const std::string errorMsgValue;
 
   void assignNew(const NameType& name) {
     nameToValue.insert(typename NameToValue::value_type(name, currValue));
@@ -45,12 +43,12 @@ protected:
     throw WrongInstructionException(errorMsgName + name);
   }
   void throwErrorValue(const ValueType & value) const {
-    throw WrongInstructionException(errorMsgValue + to_string(value));
+    throw WrongInstructionException(errorMsgValue + std::to_string(value));
   }
 
 public:
-  DoubleCorrelationMap(const int32_t & _currValue, const string & _errorMsgName,
-      const string & _errorMsgVal)
+  DoubleCorrelationMap(const int32_t & _currValue, const std::string & _errorMsgName,
+      const std::string & _errorMsgVal)
     : currValue(_currValue), errorMsgName(_errorMsgName)
     , errorMsgValue(_errorMsgVal)
   { }
@@ -154,8 +152,8 @@ public:
   }
 
   const int32_t & getInstr(const char * name) const { return getItem(name); }
-  const int32_t & getInstr(const string & name) const { return getItem(name); }
-  const string & getInstr(const int32_t & value) const { return getItem(value); }
+  const int32_t & getInstr(const std::string & name) const { return getItem(name); }
+  const std::string & getInstr(const int32_t & value) const { return getItem(value); }
 } ISet;
 
 static class ArgsTypeSet : public DoubleCorrelationMap<> {

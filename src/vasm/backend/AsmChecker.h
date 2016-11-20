@@ -17,7 +17,7 @@ public:
   static void checkArgs(const asm_return_statement & stmt);
 
   static void checkCallParameters(const asm_function_call & stmt,
-      const deque<asm_function *> & functions);
+      const std::deque<asm_function *> & functions);
 
   static void checkInstructions(const asm_program & prog,
       const bool & usingTemps);

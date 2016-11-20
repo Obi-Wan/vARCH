@@ -21,8 +21,8 @@ class Backend {
 
   void doRegisterAllocation();
 
-  void loadObj(const string & filename);
-  void saveObj(const string & filename);
+  void loadObj(const std::string & filename);
+  void saveObj(const std::string & filename);
 public:
   Backend(const AsmArgs & _args) : args(_args) { }
   Backend(const Backend & other) = default;

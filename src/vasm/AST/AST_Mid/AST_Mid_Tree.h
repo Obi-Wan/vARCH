@@ -15,9 +15,9 @@ class ASTM_Tree {
 public:
   EnvSymbols globalSymbols;
 
-  vector<ASTM_VarDecl *> globals;
-  vector<ASTM_FunctionProto *> functionProtos;
-  vector<ASTM_FunctionDef *> functionDefs;
+  std::vector<ASTM_VarDecl *> globals;
+  std::vector<ASTM_FunctionProto *> functionProtos;
+  std::vector<ASTM_FunctionDef *> functionDefs;
 
   void addFunctionProto(ASTM_FunctionProto * func_proto) {
     functionProtos.push_back(func_proto);

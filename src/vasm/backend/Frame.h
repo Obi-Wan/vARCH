@@ -20,9 +20,9 @@ class Frame {
   // Push temps map and fin max temp
   uint32_t minNewTemp;
 
-  vector<ListOfStmts::iterator> returns;
+  std::vector<ListOfStmts::iterator> returns;
 
-  vector<ListOfStmts::iterator> f_calls;
+  std::vector<ListOfStmts::iterator> f_calls;
   void mindFunctionParameters(asm_function & function);
   void mindCalleeSaveRegs(ListOfStmts & stmts);
   void mindReturnStmts(ListOfStmts & stmts);

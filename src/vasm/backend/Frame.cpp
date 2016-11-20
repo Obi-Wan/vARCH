@@ -12,8 +12,6 @@
 
 #include <sstream>
 
-using namespace std;
-
 void
 Frame::init(asm_function & function)
 {
@@ -37,13 +35,13 @@ Frame::init(asm_function & function)
         DebugPrintf(("New minNewTemp %u\n", minNewTemp));
       }
     } catch (const BasicException & e) {
-      stringstream stream;
+      std::stringstream stream;
       stream << "Double definition of temporary in function parameters "
-              << "initialization, at:" << endl;
+              << "initialization, at:" << std::endl;
       stream << "  - " << par->position.fileNode->printString()
                 << " Line: " << par->position.first_line << ".\n"
                 << par->position.fileNode->printStringStackIncludes()
-                << endl;
+                << std::endl;
       throw WrongArgumentException(stream.str());
     }
   }
@@ -54,7 +52,7 @@ Frame::init(asm_function & function)
     asm_statement * stmt = *stmtIt;
     if (stmt->isInstruction()) {
       asm_instruction_statement * i_stmt = (asm_instruction_statement *) stmt;
-      vector<asm_arg *> args = i_stmt->args;
+      std::vector<asm_arg *> args = i_stmt->args;
       for(size_t numArg = 0; numArg < args.size(); numArg++)
       {
         const bool isTemp = args[numArg]->isTemporary();
@@ -323,10 +321,10 @@ Frame::makeInitArg(const asm_data_keyword_statement * data,
     }
     case ASM_STRING_KEYWORD_STATEMENT: {
       delete tempArg;
-      stringstream stream;
-      stream << "Local string variables not yet supported, at:" << endl;
+      std::stringstream stream;
+      stream << "Local string variables not yet supported, at:" << std::endl;
       stream << pos.fileNode->printString()
-              << " Line: " << pos.first_line << endl;
+              << " Line: " << pos.first_line << std::endl;
       throw WrongArgumentException(stream.str());
     }
     default:
@@ -370,13 +368,13 @@ Frame::allocateLocalString(const asm_string_keyword_statement * data,
   const size_t tStrInitialSize = data->str.size();
   const size_t rest = tStrInitialSize % 4;
 
-  vector<int8_t> tempString;
+  std::vector<int8_t> tempString;
   tempString.insert(tempString.end(), data->str.begin(), data->str.end());
   tempString.resize(tStrInitialSize + (4 - rest) * (rest != 0), '\0');
 
   ListOfStmts tempListOfStmts;
 
-  for(string::const_iterator charIt = data->str.begin(); charIt < data->str.end(); )
+  for(std::string::const_iterator charIt = data->str.begin(); charIt < data->str.end(); )
   {
     asm_immediate_arg * tempArg = new asm_immediate_arg(pos);
     tempArg->content.val = DEAL_SWORD_FROM_BWORDS(charIt);

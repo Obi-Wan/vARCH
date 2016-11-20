@@ -31,8 +31,8 @@ Backend::assignFunctionParameters()
       if (stmt->getType() == ASM_FUNCTION_CALL) {
         asm_function_call * f_stmt = (asm_function_call *) stmt;
 
-        const vector<asm_arg *> & args = f_stmt->args;
-        const string & f_name = ((const asm_label_arg *)args[0])->label;
+        const std::vector<asm_arg *> & args = f_stmt->args;
+        const std::string & f_name = ((const asm_label_arg *)args[0])->label;
 
         for(const asm_function * o_func : program.functions)
         {
@@ -145,7 +145,7 @@ Backend::doRegisterAllocation()
 }
 
 void
-Backend::loadObj(const string & filename)
+Backend::loadObj(const std::string & filename)
 {
   asm_program prog;
   ObjLoader reader(filename);
@@ -168,7 +168,7 @@ Backend::loadObj(const string & filename)
 }
 
 void
-Backend::saveObj(const string & filename)
+Backend::saveObj(const std::string & filename)
 {
   ObjWriter writer(filename);
   writer.writeObj(this->program);
@@ -194,13 +194,13 @@ Backend::emit()
   Linker linker(program, args);
   linker.prelink();
 
-  for(const string & filename : args.getObjInputNames())
+  for(const std::string & filename : args.getObjInputNames())
   {
     DebugPrintf(("LOADING: %s\n", filename.c_str()));
     this->loadObj(filename);
   }
 
-  const string & output_name = args.getOutputName();
+  const std::string & output_name = args.getOutputName();
 
   if (args.getOnlyCompile())
   {
@@ -219,7 +219,7 @@ Backend::emit()
   }
 
   if (!args.getDebugSymbolsName().empty()) {
-    const string & symName = args.getDebugSymbolsName();
+    const std::string & symName = args.getDebugSymbolsName();
     const size_t & symNameSize = symName.size();
     if (symNameSize > 4 && !symName.substr(symNameSize-4,4).compare(".xml"))
     {

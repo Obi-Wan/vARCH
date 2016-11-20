@@ -10,7 +10,6 @@
 #include "IncludesTree.h"
 
 #include <sstream>
-using namespace std;
 
 void
 asm_instruction_statement::ensureTempsUsage(const bool & used) const
@@ -22,16 +21,16 @@ asm_instruction_statement::ensureTempsUsage(const bool & used) const
       const asm_immediate_arg * arg = (const asm_immediate_arg *) arg_g;
       if (!(arg->type == IMMED || arg->type == DIRECT) && (used ^ arg->isTemp))
       {
-        stringstream stream;
+        std::stringstream stream;
         if (used) {
           stream << "Found an explicit register when compiling for temporaries";
         } else {
           stream << "Found a temporary when not compiling for temporaries,";
         }
         stream  << " as argument of instruction '" << ISet.getInstr(instruction)
-                  << "' (" << instruction << ") at position:" << endl
+                  << "' (" << instruction << ") at position:" << std::endl
                 << position.fileNode->printString()
-                  << " Line: " << position.first_line << endl;
+                  << " Line: " << position.first_line << std::endl;
         throw WrongArgumentException(stream.str());
       }
     }
@@ -78,10 +77,10 @@ asm_int_keyword_statement::emitCode(Bloat::iterator & codeIt) {
       break;
     }
     default: {
-      stringstream stream;
+      std::stringstream stream;
       stream << __FUNCTION__ << ": Wrong Number scale! I was expecting "
             << "valid values for the enumeration 'ScaleOfArgument', but "
-            << "got: " << scale << endl;
+            << "got: " << scale << std::endl;
       throw WrongArgumentException(stream.str());
     }
   }

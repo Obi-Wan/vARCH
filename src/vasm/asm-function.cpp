@@ -26,13 +26,13 @@ asm_function::~asm_function()
  * @param locs
  */
 void
-asm_function::addStackLocals(list<asm_data_statement *> && locs)
+asm_function::addStackLocals(std::list<asm_data_statement *> && locs)
 {
   this->stackLocals.insert(this->stackLocals.end(), locs.begin(), locs.end());
 }
 
 void
-asm_function::addStmts(list<asm_statement *> && stmts)
+asm_function::addStmts(std::list<asm_statement *> && stmts)
 {
   this->stmts.insert(this->stmts.end(), stmts.begin(), stmts.end());
 }

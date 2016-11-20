@@ -10,7 +10,6 @@
 #include "exceptions.h"
 
 #include <sstream>
-using namespace std;
 
 void
 TableOfSymbols::addLabel(asm_label_statement * lab)
@@ -22,16 +21,16 @@ TableOfSymbols::addLabel(asm_label_statement * lab)
   if (previousDeclaration == defLabels.end()) {
     defLabels.insert( LabelsMap::value_type( lab->label, lab ) );
   } else {
-    stringstream stream;
+    std::stringstream stream;
     YYLTYPE & prevPos = previousDeclaration->second->position;
     YYLTYPE & pos = lab->position;
     stream  << "Multiple definitions of '" << lab->label << "' at positions:\n"
             << prevPos.fileNode->printString()
               << " Line: " << prevPos.first_line << " The first definition.\n"
-              << prevPos.fileNode->printStringStackIncludes() << endl
+              << prevPos.fileNode->printStringStackIncludes() << std::endl
             << pos.fileNode->printString()
               << " Line: " << pos.first_line << " The new definition.\n"
-              << pos.fileNode->printStringStackIncludes() << endl;
+              << pos.fileNode->printStringStackIncludes() << std::endl;
     throw WrongArgumentException(stream.str());
   }
 }
@@ -45,30 +44,30 @@ TableOfSymbols::importLabels(const TableOfSymbols & o)
   }
 }
 
-string
+std::string
 TableOfSymbols::emitDebugSymbols() const
 {
-  stringstream output;
+  std::stringstream output;
   for(LabelsMap::const_iterator labelIt = defLabels.begin();
       labelIt != defLabels.end(); labelIt++)
   {
     output << "  \"" << labelIt->first << "\""
-            << "  " << labelIt->second->offset << endl;
+            << "  " << labelIt->second->offset << std::endl;
   }
   return output.str();
 }
 
-string
+std::string
 TableOfSymbols::emitXMLDebugSymbols() const
 {
-  stringstream output;
+  std::stringstream output;
   for(LabelsMap::const_iterator labelIt = defLabels.begin();
       labelIt != defLabels.end(); labelIt++)
   {
-    output << "  <symbol>" << endl
-            << "    <id>" << labelIt->first << "</id>" << endl
-            << "    <offset>" << labelIt->second->offset << "</offset>" << endl
-            << "  </symbol>" << endl;
+    output << "  <symbol>" << std::endl
+            << "    <id>" << labelIt->first << "</id>" << std::endl
+            << "    <offset>" << labelIt->second->offset << "</offset>" << std::endl
+            << "  </symbol>" << std::endl;
   }
   return output.str();
 }

@@ -26,7 +26,7 @@ struct asm_statement {
 
   virtual bool isInstruction() const throw() { return false; }
 
-  virtual const string toString() const { return ""; }
+  virtual const std::string toString() const { return ""; }
   virtual size_t getSize() const throw() { return 0; }
 
   virtual void emitCode(Bloat::iterator & position) { }
@@ -43,7 +43,7 @@ struct asm_instruction_statement : asm_statement {
 
   const int32_t instruction;
 
-  vector<asm_arg *> args;
+  std::vector<asm_arg *> args;
 
   asm_instruction_statement(const YYLTYPE& pos, const int32_t _instr)
     : asm_statement(pos), instruction(_instr)
@@ -73,8 +73,8 @@ struct asm_instruction_statement : asm_statement {
 
   void ensureTempsUsage(const bool & used) const;
 
-  const string toString() const {
-    string output = "(instr, ";
+  const std::string toString() const {
+    std::string output = "(instr, ";
     for(asm_arg * arg : args) { output += arg->toString() + " ";  }
     output += " )";
     return output;
@@ -200,35 +200,35 @@ struct asm_data_statement : asm_statement {
 };
 
 struct asm_label_statement : asm_data_statement {
-  const string label;
+  const std::string label;
   size_t size;
   size_t num;
   bool is_global;
   bool is_func;
 
-  asm_label_statement(const YYLTYPE& pos, const string && _label,
+  asm_label_statement(const YYLTYPE& pos, const std::string && _label,
       const size_t & _size, const size_t & _num, const bool & _glob = false,
       const bool & _is_func = false)
     : asm_data_statement(pos), label(move(_label)), size(_size), num(_num)
     , is_global(_glob), is_func(_is_func)
   { }
-  asm_label_statement(const YYLTYPE& pos, const string & _label,
+  asm_label_statement(const YYLTYPE& pos, const std::string & _label,
       const size_t & _size, const size_t & _num, const bool & _glob = false,
       const bool & _is_func = false)
     : asm_data_statement(pos), label(_label), size(_size), num(_num), is_global(_glob)
     , is_func(_is_func)
   { }
-  asm_label_statement(const asm_label_statement & old, const string & prefix)
+  asm_label_statement(const asm_label_statement & old, const std::string & prefix)
     : asm_data_statement(old), label(prefix + "::" + old.label)
     , size(old.size), num(old.num), is_global(old.is_global)
     , is_func(old.is_func)
   { }
   asm_label_statement(const asm_label_statement &) = default;
 
-  const string toString() const { return string("(label: '") + label + "')"; }
+  const std::string toString() const { return std::string("(label: '") + label + "')"; }
   const ObjType getType() const throw() { return ASM_LABEL_STATEMENT; }
 
-  const string & getLabel() const { return this->label; }
+  const std::string & getLabel() const { return this->label; }
   const bool & isGlobal() const { return this->is_global; }
   const bool & isFunction() const { return this->is_func; }
 
@@ -239,7 +239,7 @@ struct asm_data_keyword_statement : asm_data_statement {
   asm_data_keyword_statement(const YYLTYPE& pos) : asm_data_statement(pos) { }
   asm_data_keyword_statement(const asm_data_keyword_statement & ) = default;
 
-  const string toString() const { return "(data_keyword_statement)"; }
+  const std::string toString() const { return "(data_keyword_statement)"; }
   const ObjType getType() const throw() { return ASM_KEYWORD_STATEMENT; }
 
   virtual asm_statement * getCopy() const { return new asm_data_keyword_statement(*this); }
@@ -254,7 +254,7 @@ struct asm_int_keyword_statement : asm_data_keyword_statement {
   { }
   asm_int_keyword_statement(const asm_int_keyword_statement &) = default;
 
-  const string toString() const { return "(integer_keyword_statement)"; }
+  const std::string toString() const { return "(integer_keyword_statement)"; }
   size_t getSize() const throw() { return (1 << scale); }
   const ObjType getType() const throw() { return ASM_INT_KEYWORD_STATEMENT; }
 
@@ -265,15 +265,15 @@ struct asm_int_keyword_statement : asm_data_keyword_statement {
 
 // TODO: compact string code emission
 struct asm_string_keyword_statement : asm_data_keyword_statement {
-  const string str;
+  const std::string str;
 
-  asm_string_keyword_statement(const YYLTYPE& pos, const string & _str)
+  asm_string_keyword_statement(const YYLTYPE& pos, const std::string & _str)
     : asm_data_keyword_statement(pos), str(_str)
   { }
   asm_string_keyword_statement(const asm_string_keyword_statement &) = default;
 
-  const string toString() const {
-    return  string("(string_keyword_statement: '") + str + "')";
+  const std::string toString() const {
+    return  std::string("(string_keyword_statement: '") + str + "')";
   }
   size_t getSize() const throw() { return str.size(); }
   const ObjType getType() const throw() { return ASM_STRING_KEYWORD_STATEMENT; }
@@ -295,7 +295,7 @@ struct asm_real_keyword_statement : asm_data_keyword_statement {
   { }
   asm_real_keyword_statement(const asm_real_keyword_statement &) = default;
 
-  const string toString() const { return  "(real_keyword_statement: )"; }
+  const std::string toString() const { return  "(real_keyword_statement: )"; }
   size_t getSize() const throw() { return 4; }
   const ObjType getType() const throw() { return ASM_REAL_KEYWORD_STATEMENT; }
   void emitCode(Bloat::iterator & codeIt) {

@@ -27,7 +27,7 @@ asm_immediate_arg::getSize() const
       return 4;
     }
     default:
-      throw WrongArgumentException(string(__PRETTY_FUNCTION__) + ": no such Argument type");
+      throw WrongArgumentException(std::string(__PRETTY_FUNCTION__) + ": no such Argument type");
   }
 }
 
@@ -61,7 +61,7 @@ asm_immediate_arg::emitCode(Bloat::iterator & codeIt) const
         break;
       }
       default:
-        throw WrongArgumentException(string(__PRETTY_FUNCTION__) +
+        throw WrongArgumentException(std::string(__PRETTY_FUNCTION__) +
             "No such kind of scale for IMMED argument");
     }
   } else {
@@ -107,8 +107,8 @@ asm_immediate_arg::emitCode(Bloat::iterator & codeIt) const
         break;
       }
       default: {
-        throw WrongArgumentException(string(__PRETTY_FUNCTION__)
-            + " No such kind of argument: " + to_string(type));
+        throw WrongArgumentException(std::string(__PRETTY_FUNCTION__)
+            + " No such kind of argument: " + std::to_string(type));
       }
     }
     for(size_t count = 0; count < 4; count++) {

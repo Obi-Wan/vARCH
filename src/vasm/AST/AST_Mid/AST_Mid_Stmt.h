@@ -15,8 +15,6 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 enum ASTM_TypeQualifiers {
   ASTM_stacked,
   ASTM_const,
@@ -74,7 +72,7 @@ public:
   ASTM_Node(const YYLTYPE & _pos) : pos(_pos) { }
   virtual ~ASTM_Node() { }
 
-  virtual const string toString() const { return ""; }
+  virtual const std::string toString() const { return ""; }
   virtual const ASTM_Class getClass() const throw() { return ASTM_NODE; }
 };
 
@@ -95,15 +93,15 @@ public:
 
 class ASTM_ArgLabel : public ASTM_Arg {
 public:
-  const string label;
+  const std::string label;
   const bool relative;
 
-  ASTM_ArgLabel(const YYLTYPE & _pos, const string & id,
+  ASTM_ArgLabel(const YYLTYPE & _pos, const std::string & id,
       const bool & _rel = false)
     : ASTM_Arg(_pos, ASTM_ptr_void), label(id), relative(_rel)
   { }
 
-  virtual const string toString() const {
+  virtual const std::string toString() const {
     return "";
   }
   virtual const ASTM_Class getClass() const throw() { return ASTM_ARG_LABEL; }
@@ -111,11 +109,11 @@ public:
 
 class ASTM_ArgRegister : public ASTM_Arg {
 public:
-  const string id;
+  const std::string id;
   const TypeOfArgument kind;
   const bool relative;
 
-  ASTM_ArgRegister(const YYLTYPE & _pos, const string & _id,
+  ASTM_ArgRegister(const YYLTYPE & _pos, const std::string & _id,
       const ASTM_BuiltinTypes & _type, const TypeOfArgument & _kind,
       const bool & _rel = false)
     : ASTM_Arg(_pos, _type), id(_id), kind(_kind), relative(_rel)
@@ -125,9 +123,9 @@ public:
 
 class ASTM_ArgNumber : public ASTM_Arg {
 public:
-  const string number;
+  const std::string number;
 
-  ASTM_ArgNumber(const YYLTYPE & _pos, const string & _num,
+  ASTM_ArgNumber(const YYLTYPE & _pos, const std::string & _num,
       const ASTM_BuiltinTypes & _type)
     : ASTM_Arg(_pos, _type), number(_num)
   { }
@@ -145,9 +143,9 @@ public:
 
 class ASTM_StmtLabel : public ASTM_Stmt {
 public:
-  const string label;
+  const std::string label;
 
-  ASTM_StmtLabel(const YYLTYPE & _pos, const string & id)
+  ASTM_StmtLabel(const YYLTYPE & _pos, const std::string & id)
     : ASTM_Stmt(_pos), label(id)
   { }
 };
@@ -165,7 +163,7 @@ public:
 
 class ASTM_StmtExp : public ASTM_StmtBase {
 public:
-  vector<ASTM_Arg *> args;
+  std::vector<ASTM_Arg *> args;
 
   ASTM_StmtExp(const YYLTYPE & _pos, const int32_t & _instr,
       const ASTM_BuiltinTypes & _ret_type = ASTM_auto)
@@ -192,11 +190,11 @@ public:
 
 class ASTM_StmtAssign : public ASTM_Stmt {
 public:
-  const string assignedId;
+  const std::string assignedId;
 
   ASTM_Node * const expr;
 
-  ASTM_StmtAssign(const YYLTYPE & _pos, const string & _id,
+  ASTM_StmtAssign(const YYLTYPE & _pos, const std::string & _id,
       ASTM_Node * const _expr)
     : ASTM_Stmt(_pos), assignedId(_id), expr(_expr)
   { }
@@ -232,14 +230,14 @@ public:
 class ASTM_Param : public ASTM_Node {
 public:
   const ASTM_BuiltinTypes type;
-  const string id;
+  const std::string id;
 
   ASTM_Param(const YYLTYPE & _pos, const ASTM_BuiltinTypes & _type,
-      const string & _id)
+      const std::string & _id)
     : ASTM_Node(_pos), type(_type), id(_id)
   { }
 
-  virtual const string toString() const { return "Name: " + id; }
+  virtual const std::string toString() const { return "Name: " + id; }
 };
 
 #endif /* AST_MID_STMT_H_ */

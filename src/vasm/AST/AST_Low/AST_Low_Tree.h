@@ -12,20 +12,20 @@
 #include "../../asm-program.h"
 
 class ASTL_Tree {
-  list<asm_data_statement *> convertVariables(const vector<ASTL_Stmt *> &)
+  std::list<asm_data_statement *> convertVariables(const std::vector<ASTL_Stmt *> &)
       const;
-  list<asm_statement *> convertStatements(const vector<ASTL_Stmt *> &) const;
+  std::list<asm_statement *> convertStatements(const std::vector<ASTL_Stmt *> &) const;
 
-  void convertGlobalVariables(asm_program & prog, const vector<ASTL_Stmt *> &) const;
+  void convertGlobalVariables(asm_program & prog, const std::vector<ASTL_Stmt *> &) const;
   void convertFunctionVariables(asm_program & prog, asm_function & func,
-      const vector<ASTL_Stmt *> &) const;
+      const std::vector<ASTL_Stmt *> &) const;
 
 public:
   EnvSymbols globalSymbols;
 
-  vector<ASTL_Stmt *> globals;
-  vector<ASTL_FunctionDef *> functionDefs;
-  vector<ASTL_FunctionProto *> functionProtos;
+  std::vector<ASTL_Stmt *> globals;
+  std::vector<ASTL_FunctionDef *> functionDefs;
+  std::vector<ASTL_FunctionProto *> functionProtos;
 
   ~ASTL_Tree();
 
@@ -37,7 +37,7 @@ public:
     functionProtos.push_back(func_def);
   }
 
-  void addGlobalVars(list<ASTL_Stmt *> * var_decl) {
+  void addGlobalVars(std::list<ASTL_Stmt *> * var_decl) {
     globals.insert(globals.end(), var_decl->begin(), var_decl->end());
   }
 

@@ -15,9 +15,9 @@
 #include <deque>
 
 struct asm_program {
-  deque<asm_function *> functions;
-  vector<asm_data_statement *> shared_vars;
-  vector<asm_data_statement *> constants;
+  std::deque<asm_function *> functions;
+  std::vector<asm_data_statement *> shared_vars;
+  std::vector<asm_data_statement *> constants;
 
   TableOfSymbols globalSymbols;
 
@@ -28,21 +28,21 @@ public:
   void addFunction(asm_function * _func) {
     functions.insert(functions.end(), _func);
   }
-  void addFunctions(list<asm_function *> * _funcs) {
+  void addFunctions(std::list<asm_function *> * _funcs) {
     functions.insert(functions.end(), _funcs->begin(), _funcs->end());
   }
 
   void addSharedVar(asm_data_statement * _var) {
     shared_vars.insert(shared_vars.end(), _var);
   }
-  void addSharedVars(list<asm_data_statement *> && _vars) {
+  void addSharedVars(std::list<asm_data_statement *> && _vars) {
     shared_vars.insert(shared_vars.end(), _vars.begin(), _vars.end());
   }
 
   void addConstant(asm_data_statement * _var) {
     constants.insert(constants.end(), _var);
   }
-  void addConstants(list<asm_data_statement *> && _vars) {
+  void addConstants(std::list<asm_data_statement *> && _vars) {
     constants.insert(constants.end(), _vars.begin(), _vars.end());
   }
 
@@ -62,10 +62,10 @@ public:
     return totSize;
   }
 
-  void assemble(const string & outputName);
+  void assemble(const std::string & outputName);
 
-  void emitDebugSymbols(const string & outputName) const;
-  void emitXMLDebugSymbols(const string & outputName) const;
+  void emitDebugSymbols(const std::string & outputName) const;
+  void emitXMLDebugSymbols(const std::string & outputName) const;
 };
 
 #endif	/* ASM_PROGRAM_H */

@@ -13,7 +13,7 @@
 #include <map>
 #include <string>
 
-template<typename SymbolNameType = string, typename SymbolType = size_t>
+template<typename SymbolNameType = std::string, typename SymbolType = size_t>
 class OffsetTempLookup {
 protected:
   typedef std::map<SymbolType, SymbolNameType> SymToStr;
@@ -28,7 +28,7 @@ public:
   bool isOffset(const SymbolType & sym) const;
 };
 
-template<typename SymbolNameType = string, typename SymbolType = size_t>
+template<typename SymbolNameType = std::string, typename SymbolType = size_t>
 class SymbolsTempLookup : public OffsetTempLookup<SymbolNameType, SymbolType> {
 protected:
   typedef typename OffsetTempLookup<SymbolNameType, SymbolType>::SymToStr SymToStr;
@@ -57,7 +57,7 @@ class Disassembler {
   asm_arg * decodeArgument(const TypeOfArgument & p_arg_type,
       const ScaleOfArgument & p_arg_scale, const ArgumentValue & arg);
   void decodeInstruction(const int8_t *& data, int32_t & instr,
-      vector<TypeOfArgument> & type_args, vector<ScaleOfArgument> & scale_args);
+      std::vector<TypeOfArgument> & type_args, std::vector<ScaleOfArgument> & scale_args);
 public:
 //  Disassembler();
 
@@ -81,7 +81,7 @@ OffsetTempLookup<SymbolNameType, SymbolType>::addOffset(
   if (symToStr.find(sym) == symToStr.end()) {
     symToStr.insert(typename SymToStr::value_type(sym, str));
   } else {
-    throw WrongArgumentException("Offset '" + to_string(sym) + "' is already a symbol");
+    throw WrongArgumentException("Offset '" + std::to_string(sym) + "' is already a symbol");
   }
 }
 

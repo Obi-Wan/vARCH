@@ -13,7 +13,7 @@
 #include "AST/AST_Low/AST_Low_Stmt.h"
 
 #include <cstdlib>
-#include <string.h>
+#include <cstring>
 
 class ArgumentsHandler {
   static uint32_t getRegNum(const char * str);

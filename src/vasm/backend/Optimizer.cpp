@@ -13,7 +13,7 @@ Optimizer::removeUselessMoves(asm_function & func)
   // Remove Moves with identical source and destination
 
   // Find useless statements
-  vector<ListOfStmts::iterator> idMoves;
+  std::vector<ListOfStmts::iterator> idMoves;
 
   DebugPrintf(("Trying to find useless moves\n"));
   for(ListOfStmts::iterator stmtIt = func.stmts.begin();
@@ -24,7 +24,7 @@ Optimizer::removeUselessMoves(asm_function & func)
       asm_instruction_statement * i_stmt = (asm_instruction_statement *) stmt;
       if (i_stmt->instruction == MOV) {
         DebugPrintf(("Found Move!\n"));
-        vector<asm_arg *> args = i_stmt->args;
+        std::vector<asm_arg *> args = i_stmt->args;
         if (args[0]->getType() == ASM_IMMEDIATE_ARG
             && args[1]->getType() == ASM_IMMEDIATE_ARG)
         {
@@ -58,7 +58,7 @@ Optimizer::removeUselessArithmetics(asm_function & func)
   // Remove Arithmetic operations that do nothing
 
   // Find useless statements
-  vector<ListOfStmts::iterator> useless;
+  std::vector<ListOfStmts::iterator> useless;
 
   DebugPrintf(("Trying to find useless arithmetic operations\n"));
   for(ListOfStmts::iterator stmtIt = func.stmts.begin();
@@ -67,7 +67,7 @@ Optimizer::removeUselessArithmetics(asm_function & func)
     asm_statement * stmt = *stmtIt;
     if (stmt->getType() == ASM_INSTRUCTION_STATEMENT) {
       asm_instruction_statement * i_stmt = (asm_instruction_statement *) stmt;
-      vector<asm_arg *> args = i_stmt->args;
+      std::vector<asm_arg *> args = i_stmt->args;
       switch (i_stmt->instruction) {
         case SUB:
         case ADD: {

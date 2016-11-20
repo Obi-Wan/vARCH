@@ -816,7 +816,7 @@ Cpu::getReg(const int32_t & regPos)
     case PROGRAM_COUNTER:
       return progCounter;
     default: {
-      stringstream stream;
+      std::stringstream stream;
       stream << "No such register: " << regPos << ". Couldn't load it.";
       throw WrongArgumentException(stream.str());
     }
@@ -854,7 +854,7 @@ Cpu::setReg(const int32_t & regPos, const int32_t & value)
       progCounter = value;
       break;
     default: {
-      stringstream stream;
+      std::stringstream stream;
       stream << "No such register: " << regPos << ". Couldn't set it.";
       throw WrongArgumentException(stream.str());
     }

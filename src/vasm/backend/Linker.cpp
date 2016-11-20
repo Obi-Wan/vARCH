@@ -49,7 +49,7 @@ INLINE void
 Linker::moveMainToTop()
 {
   /* Let's put the main function in front of all the others */
-  for(deque<asm_function *>::iterator iter = program.functions.begin();
+  for(std::deque<asm_function *>::iterator iter = program.functions.begin();
       iter != program.functions.end(); iter++)
   {
     if (!(*iter)->name.compare("main")) {
@@ -200,7 +200,7 @@ Linker::assignValuesToLocalLabels()
     for(ArgLabelRecord * ref : func->refs)
     {
       asm_label_arg & argument = *(ref->arg);
-      const string & labelName = argument.label;
+      const std::string & labelName = argument.label;
 
       DebugPrintf(("  - Processing label: %s\n", labelName.c_str()));
       asm_label_statement * localLabel = func->localSymbols.getStmt(labelName);
@@ -262,7 +262,7 @@ Linker::assignValuesToLabels()
     for(ArgLabelRecord * ref : func->refs)
     {
       asm_label_arg & argument = *(ref->arg);
-      const string & labelName = argument.label;
+      const std::string & labelName = argument.label;
 
       DebugPrintf(("  - Processing label: %s\n", labelName.c_str()));
       asm_label_statement * localLabel = func->localSymbols.getStmt(labelName);

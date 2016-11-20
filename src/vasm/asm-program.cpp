@@ -17,7 +17,7 @@ asm_program::~asm_program()
 }
 
 void
-asm_program::assemble(const string & outputName)
+asm_program::assemble(const std::string & outputName)
 {
   Bloat bytecode;
   const size_t tot_size = getFunciontsTotalSize()
@@ -42,34 +42,34 @@ asm_program::assemble(const string & outputName)
 }
 
 void
-asm_program::emitDebugSymbols(const string & outputName) const
+asm_program::emitDebugSymbols(const std::string & outputName) const
 {
   TextWriter writer(outputName);
-  writer << "GLOBAL_SYMBOLS" << endl
+  writer << "GLOBAL_SYMBOLS" << std::endl
           << globalSymbols.emitDebugSymbols()
-          << "END" << endl << endl;
+          << "END" << std::endl << std::endl;
 
   for(asm_function * func : functions)
   {
-    writer << "FUNCTION \"" << func->name << "\"" << endl
+    writer << "FUNCTION \"" << func->name << "\"" << std::endl
             << func->localSymbols.emitDebugSymbols()
-            << "END" << endl << endl;
+            << "END" << std::endl << std::endl;
   }
 }
 
 void
-asm_program::emitXMLDebugSymbols(const string & outputName) const
+asm_program::emitXMLDebugSymbols(const std::string & outputName) const
 {
   TextWriter writer(outputName);
-  writer << "<global_symbols>" << endl
+  writer << "<global_symbols>" << std::endl
           << globalSymbols.emitXMLDebugSymbols()
-          << "</global_symbols>" << endl;
+          << "</global_symbols>" << std::endl;
 
   for(asm_function * func : functions)
   {
-    writer << "<function name=\"" << func->name << "\">" << endl
+    writer << "<function name=\"" << func->name << "\">" << std::endl
             << func->localSymbols.emitXMLDebugSymbols()
-            << "</function>" << endl;
+            << "</function>" << std::endl;
   }
 }
 

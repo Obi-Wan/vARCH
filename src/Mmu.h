@@ -21,10 +21,10 @@ union DoubleWord {
 class Mmu {
 public:
   Mmu(const uint32_t & _maxMem, DoubleWord * _mem);
-  Mmu(const Mmu& orig);
+  Mmu(const Mmu & orig);
 
-  const uint32_t &getMaxMem() const throw() { return maxMem; }
-  const uint32_t &getLimit() const throw() { return limit; }
+  const uint32_t & getMaxMem() const throw() { return maxMem; }
+  const uint32_t & getLimit() const throw() { return limit; }
 
   /**
    * Stores data to memory
@@ -45,8 +45,9 @@ public:
    *
    * @return Time taken by the operation
    */
-  uint32_t storeToMemUI32(const uint32_t& data, const uint32_t & addr) {
-    DoubleWord _data; _data.u32 = data;
+  uint32_t storeToMemUI32(const uint32_t & data, const uint32_t & addr) {
+    DoubleWord _data;
+    _data.u32 = data;
     return storeToMem(_data, addr, BYTE4);
   }
   /**

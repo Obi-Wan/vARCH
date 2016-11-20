@@ -13,8 +13,6 @@
 #include <map>
 #include <list>
 
-using namespace std;
-
 class EnvSymbols {
 
   struct SymbolRecord {
@@ -22,24 +20,24 @@ class EnvSymbols {
     YYLTYPE pos;
   };
 
-  typedef map<string, SymbolRecord> MapOfSymbols;
+  typedef std::map<std::string, SymbolRecord> MapOfSymbols;
 
 public:
-  void put(const string & name, const ASTM_BuiltinTypes & type,
+  void put(const std::string & name, const ASTM_BuiltinTypes & type,
       const YYLTYPE & pos);
-  const ASTM_BuiltinTypes & getType(const string & name) const;
+  const ASTM_BuiltinTypes & getType(const std::string & name) const;
 };
 
 class ASTM_FunctionProto : public ASTM_Node {
 public:
   const ASTM_BuiltinTypes retType;
-  const string name;
+  const std::string name;
 
-  vector<ASTM_Param *> params;
+  std::vector<ASTM_Param *> params;
 
   ASTM_FunctionProto(const YYLTYPE & _pos,
-      const ASTM_BuiltinTypes & _ret_type, const string & _name,
-      list<ASTM_Param *> * paramsList)
+      const ASTM_BuiltinTypes & _ret_type, const std::string & _name,
+      std::list<ASTM_Param *> * paramsList)
     : ASTM_Node(_pos), retType(_ret_type), name(_name)
   {
     params.insert(params.end(), paramsList->begin(), paramsList->end());
@@ -54,11 +52,11 @@ class ASTM_FunctionDef : public ASTM_FunctionProto {
 public:
   EnvSymbols symbols;
 
-  vector<ASTM_Stmt *> stmts;
+  std::vector<ASTM_Stmt *> stmts;
 
   ASTM_FunctionDef(const YYLTYPE & _pos,
-      const ASTM_BuiltinTypes & _ret_type, const string & _name,
-      list<ASTM_Param *> * paramsList, list<ASTM_Stmt *> * stmtsList)
+      const ASTM_BuiltinTypes & _ret_type, const std::string & _name,
+      std::list<ASTM_Param *> * paramsList, std::list<ASTM_Stmt *> * stmtsList)
     : ASTM_FunctionProto(_pos, _ret_type, _name, paramsList)
   {
     stmts.insert(stmts.end(), stmtsList->begin(), stmtsList->end());

@@ -11,8 +11,6 @@
 #include "AsmArgs.h"
 #include "disassembler/Disassembler.h"
 
-using namespace std;
-
 void
 printAssembler(const asm_program * const program);
 

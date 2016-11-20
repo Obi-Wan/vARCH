@@ -125,7 +125,7 @@ ObjLoader::readObj(asm_program & prog)
     {
       Elf64_Addr offset;
       Elf64_Addr value;
-      string sym_name;
+      std::string sym_name;
 
       Elf_Word type;
       Elf_Sxword dummy1;
@@ -155,7 +155,7 @@ ObjLoader::readObj(asm_program & prog)
         if (indx)
         {
           const size_t sym_size = indx - previous_indx;
-          const string && sym_content = string(&rodata_data[previous_indx], sym_size);
+          const std::string && sym_content = std::string(&rodata_data[previous_indx], sym_size);
           asm_string_keyword_statement * stmt = new asm_string_keyword_statement(YYLTYPE(), sym_content);
           prog.constants.push_back(stmt);
           previous_indx = indx;
@@ -163,7 +163,7 @@ ObjLoader::readObj(asm_program & prog)
           DebugPrintf(("Saved const data (size %lu): '%s'\n", sym_size, sym_content.c_str()));
         }
 
-        const string & sym_name = lookup_position_const.getString(indx);
+        const std::string & sym_name = lookup_position_const.getString(indx);
         asm_label_statement * const sym_label = prog.globalSymbols.getStmt(sym_name);
         prog.constants.push_back(sym_label);
 
@@ -173,7 +173,7 @@ ObjLoader::readObj(asm_program & prog)
     if (rodata_size - previous_indx)
     {
       const size_t sym_size = rodata_size - previous_indx;
-      const string && sym_content = string(&rodata_data[previous_indx], sym_size);
+      const std::string && sym_content = std::string(&rodata_data[previous_indx], sym_size);
       asm_string_keyword_statement * stmt = new asm_string_keyword_statement(YYLTYPE(), sym_content);
       prog.constants.push_back(stmt);
     }
@@ -195,7 +195,7 @@ ObjLoader::readObj(asm_program & prog)
         if (indx)
         {
           const size_t sym_size = indx - previous_indx;
-          const string && sym_content = string(&data_data[previous_indx], sym_size);
+          const std::string && sym_content = std::string(&data_data[previous_indx], sym_size);
           asm_string_keyword_statement * stmt = new asm_string_keyword_statement(YYLTYPE(), sym_content);
           prog.shared_vars.push_back(stmt);
           previous_indx = indx;
@@ -203,7 +203,7 @@ ObjLoader::readObj(asm_program & prog)
           DebugPrintf(("Saved shared data (size %lu): '%s'\n", sym_size, sym_content.c_str()));
         }
 
-        const string & sym_name = lookup_position_shared.getString(indx);
+        const std::string & sym_name = lookup_position_shared.getString(indx);
         asm_label_statement * const sym_label = prog.globalSymbols.getStmt(sym_name);
         prog.shared_vars.push_back(sym_label);
 
@@ -213,7 +213,7 @@ ObjLoader::readObj(asm_program & prog)
     if (data_size - previous_indx)
     {
       const size_t sym_size = data_size - previous_indx;
-      const string && sym_content = string(&data_data[previous_indx], sym_size);
+      const std::string && sym_content = std::string(&data_data[previous_indx], sym_size);
       asm_string_keyword_statement * stmt = new asm_string_keyword_statement(YYLTYPE(), sym_content);
       prog.shared_vars.push_back(stmt);
     }
@@ -342,7 +342,7 @@ ObjWriter::writeObj(const asm_program & prog)
 
     for (ArgLabelRecord * ref : func->refs)
     {
-      const string & label_name = ref->arg->label;
+      const std::string & label_name = ref->arg->label;
 
       asm_label_statement * l_stmt = prog.globalSymbols.getStmt(label_name);
       if (!l_stmt)

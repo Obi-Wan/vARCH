@@ -14,13 +14,12 @@
 
 #include <sstream>
 
-
 void
 ASTL_Tree::convertGlobalVariables(asm_program & prog,
-    const vector<ASTL_Stmt *> &astl_vars)
+    const std::vector<ASTL_Stmt *> &astl_vars)
 const
 {
-  list<asm_data_statement *> && vars = convertVariables(astl_vars);
+  std::list<asm_data_statement *> && vars = convertVariables(astl_vars);
 
   bool is_constant = false;
   bool is_shared = false;
@@ -50,9 +49,9 @@ const
 
 void
 ASTL_Tree::convertFunctionVariables(asm_program & prog, asm_function & func,
-    const vector<ASTL_Stmt *> & astl_vars) const
+    const std::vector<ASTL_Stmt *> & astl_vars) const
 {
-  list<asm_data_statement *> && vars = convertVariables(astl_vars);
+  std::list<asm_data_statement *> && vars = convertVariables(astl_vars);
 
   bool is_constant = false;
   bool is_shared = false;
@@ -93,10 +92,10 @@ ASTL_Tree::convertFunctionVariables(asm_program & prog, asm_function & func,
   }
 }
 
-list<asm_data_statement *>
-ASTL_Tree::convertVariables(const vector<ASTL_Stmt *> & variables) const
+std::list<asm_data_statement *>
+ASTL_Tree::convertVariables(const std::vector<ASTL_Stmt *> & variables) const
 {
-  list<asm_data_statement *> destVars;
+  std::list<asm_data_statement *> destVars;
 
   for(ASTL_Stmt * tempStmt : variables)
   {
@@ -137,10 +136,10 @@ ASTL_Tree::convertVariables(const vector<ASTL_Stmt *> & variables) const
   return destVars;
 }
 
-list<asm_statement *>
-ASTL_Tree::convertStatements(const vector<ASTL_Stmt *> & inStmts) const
+std::list<asm_statement *>
+ASTL_Tree::convertStatements(const std::vector<ASTL_Stmt *> & inStmts) const
 {
-  list<asm_statement *> destStmts;
+  std::list<asm_statement *> destStmts;
 
   for(ASTL_Stmt * tempStmt : inStmts)
   {
@@ -238,7 +237,7 @@ ASTL_Tree::emitAsm(asm_program & program) const
 
     // Convert statements
     {
-      list<asm_statement *> && tempStmts = this->convertStatements(func->stmts);
+      std::list<asm_statement *> && tempStmts = this->convertStatements(func->stmts);
       destFunc->addStmts(move(tempStmts));
     }
     destFunc->finalize();

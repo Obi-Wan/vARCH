@@ -19,8 +19,6 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 struct asm_arg {
   enum TypeOfArgument type;
   enum ScaleOfArgument scale;
@@ -40,7 +38,7 @@ struct asm_arg {
 
   virtual ~asm_arg() = default;
 
-  virtual const string toString() const { return ""; }
+  virtual const std::string toString() const { return ""; }
   virtual const size_t getSize() const { return 0; }
   virtual void emitCode(Bloat::iterator & codeIt) const { }
   virtual const ObjType getType() const throw() { return ASM_ARG; }
@@ -91,7 +89,7 @@ struct asm_immediate_arg : asm_arg {
 
   void emitCode(Bloat::iterator & codeIt) const;
   const ObjType getType() const throw() { return ASM_IMMEDIATE_ARG; }
-  const string toString() const { return "(immediate arg)"; }
+  const std::string toString() const { return "(immediate arg)"; }
   const size_t getSize() const;
 
   virtual bool isTemporary() const throw() { return isTemp; }
@@ -117,26 +115,26 @@ struct asm_function_param : asm_arg {
   virtual asm_arg * getCopy() const { return new asm_function_param(*this); }
 };
 
-typedef vector<asm_function_param *>        ListOfParams;
-typedef vector<const asm_function_param *>  ConstListOfParams;
+typedef std::vector<asm_function_param *>        ListOfParams;
+typedef std::vector<const asm_function_param *>  ConstListOfParams;
 
 struct asm_label_arg : asm_immediate_arg {
-  const string label;
+  const std::string label;
 
-  asm_label_arg(const YYLTYPE& pos, const string && _lab
+  asm_label_arg(const YYLTYPE& pos, const std::string && _lab
       , const TypeOfArgument& _type, const ScaleOfArgument & _scale = BYTE4)
     : asm_immediate_arg(pos, 0, _type, _scale, REG_NO_ACTION, false), label(move(_lab))
   { }
-  asm_label_arg(const YYLTYPE& pos, const string & _lab
+  asm_label_arg(const YYLTYPE& pos, const std::string & _lab
       , const TypeOfArgument& _type, const ScaleOfArgument & _scale = BYTE4)
     : asm_immediate_arg(pos, 0, _type, _scale, REG_NO_ACTION, false), label(_lab)
   { }
-  asm_label_arg(const asm_immediate_arg & old, const string & _lab)
+  asm_label_arg(const asm_immediate_arg & old, const std::string & _lab)
     : asm_immediate_arg(old), label(_lab)
   { }
   asm_label_arg(const asm_label_arg &) = default;
 
-  const string toString() const { return string("(label: '") + label + "')"; }
+  const std::string toString() const { return std::string("(label: '") + label + "')"; }
 
   const ObjType getType() const throw() { return ASM_LABEL_ARG; }
 

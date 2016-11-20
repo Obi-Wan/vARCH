@@ -77,7 +77,6 @@ AsmArgs::parse()
     else if (!tempArg.compare("--disassemble-result"))
     {
       disassembleResult = true;
-
     }
     else if (!tempArg.compare("-fomit-frame-pointer"))
     {
@@ -137,17 +136,17 @@ AsmArgs::parse()
 void
 AsmArgs::printHelp() const throw()
 {
-  cout << "Syntax is: 'vasm <input_files> -o <output_file> [options]'" << endl;
-  cout << " --only-validate : only parse, without emitting code" << endl;
-  cout << " -v : Verbose mode, giving extra information" << endl;
-  cout << " -c : Just compiles, and output a static object file" << endl;
-  cout << " -I<include_path> : adds an include path" << endl;
-  cout << " -d <output_file> : generates debug symbols file "
-        << "(if extension is .xml, an XML file will be generated)" << endl;
-  cout << " --reg-auto-alloc : Lets the assembler auto allocate registers" << endl;
-  cout << " --reg-coalesce : (if --reg-auto-alloc) coalesces registers" << endl;
-  cout << " --disassemble-result : outputs the disassembled code" << endl;
-  cout << " -O<optimization_level> : between 0 and 3, enables different "
-        << "optimization levels" << endl;
-  cout << " -fomit-frame-pointer : omits frame pointer (not working, yet)" << endl;
+  std::cout << "Syntax is: 'vasm <input_files> -o <output_file> [options]'" << std::endl;
+  std::cout << " --only-validate : only parse, without emitting code" << std::endl;
+  std::cout << " -v : Verbose mode, giving extra information" << std::endl;
+  std::cout << " -c : Just compiles, and output a static object file" << std::endl;
+  std::cout << " -I<include_path> : adds an include path" << std::endl;
+  std::cout << " -d <output_file> : generates debug symbols file "
+        << "(if extension is .xml, an XML file will be generated)" << std::endl;
+  std::cout << " --reg-auto-alloc : Lets the assembler auto allocate registers" << std::endl;
+  std::cout << " --reg-coalesce : (if --reg-auto-alloc) coalesces registers" << std::endl;
+  std::cout << " --disassemble-result : outputs the disassembled code" << std::endl;
+  std::cout << " -O<optimization_level> : between 0 and 3, enables different "
+        << "optimization levels" << std::endl;
+  std::cout << " -fomit-frame-pointer : omits frame pointer (not working, yet)" << std::endl;
 }

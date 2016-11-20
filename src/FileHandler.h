@@ -10,36 +10,33 @@
 
 #include "macros.h"
 #include "BinaryVectors.h"
-
-#include <vector>
-#include <fstream>
-#include <string>
 #include "exceptions.h"
 
-using namespace std;
+#include <fstream>
+#include <string>
 
 static const char * openFileError = "Error opening file: ";
 
 class FileHandler {
 public:
-  FileHandler(const char * filename, ios_base::openmode mode) {
+  FileHandler(const char * filename, std::ios_base::openmode mode) {
     file.open(filename, mode );
-    if (!file) throw WrongFileException(string(openFileError).append(filename));
+    if (!file) throw WrongFileException(std::string(openFileError).append(filename));
   }
-  FileHandler(const string &filename, ios_base::openmode mode) {
+  FileHandler(const std::string &filename, std::ios_base::openmode mode) {
     file.open(filename.c_str(), mode );
-    if (!file) throw WrongFileException(string(openFileError).append(filename));
+    if (!file) throw WrongFileException(std::string(openFileError).append(filename));
   }
   ~FileHandler() { file.close(); }
   
 protected:
-  fstream file;
+  std::fstream file;
 };
 
 class BinLoader : public FileHandler {
 public:
   BinLoader(const char * filename)
-    : FileHandler(filename, ios_base::in | ios_base::binary) { }
+    : FileHandler(filename, std::ios_base::in | std::ios_base::binary) { }
 //  virtual ~BinLoader() { }
 
   Bloat getBinFileContent();
@@ -48,10 +45,10 @@ public:
 class BinWriter : public FileHandler {
 public:
   BinWriter(const char * filename)
-    : FileHandler(filename, ios_base::out | ios_base::binary | ios_base::trunc)
+    : FileHandler(filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc)
   { }
-  BinWriter(const string & filename)
-    : FileHandler(filename, ios_base::out | ios_base::binary | ios_base::trunc)
+  BinWriter(const std::string & filename)
+    : FileHandler(filename, std::ios_base::out | std::ios_base::binary | std::ios_base::trunc)
   { }
 //  virtual ~BinWriter() { }
 
@@ -61,22 +58,22 @@ public:
 class TextLoader : public FileHandler {
 public:
   TextLoader(const char * filename)
-    : FileHandler(filename, ios_base::in) { }
-  TextLoader(const string & filename)
-    : FileHandler(filename, ios_base::in) { }
+    : FileHandler(filename, std::ios_base::in) { }
+  TextLoader(const std::string & filename)
+    : FileHandler(filename, std::ios_base::in) { }
 //  virtual ~TextLoader() { }
 
-  string getTextFileContent();
+  std::string getTextFileContent();
 };
 
 class TextWriter : public FileHandler {
 public:
   TextWriter(const char * filename)
-      : FileHandler(filename, ios_base::out | ios_base::trunc ) { }
-  TextWriter(const string & filename)
-      : FileHandler(filename.c_str(), ios_base::out | ios_base::trunc ) { }
+      : FileHandler(filename, std::ios_base::out | std::ios_base::trunc ) { }
+  TextWriter(const std::string & filename)
+      : FileHandler(filename.c_str(), std::ios_base::out | std::ios_base::trunc ) { }
 
-  void writeLineToFile(const string & line) {
+  void writeLineToFile(const std::string & line) {
     file << (line + "\n");
   }
   template<typename Type>
@@ -84,15 +81,15 @@ public:
     file << input;
     return *this;
   }
-  TextWriter & operator<<(ostream & (*fp)(ostream &)) {
+  TextWriter & operator<<(std::ostream & (*fp)(std::ostream &)) {
     file << fp;
     return *this;
   }
-  TextWriter & operator<<(ios & (*fp)(ios&)) {
+  TextWriter & operator<<(std::ios & (*fp)(std::ios &)) {
     file << fp;
     return *this;
   }
-  TextWriter & operator<<(ios_base & (*fp)(ios_base&)) {
+  TextWriter & operator<<(std::ios_base & (*fp)(std::ios_base&)) {
     file << fp;
     return *this;
   }

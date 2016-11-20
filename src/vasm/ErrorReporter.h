@@ -15,13 +15,11 @@
 #include <string>
 #include <list>
 
-using namespace std;
-
 class ErrorReporter {
-  list<string> listOfErrMsgs;
+  std::list<std::string> listOfErrMsgs;
 public:
-  void addErrorMsg(const string && err);
-  void addErrorMsg(const YYLTYPE & pos, const string && err);
+  void addErrorMsg(const std::string && err);
+  void addErrorMsg(const YYLTYPE & pos, const std::string && err);
   void addErrorMsg(const YYLTYPE & pos, const BasicException & e);
 
   static void printError(const YYLTYPE & pos, const BasicException & e);

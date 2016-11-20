@@ -12,9 +12,8 @@
 #include "Cpu.h"
 #include "FileHandler.h"
 #include "../include/masks.h"
-#include <vector>
 
-using namespace std;
+#include <vector>
 
 #define EXTRACT_REQUEST(x) (EXTRACT_HIGHER_HWORD_FROM_SWORD(x))
 #define EXTRACT_DEVICE(x)  (EXTRACT_LOWER__HWORD_FROM_SWORD(x))
@@ -31,7 +30,7 @@ public:
   const Cpu& getCpu(const uint32_t & num = 0) const;
 
   void singlePutToComponent(const uint32_t& numComp, const uint32_t& signal);
-  int singleGetFromComponent(const uint32_t& numComp);
+  int32_t singleGetFromComponent(const uint32_t& numComp);
 
 private:
   Cpu & cpu;
@@ -39,7 +38,7 @@ private:
   DoubleWord * mainMem;
   const uint32_t maxMem;
 
-  vector<Component *> components;
+  std::vector<Component *> components;
 
   void initMem();
 

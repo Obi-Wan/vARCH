@@ -8,8 +8,8 @@
 #include "RegAllocator.h"
 
 inline void
-RegAllocator::_findMax(const vector<const NodeType *> & nodes,
-    const vector<uint32_t> & degrees, SimlifyRecord & record)
+RegAllocator::_findMax(const std::vector<const NodeType *> & nodes,
+    const std::vector<uint32_t> & degrees, SimlifyRecord & record)
   const
 {
   for(size_t nodeNum = 0; nodeNum < nodes.size(); nodeNum++)
@@ -28,7 +28,7 @@ RegAllocator::_pushNode(const SimlifyRecord & record, InterferenceGraph & graph)
 {
   nodesStack.push_back(record);
 
-  const string &tempLbl = tempsMap.getLabel(record.uid);
+  const std::string &tempLbl = tempsMap.getLabel(record.uid);
   DebugPrintf(("Selected temp: %u\n  label: %s\n  degree: %u\n", record.uid,
       tempLbl.c_str(), record.degree));
 
@@ -48,8 +48,8 @@ RegAllocator::_simpleSimplify(const InterferenceGraph & interf)
     DebugPrintf(("Printed partial InterfGraph\n"));
 #endif
 
-    vector<const NodeType *> significantNodes, notSignificantNodes;
-    vector<uint32_t> significantDegrees, notSignificantDegrees;
+    std::vector<const NodeType *> significantNodes, notSignificantNodes;
+    std::vector<uint32_t> significantDegrees, notSignificantDegrees;
 
     for(nl_c_iterator nodeIt = workGraph.getListOfNodes().begin();
         nodeIt != workGraph.getListOfNodes().end(); nodeIt++)
@@ -96,8 +96,8 @@ RegAllocator::_coalesceSimplify(const InterferenceGraph & interf)
   InterferenceGraph workGraph(interf);
   for(; !workGraph.hasOnlyPrecolored();)
   {
-    vector<const NodeType *> highDegNodes, simplifyNodes, freezeNodes;
-    vector<uint32_t> highDegNodesDegs, simplifyNodesDegs, freezeNodesDegs;
+    std::vector<const NodeType *> highDegNodes, simplifyNodes, freezeNodes;
+    std::vector<uint32_t> highDegNodesDegs, simplifyNodesDegs, freezeNodesDegs;
 
 #ifdef DEBUG
     DebugPrintf(("Iteration of simplify. Graph Size: %lu\n",
@@ -236,13 +236,13 @@ inline void
 RegAllocator::_simpleSelect(const InterferenceGraph & interf)
 {
   // Registers run from 1 to 8, 0 is for Actual Spill
-  vector<bool> regs;
+  std::vector<bool> regs;
   for(; nodesStack.size(); )
   {
     regs.clear(); regs.resize(maxRegs, true);
     SimlifyRecord record = nodesStack.back(); nodesStack.pop_back();
 
-    const string &tempLbl = tempsMap.getLabel(record.uid);
+    const std::string &tempLbl = tempsMap.getLabel(record.uid);
     am_c_iterator succs = interf.getSuccs().find(interf.checkLabel(tempLbl,""));
 
     const NodeSetType & rels = succs->second;
@@ -322,29 +322,29 @@ RegAllocator::coalesceAllocateRegs(const InterferenceGraph & interf)
 void
 RegAllocator::printStack() const
 {
-  cout << "Stack of simplified nodes (number of registers " << maxRegs << "):"
-      << endl;
-  for(deque<SimlifyRecord>::const_reverse_iterator el = nodesStack.rbegin();
+  std::cout << "Stack of simplified nodes (number of registers " << maxRegs << "):"
+      << std::endl;
+  for(std::deque<SimlifyRecord>::const_reverse_iterator el = nodesStack.rbegin();
       el != nodesStack.rend(); ++el)
   {
-    cout << "Node: " << el->uid << "\n  label: " << tempsMap.getLabel(el->uid)
+    std::cout << "Node: " << el->uid << "\n  label: " << tempsMap.getLabel(el->uid)
         << "\n  degree: " << el->degree
-        << "\n  Potential Spill: " << boolalpha << el->isPotentialSpill << endl;
+        << "\n  Potential Spill: " << std::boolalpha << el->isPotentialSpill << std::endl;
   }
 }
 
 void
 RegAllocator::printAssigned() const
 {
-  cout << "Assigned regs to temps: \n";
+  std::cout << "Assigned regs to temps: \n";
   for(AssignedRegs::const_iterator el = assignedRegs.begin();
       el != assignedRegs.end(); el++)
   {
-    cout << "Node: " << tempsMap.getLabel(el->first) << ", reg: ";
+    std::cout << "Node: " << tempsMap.getLabel(el->first) << ", reg: ";
     if (el->second) {
-      cout << "R" << el->second << endl;
+      std::cout << "R" << el->second << std::endl;
     } else {
-      cout << "Actual Spill" << endl;
+      std::cout << "Actual Spill" << std::endl;
     }
   }
 }

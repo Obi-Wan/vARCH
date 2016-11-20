@@ -41,7 +41,7 @@ public:
 protected:
   const TempsMap & tempsMap;
 
-  deque<SimlifyRecord> nodesStack;
+  std::deque<SimlifyRecord> nodesStack;
 
   // Relation 1-to-1 to nodes in the list of given interference graph
   AssignedRegs assignedRegs;
@@ -55,8 +55,8 @@ protected:
 
   const uint32_t maxRegs;
 
-  void _findMax(const vector<const NodeType *> & nodes,
-      const vector<uint32_t> & degrees, SimlifyRecord & record) const;
+  void _findMax(const std::vector<const NodeType *> & nodes,
+      const std::vector<uint32_t> & degrees, SimlifyRecord & record) const;
   void _pushNode(const SimlifyRecord & record, InterferenceGraph & graph);
 
   void _simpleSelect(const InterferenceGraph & interf);

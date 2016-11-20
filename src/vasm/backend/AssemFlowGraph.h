@@ -13,13 +13,13 @@
 #include "../algorithms/TempsMap.h"
 
 class AssemFlowGraph : public FlowGraph<asm_statement *> {
-  typedef map<asm_statement *, const NodeFlowGraph<asm_statement *> * > StmtToNode;
+  typedef std::map<asm_statement *, const NodeFlowGraph<asm_statement *> * > StmtToNode;
 
   StmtToNode backReference;
 
   TempsMap & tempsMap;
 
-  string buildStmtLabel(const asm_statement * const stmt, const uint32_t & progr)
+  std::string buildStmtLabel(const asm_statement * const stmt, const uint32_t & progr)
     const;
 
   void _addNodesToGraph(asm_function & function);
@@ -28,7 +28,7 @@ class AssemFlowGraph : public FlowGraph<asm_statement *> {
 
   void _addToSet(UIDMultiSetType & nodeSet, const uint32_t &shiftedUID);
 
-  bool _moveInstr(const vector<asm_arg *> & args, UIDMultiSetType & nodeUses,
+  bool _moveInstr(const std::vector<asm_arg *> & args, UIDMultiSetType & nodeUses,
       UIDMultiSetType & nodeDefs);
   bool _argIsDefined(const int & instruction, const size_t & argNum,
       const TypeOfArgument & argType, const ModifierOfArgument & argMod) const;

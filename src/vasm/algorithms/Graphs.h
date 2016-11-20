@@ -23,8 +23,8 @@ public:
   typedef typename BaseGraph<DataType, NodeBaseType>::NodeType     NodeType;
   typedef typename BaseGraph<DataType, NodeBaseType>::NodeListType NodeListType;
   typedef typename BaseGraph<DataType, NodeBaseType>::NodeMapType  NodeMapType;
-  typedef class set<const NodeType *> NodeSetType;
-  typedef class map<const NodeType *, NodeSetType> ArcsMap;
+  typedef class std::set<const NodeType *> NodeSetType;
+  typedef class std::map<const NodeType *, NodeSetType> ArcsMap;
 
   typedef typename NodeSetType::iterator        ns_iterator;
   typedef typename NodeSetType::const_iterator  ns_c_iterator;
@@ -63,33 +63,33 @@ public:
 
   virtual ~Graph() { if (baseGraph && baseGraphIsPrivate) delete baseGraph; }
 
-  virtual NodeType * addNewNode(const string & _label, DataType _data);
-  virtual void removeNode(const string & _label);
+  virtual NodeType * addNewNode(const std::string & _label, DataType _data);
+  virtual void removeNode(const std::string & _label);
   virtual void removeNode(const NodeType * const node);
 
   virtual void clear();
 
-  void addDirectedArc(const string & _from, const string & _to);
+  void addDirectedArc(const std::string & _from, const std::string & _to);
   void addDirectedArc(const NodeType * const from, const NodeType * const to);
-  void delDirectedArc(const string & _from, const string & _to);
+  void delDirectedArc(const std::string & _from, const std::string & _to);
   void delDirectedArc(const NodeType * const from, const NodeType * const to);
 
-  void addUndirectedArc(const string & node1, const string & node2);
+  void addUndirectedArc(const std::string & node1, const std::string & node2);
   void addUndirectedArc(const NodeType * const n1, const NodeType * const n2);
 
-  void removeAllArcs(const string & node1);
+  void removeAllArcs(const std::string & node1);
   void removeAllArcs(const NodeType * const n1);
 
-  void coalesce(const string & final, const string & alias);
+  void coalesce(const std::string & final, const std::string & alias);
   void coalesce(const NodeType * const final, const NodeType * const alias);
 
   size_t inDegree(const NodeType * const node) const;
-  size_t inDegree(const string & _label) const;
+  size_t inDegree(const std::string & _label) const;
   size_t outDegree(const NodeType * const node) const;
-  size_t outDegree(const string & _label) const;
+  size_t outDegree(const std::string & _label) const;
 
-  void makeVisitList(deque<const NodeType *> & list,
-      map<const NodeType *, bool> & visited,
+  void makeVisitList(std::deque<const NodeType *> & list,
+      std::map<const NodeType *, bool> & visited,
       const NodeType * const rootNode = NULL);
 
   const ArcsMap & getPreds() const throw() { return preds; }
@@ -108,13 +108,13 @@ public:
   /// Wrappers to BaseGraph
   //////////////////////////////////////////////////////////////////////////////
 
-  void checkNodePtr(const NodeType * const node, const string & errorMessage)
+  void checkNodePtr(const NodeType * const node, const std::string & errorMessage)
     const
   { baseGraph->checkNodePtr(node, errorMessage); }
 
-  NodeType * checkLabel(const string & _label, const string & _errorMsg)
+  NodeType * checkLabel(const std::string & _label, const std::string & _errorMsg)
   { return baseGraph->checkLabel(_label, _errorMsg); }
-  const NodeType * checkLabel(const string & _label, const string & _errorMsg)
+  const NodeType * checkLabel(const std::string & _label, const std::string & _errorMsg)
       const
   { return baseGraph->checkLabel(_label, _errorMsg); }
 
@@ -331,7 +331,7 @@ Graph<DataType, NodeBaseType>::Graph(const Graph<DataType, NodeBaseType> & old,
   for(am_c_iterator predIt = old.preds.begin(); predIt != old.preds.end();
       predIt++)
   {
-    const string & fromLabel = predIt->first->label;
+    const std::string & fromLabel = predIt->first->label;
     const NodeSetType & toSet = predIt->second;
     for(ns_c_iterator succIt = toSet.begin(); succIt != toSet.end(); succIt++)
     {
@@ -362,7 +362,7 @@ Graph<DataType, NodeBaseType>::Graph(BaseGraph<DataType, NodeBaseType> * old,
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE typename Graph<DataType, NodeBaseType>::NodeType *
-Graph<DataType, NodeBaseType>::addNewNode(const string & _label,
+Graph<DataType, NodeBaseType>::addNewNode(const std::string & _label,
     DataType _data)
 {
   NodeType * node = NULL;
@@ -398,9 +398,9 @@ Graph<DataType, NodeBaseType>::removeNode(const NodeType * const node)
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE void
-Graph<DataType, NodeBaseType>::removeNode(const string & _label)
+Graph<DataType, NodeBaseType>::removeNode(const std::string & _label)
 {
-  const string errorMsg = "Trying to remove a node that is not in the graph";
+  const std::string errorMsg = "Trying to remove a node that is not in the graph";
   const NodeType * const node = checkLabel(_label, errorMsg);
 
   if (baseGraphIsPrivate) {
@@ -423,11 +423,11 @@ Graph<DataType, NodeBaseType>::clear()
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE void
-Graph<DataType, NodeBaseType>::addDirectedArc(const string & _from,
-    const string & _to)
+Graph<DataType, NodeBaseType>::addDirectedArc(const std::string & _from,
+    const std::string & _to)
 {
-  const string errorMsgF = "Trying to add an arc from a node not in the graph";
-  const string errorMsgT = "Trying to add an arc to a node not in the graph";
+  const std::string errorMsgF = "Trying to add an arc from a node not in the graph";
+  const std::string errorMsgT = "Trying to add an arc to a node not in the graph";
 
   _addDirectedArc(
       this->checkLabel(_from, errorMsgF),
@@ -440,8 +440,8 @@ INLINE void
 Graph<DataType, NodeBaseType>::addDirectedArc(const NodeType * const from,
     const NodeType * const to)
 {
-  const string errorMsgF = "Trying to add an arc from a node not in the graph";
-  const string errorMsgT = "Trying to add an arc to a node not in the graph";
+  const std::string errorMsgF = "Trying to add an arc from a node not in the graph";
+  const std::string errorMsgT = "Trying to add an arc to a node not in the graph";
 
   checkNodePtr(from, errorMsgF);
   checkNodePtr(to, errorMsgT);
@@ -451,11 +451,11 @@ Graph<DataType, NodeBaseType>::addDirectedArc(const NodeType * const from,
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE void
-Graph<DataType, NodeBaseType>::delDirectedArc(const string & _from,
-    const string & _to)
+Graph<DataType, NodeBaseType>::delDirectedArc(const std::string & _from,
+    const std::string & _to)
 {
-  const string errorMsgF = "Trying to remove an arc from a node not in the graph";
-  const string errorMsgT = "Trying to remove an arc to a node not in the graph";
+  const std::string errorMsgF = "Trying to remove an arc from a node not in the graph";
+  const std::string errorMsgT = "Trying to remove an arc to a node not in the graph";
 
   _delDirectedArc(
       this->checkLabel(_from, errorMsgF),
@@ -468,8 +468,8 @@ INLINE void
 Graph<DataType, NodeBaseType>::delDirectedArc(const NodeType * const from,
     const NodeType * const to)
 {
-  const string errorMsgF = "Trying to remove an arc from a node not in the graph";
-  const string errorMsgT = "Trying to remove an arc to a node not in the graph";
+  const std::string errorMsgF = "Trying to remove an arc from a node not in the graph";
+  const std::string errorMsgT = "Trying to remove an arc to a node not in the graph";
 
   checkNodePtr(from, errorMsgF);
   checkNodePtr(to, errorMsgT);
@@ -479,10 +479,10 @@ Graph<DataType, NodeBaseType>::delDirectedArc(const NodeType * const from,
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE void
-Graph<DataType, NodeBaseType>::addUndirectedArc(const string & node1,
-    const string & node2)
+Graph<DataType, NodeBaseType>::addUndirectedArc(const std::string & node1,
+    const std::string & node2)
 {
-  const string errorMsg = "Trying to add an arc from (and to) a node not in the"
+  const std::string errorMsg = "Trying to add an arc from (and to) a node not in the"
       " graph";
 
   _addUndirectedArc( checkLabel(node1, errorMsg), checkLabel(node2, errorMsg) );
@@ -493,7 +493,7 @@ INLINE void
 Graph<DataType, NodeBaseType>::addUndirectedArc(const NodeType * const node1,
     const NodeType * const node2)
 {
-  const string errorMsg = "Trying to add an arc from (and to) a node not in the"
+  const std::string errorMsg = "Trying to add an arc from (and to) a node not in the"
       " graph";
 
   checkNodePtr(node1, errorMsg);
@@ -504,9 +504,9 @@ Graph<DataType, NodeBaseType>::addUndirectedArc(const NodeType * const node1,
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE void
-Graph<DataType, NodeBaseType>::removeAllArcs(const string & node1)
+Graph<DataType, NodeBaseType>::removeAllArcs(const std::string & node1)
 {
-  const string errorMsg = "Trying to remove arcs from (and to) a node not in "
+  const std::string errorMsg = "Trying to remove arcs from (and to) a node not in "
       "the graph";
 
   _removeAllArcs(checkLabel(node1, errorMsg));
@@ -516,7 +516,7 @@ template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE void
 Graph<DataType, NodeBaseType>::removeAllArcs(const NodeType * const node1)
 {
-  const string errorMsg = "Trying to remove arcs from (and to) a node not in "
+  const std::string errorMsg = "Trying to remove arcs from (and to) a node not in "
       "the graph";
 
   baseGraph->checkNodePtr(node1, errorMsg);
@@ -525,10 +525,10 @@ Graph<DataType, NodeBaseType>::removeAllArcs(const NodeType * const node1)
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE void
-Graph<DataType, NodeBaseType>::coalesce(const string & final,
-    const string & alias)
+Graph<DataType, NodeBaseType>::coalesce(const std::string & final,
+    const std::string & alias)
 {
-  const string errorMsg = "Trying to coalesce nodes not in the graph";
+  const std::string errorMsg = "Trying to coalesce nodes not in the graph";
 
  this->_coalesce(
      this->checkLabel(final, errorMsg),
@@ -541,7 +541,7 @@ INLINE void
 Graph<DataType, NodeBaseType>::coalesce(const NodeType * const final,
     const NodeType * const alias)
 {
-  const string errorMsg = "Trying to coalesce nodes not in the graph";
+  const std::string errorMsg = "Trying to coalesce nodes not in the graph";
 
   checkNodePtr(final, errorMsg);
   checkNodePtr(alias, errorMsg);
@@ -553,7 +553,7 @@ template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE size_t
 Graph<DataType, NodeBaseType>::inDegree(const NodeType * const node) const
 {
-  const string errorMsg = "Trying to get the In Degree of a node not in the "
+  const std::string errorMsg = "Trying to get the In Degree of a node not in the "
       "graph";
 
   checkNodePtr(node, errorMsg);
@@ -562,9 +562,9 @@ Graph<DataType, NodeBaseType>::inDegree(const NodeType * const node) const
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE size_t
-Graph<DataType, NodeBaseType>::inDegree(const string & _label) const
+Graph<DataType, NodeBaseType>::inDegree(const std::string & _label) const
 {
-  const string errorMsg = "Trying to get the In Degree of a node not in the "
+  const std::string errorMsg = "Trying to get the In Degree of a node not in the "
       "graph";
 
   return _inDegree( checkLabel( _label, errorMsg ) );
@@ -574,7 +574,7 @@ template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE size_t
 Graph<DataType, NodeBaseType>::outDegree(const NodeType * const node) const
 {
-  const string errorMsg = "Trying to get the Out Degree of a node not in the "
+  const std::string errorMsg = "Trying to get the Out Degree of a node not in the "
       "graph";
 
   checkNodePtr(node, errorMsg);
@@ -583,9 +583,9 @@ Graph<DataType, NodeBaseType>::outDegree(const NodeType * const node) const
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE size_t
-Graph<DataType, NodeBaseType>::outDegree(const string & _label) const
+Graph<DataType, NodeBaseType>::outDegree(const std::string & _label) const
 {
-  const string errorMsg = "Trying to get the Out Degree of a node not in the "
+  const std::string errorMsg = "Trying to get the Out Degree of a node not in the "
       "graph";
 
   return _outDegree( checkLabel( _label, errorMsg ) );
@@ -594,7 +594,7 @@ Graph<DataType, NodeBaseType>::outDegree(const string & _label) const
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 INLINE void
 Graph<DataType, NodeBaseType>::makeVisitList(
-    deque<const NodeType *> & visitList, map<const NodeType *, bool> & visited,
+    std::deque<const NodeType *> & visitList, std::map<const NodeType *, bool> & visited,
     const NodeType * const rootNode)
 {
   const NodeType * node = rootNode;
@@ -603,7 +603,7 @@ Graph<DataType, NodeBaseType>::makeVisitList(
       node = &*getListOfNodes().begin();
     }
 
-    visited.insert(typename map<const NodeType *, bool>::value_type(node,true));
+    visited.insert(typename std::map<const NodeType *, bool>::value_type(node, true));
 
     const NodeSetType & succsSet = getSuccs(node);
     for(ns_iterator succ = succsSet.begin(); succ != succsSet.end();
@@ -626,7 +626,7 @@ Graph<DataType, NodeBaseType>::getPreds(const NodeType * const node) const
   if (predsIter != preds.end()) {
     return predsIter->second;
   } else {
-    string errorMsg = "ERROR in function ";
+    std::string errorMsg = "ERROR in function ";
     errorMsg.append(__PRETTY_FUNCTION__);
     errorMsg.append(": Couldn't find node (label ");
     errorMsg.append(node->label);
@@ -643,7 +643,7 @@ Graph<DataType, NodeBaseType>::getSuccs(const NodeType * const node) const
   if (succsIter != succs.end()) {
     return succsIter->second;
   } else {
-    string errorMsg = "ERROR in function ";
+    std::string errorMsg = "ERROR in function ";
     errorMsg.append(__PRETTY_FUNCTION__);
     errorMsg.append(": Couldn't find node (label ");
     errorMsg.append(node->label);
@@ -664,7 +664,7 @@ Graph<DataType, NodeBaseType>::areAdjacent(const NodeType * const n1,
     return (predsIter->second.count(n2) != 0)
         || (succsIter->second.count(n2) != 0);
   } else {
-    string errorMsg = "ERROR in function ";
+    std::string errorMsg = "ERROR in function ";
     errorMsg.append(__PRETTY_FUNCTION__);
     errorMsg.append(": Couldn't find node (label ");
     errorMsg.append(n1->label);

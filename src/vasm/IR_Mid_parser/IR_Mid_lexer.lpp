@@ -34,8 +34,6 @@ ADDR_REG  r?\(([RA][1-8]|[U]?SP)\)
 
 #include <stack>
 
-using namespace std;
-
 #define MAX_STR_CONST 256
 
 char string_buf[MAX_STR_CONST];
@@ -53,9 +51,9 @@ struct FileBuffer {
   FILE * infile;                /* current file descriptor */
 };
 
-stack<FileBuffer> includesStack;
+std::stack<FileBuffer> includesStack;
 
-const vector<string> * includeDirs = NULL;
+const std::vector<std::string> * includeDirs = NULL;
 
 IncludesTree * includesTree = NULL;
 
@@ -293,7 +291,7 @@ shared    return KEYWORD_SHARED;
 %%
 
 void
-setIncludeDirs(const vector<string> * _dirs)
+setIncludeDirs(const std::vector<std::string> * _dirs)
 {
   includeDirs = _dirs;
 }
@@ -309,7 +307,7 @@ openFile(const char * filename, const char *& path)
   path = ".";
 
   for(size_t dir = 0; !infile && dir < includeDirs->size(); dir++) {
-    const string & inclDir = (*includeDirs)[dir];
+    const std::string & inclDir = (*includeDirs)[dir];
     infile = fopen( ( inclDir + '/' + filename).c_str(), "r");
     path = inclDir.c_str();
   }

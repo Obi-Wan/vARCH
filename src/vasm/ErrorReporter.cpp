@@ -12,24 +12,24 @@
 
 
 void
-ErrorReporter::addErrorMsg(const string && msg)
+ErrorReporter::addErrorMsg(const std::string && msg)
 {
   this->listOfErrMsgs.push_back(move(msg));
 }
 
 void
-ErrorReporter::addErrorMsg(const YYLTYPE & pos, const string && err)
+ErrorReporter::addErrorMsg(const YYLTYPE & pos, const std::string && err)
 {
-  stringstream stream;
+  std::stringstream stream;
   stream << "ERROR:" << pos.fileNode->printString() << " at Line ";
   stream.width(4);
   stream << pos.first_line;
   stream.width(0);
   if (pos.fileNode)
   {
-    stream << endl << pos.fileNode->printStringStackIncludes() << endl;
+    stream << std::endl << pos.fileNode->printStringStackIncludes() << std::endl;
   }
-  stream << "--> " << err << endl;
+  stream << "--> " << err << std::endl;
 
   this->addErrorMsg(stream.str());
 }
@@ -37,13 +37,13 @@ ErrorReporter::addErrorMsg(const YYLTYPE & pos, const string && err)
 void
 ErrorReporter::addErrorMsg(const YYLTYPE & pos, const BasicException & e)
 {
-  stringstream stream;
+  std::stringstream stream;
   stream << "ERROR:" << pos.fileNode->printString() << " at Line ";
   stream.width(4);
   stream << pos.first_line;
   stream.width(0);
-  stream << endl << pos.fileNode->printStringStackIncludes() << endl;
-  stream << "--> " << e.what() << endl;
+  stream << std::endl << pos.fileNode->printStringStackIncludes() << std::endl;
+  stream << "--> " << e.what() << std::endl;
 
   this->addErrorMsg(stream.str());
 }
@@ -51,9 +51,9 @@ ErrorReporter::addErrorMsg(const YYLTYPE & pos, const BasicException & e)
 void
 ErrorReporter::throwError(BasicException && e)
 {
-  stringstream stream;
-  stream << endl;
-  for(string & str : listOfErrMsgs) { stream << str << endl; }
+  std::stringstream stream;
+  stream << std::endl;
+  for(std::string & str : listOfErrMsgs) { stream << str << std::endl; }
   e.appendMessage(stream.str());
 
   throw e;

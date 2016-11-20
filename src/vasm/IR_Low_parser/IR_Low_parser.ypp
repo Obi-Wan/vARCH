@@ -40,16 +40,16 @@
   class ASTL_FunctionProto * functionProto;
   class ASTL_Param * function_parameter;
 
-  list<ASTL_Stmt *> * listOfStatements;
-  list<ASTL_Param *> * listOfParameters;
+  std::list<ASTL_Stmt *> * listOfStatements;
+  std::list<ASTL_Param *> * listOfParameters;
 
-  list<string> * listOfIDs;
+  std::list<std::string> * listOfIDs;
 }
 
 %code provides {
 int yyparse(ASTL_Tree & ast_tree, AsmPreprocessor & defines);
 
-void setIncludeDirs(const vector<string> * _dirs);
+void setIncludeDirs(const std::vector<std::string> * _dirs);
 bool openFirstFile(const char * const _filename);
 bool openIncludeFile(const char * const _filename, const YYLTYPE * loc);
 bool closeIncludeFile(YYLTYPE * loc);
@@ -150,7 +150,7 @@ globals
       : KEYWORD_GLOBAL blank_lines data_stmt_list KEYWORD_END
                   { $$ = $3; }
       | KEYWORD_GLOBAL blank_lines KEYWORD_END
-                  { $$ = new list<ASTL_Stmt *>(); }
+                  { $$ = new std::list<ASTL_Stmt *>(); }
       ;
 
 blank_lines
@@ -165,7 +165,7 @@ type_qualifier
 
 
 data_stmt_list
-      : data_stmt                 { $$ = new list<ASTL_Stmt *>();
+      : data_stmt                 { $$ = new std::list<ASTL_Stmt *>();
                                     $$->push_back( $1 ); }
       | data_stmt_list data_stmt  { $$ = $1; $$->push_back( $2 ); }
       ;
@@ -204,14 +204,14 @@ function_init_params
 
 function_init
       : KEYWORD_FUNCTION STRING blank_lines
-                  { $$ = new ASTL_FunctionProto( yylloc, move(string($2.text, $2.len)) );
-                    defines.addDefine("__FUNCTION__", move(string($2.text, $2.len)) ); }
+                  { $$ = new ASTL_FunctionProto( yylloc, std::move(std::string($2.text, $2.len)) );
+                    defines.addDefine("__FUNCTION__", std::move(std::string($2.text, $2.len)) ); }
       ;
 
 function_parameter
       : KEYWORD_PARAM REGISTER REGISTER blank_lines
-                  { $$ = new ASTL_Param( yylloc, move(string($2.text, $2.len)),
-                                         move(string($3.text, $3.len)) ); }
+                  { $$ = new ASTL_Param( yylloc, std::move(std::string($2.text, $2.len)),
+                                         std::move(std::string($3.text, $3.len)) ); }
       ;
 
 
@@ -219,7 +219,7 @@ locals
       : KEYWORD_LOCAL blank_lines data_stmt_list KEYWORD_END blank_lines
                   { $$ = $3; }
       | KEYWORD_LOCAL blank_lines KEYWORD_END blank_lines
-                  { $$ = new list<ASTL_Stmt *>(); }
+                  { $$ = new std::list<ASTL_Stmt *>(); }
       ;
 
 
@@ -228,11 +228,11 @@ data_stmt
                   { $$ = $1; }
       | type NUMBER blank_lines
                   { $$ = new ASTL_VarDeclNumber(yylloc, $1,
-                                                 new ASTL_ArgNumber( yylloc, move(string($2.text, $2.len)) ) ); }
+                                                 new ASTL_ArgNumber( yylloc, std::move(std::string($2.text, $2.len)) ) ); }
       | KEYWORD_STRING STRING blank_lines
-                  { $$ = new ASTL_VarDeclString(yylloc, move(string($2.text, $2.len)) ); }
+                  { $$ = new ASTL_VarDeclString(yylloc, std::move(std::string($2.text, $2.len)) ); }
       | KEYWORD_REAL NUMBER blank_lines
-                  { $$ = new ASTL_VarDeclFloat(yylloc, new ASTL_ArgNumber( yylloc, move(string($2.text, $2.len)) ) ); }
+                  { $$ = new ASTL_VarDeclFloat(yylloc, new ASTL_ArgNumber( yylloc, std::move(std::string($2.text, $2.len)) ) ); }
       ;
 
 stmt
@@ -244,10 +244,10 @@ label_def
       : label_def type_qualifier
                   { $$ = $1; $$->addQualifier($2); }
       | label_def KEYWORD_SIZE NUMBER
-                  { $$ = $1; $1->size = string($3.text, $3.len); }
+                  { $$ = $1; $1->size = std::string($3.text, $3.len); }
       | label_def KEYWORD_NUM NUMBER
-                  { $$ = $1; $1->num = string($3.text, $3.len); }
-      | DEF_LABEL { $$ = new ASTL_StmtLabel( yylloc, move(string($1.text, $1.len)) ); }
+                  { $$ = $1; $1->num = std::string($3.text, $3.len); }
+      | DEF_LABEL { $$ = new ASTL_StmtLabel( yylloc, std::move(std::string($1.text, $1.len)) ); }
       ;
 
 instruction_stmt
@@ -263,13 +263,13 @@ type
       ;
 
 arg
-      : NUMBER    { $$ = new ASTL_ArgNumber( yylloc, move(string($1.text, $1.len)) ); }
+      : NUMBER    { $$ = new ASTL_ArgNumber( yylloc, std::move(std::string($1.text, $1.len)) ); }
       | '(' NUMBER ')'
-                  { $$ = new ASTL_ArgNumber( yylloc, move(string($2.text, $2.len)), DIRECT ); }
+                  { $$ = new ASTL_ArgNumber( yylloc, std::move(std::string($2.text, $2.len)), DIRECT ); }
       | REF_AT_LABEL
-                  { $$ = new ASTL_ArgLabel( yylloc, move(string($1.text, $1.len)), IMMED ); }
+                  { $$ = new ASTL_ArgLabel( yylloc, std::move(std::string($1.text, $1.len)), IMMED ); }
       | REF_TO_LABEL
-                  { $$ = new ASTL_ArgLabel( yylloc, move(string($1.text, $1.len)), DIRECT ); }
+                  { $$ = new ASTL_ArgLabel( yylloc, std::move(std::string($1.text, $1.len)), DIRECT ); }
       | register_mod
                   { $$ = $1; }
       | arg ':' type
@@ -292,38 +292,38 @@ register_addressing
                   { $$ = $3; $$->kind = MEM_INDIR; }
       | NUMBER '(' register ')'
                   { $$ = $3; $$->kind = DISPLACED;
-                    $$->displ = new ASTL_ArgNumber( yylloc, move(string($1.text, $1.len)) ); }
+                    $$->displ = new ASTL_ArgNumber( yylloc, std::move(std::string($1.text, $1.len)) ); }
       | '(' register ')' '[' register ']'
                   { $$ = $2; $$->kind = INDEXED;
                     $$->index = $5; $5->kind = REG_INDIR; }
       | NUMBER '(' register ')' '[' register ']'
                   { $$ = $3; $$->kind = INDX_DISP;
                     $$->index = $6; $6->kind = REG_INDIR;
-                    $$->displ = new ASTL_ArgNumber( yylloc, move(string($1.text, $1.len)) ); }
+                    $$->displ = new ASTL_ArgNumber( yylloc, std::move(std::string($1.text, $1.len)) ); }
       ;
 
 register
-      : REGISTER  { $$ = new ASTL_ArgRegister( yylloc, move(string($1.text, $1.len)) ); }
+      : REGISTER  { $$ = new ASTL_ArgRegister( yylloc, std::move(std::string($1.text, $1.len)) ); }
       | SPECIAL_REGISTER
                   { $$ = new ASTL_ArgSpecialRegister( yylloc, $1 ); }
       ;
 
 define
       : PREPROC_DEFINE ID STRING
-                  { defines.addDefine(move(string($2.text, $2.len)), move(string($3.text, $3.len))); }
+                  { defines.addDefine(std::move(std::string($2.text, $2.len)), std::move(std::string($3.text, $3.len))); }
       | PREPROC_DEFINE ID '(' list_ids ')' STRING
-                  { defines.addDefine(move(string($2.text, $2.len)), move(string($6.text, $6.len)), $4); }
+                  { defines.addDefine(std::move(std::string($2.text, $2.len)), std::move(std::string($6.text, $6.len)), $4); }
       ;
 
 list_ids
       : list_ids ',' ID
-                  { $$ = $1; $$->push_back(move(string($3.text, $3.len))); }
-      | ID        { $$ = new list<string>(); $$->push_back(move(string($1.text, $1.len))); }
+                  { $$ = $1; $$->push_back(std::move(std::string($3.text, $3.len))); }
+      | ID        { $$ = new std::list<std::string>(); $$->push_back(std::move(std::string($1.text, $1.len))); }
       ;
 
 undefine
       : PREPROC_UNDEFINE ID
-                  { defines.delDefine(move(string($2.text, $2.len))); }
+                  { defines.delDefine(std::move(std::string($2.text, $2.len))); }
       ;
 
 %%

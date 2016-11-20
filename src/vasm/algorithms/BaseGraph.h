@@ -12,8 +12,6 @@
 #include <list>
 #include <string>
 
-using namespace std;
-
 #include "macros.h"
 #include "exceptions.h"
 
@@ -22,7 +20,7 @@ class NodeGraph {
 public:
   DataType data;
 
-  string label;
+  std::string label;
 
   bool operator==(const NodeGraph<DataType> & other) const throw()
   {
@@ -35,8 +33,8 @@ class BaseGraph {
 public:
   typedef class NodeBaseType<DataType> NodeType;
 
-  typedef class list<NodeType>                            NodeListType;
-  typedef class map<const string, const NodeType * const> NodeMapType;
+  typedef class std::list<NodeType>                            NodeListType;
+  typedef class std::map<const std::string, const NodeType * const> NodeMapType;
 
   typedef typename NodeListType::iterator       nl_iterator;
   typedef typename NodeListType::const_iterator nl_c_iterator;
@@ -49,10 +47,10 @@ protected:
   NodeMapType mapOfNodes;
 
 public:
-  void checkNodePtr(const NodeType * const node, const string & errorMessage)
+  void checkNodePtr(const NodeType * const node, const std::string & errorMessage)
     const;
 
-  NodeType * _addNewNode(const string & _label, DataType _data);
+  NodeType * _addNewNode(const std::string & _label, DataType _data);
   void _removeNode(const NodeType * const node);
 
 public:
@@ -61,8 +59,8 @@ public:
 
   void clear();
 
-  NodeType * checkLabel(const string & _label, const string & _errorMsg);
-  const NodeType * checkLabel(const string & _label, const string & _errorMsg)
+  NodeType * checkLabel(const std::string & _label, const std::string & _errorMsg);
+  const NodeType * checkLabel(const std::string & _label, const std::string & _errorMsg)
       const;
 
   const NodeListType & getListOfNodes() const throw() { return listOfNodes; }
@@ -78,7 +76,7 @@ public:
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 inline void
 BaseGraph<DataType, NodeBaseType>::checkNodePtr(const NodeType * const node,
-    const string & errorMessage)
+    const std::string & errorMessage)
   const
 {
   if (!node) { throw WrongArgumentException("Null pointer as node pointer"); }
@@ -90,7 +88,7 @@ BaseGraph<DataType, NodeBaseType>::checkNodePtr(const NodeType * const node,
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 inline typename BaseGraph<DataType, NodeBaseType>::NodeType *
-BaseGraph<DataType, NodeBaseType>::_addNewNode(const string & _label,
+BaseGraph<DataType, NodeBaseType>::_addNewNode(const std::string & _label,
     DataType _data)
 {
   listOfNodes.push_back(NodeType());
@@ -127,8 +125,8 @@ BaseGraph<DataType, NodeBaseType>::_removeNode(const NodeType * const node)
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 inline const typename BaseGraph<DataType, NodeBaseType>::NodeType *
-BaseGraph<DataType, NodeBaseType>::checkLabel(const string & _label,
-    const string & errorMessage)
+BaseGraph<DataType, NodeBaseType>::checkLabel(const std::string & _label,
+    const std::string & errorMessage)
   const
 {
   nm_c_iterator nodeIter = mapOfNodes.find(_label);
@@ -143,8 +141,8 @@ BaseGraph<DataType, NodeBaseType>::checkLabel(const string & _label,
 
 template<typename DataType, template<typename NodeDataType> class NodeBaseType>
 inline typename BaseGraph<DataType, NodeBaseType>::NodeType *
-BaseGraph<DataType, NodeBaseType>::checkLabel(const string & _label,
-    const string & errorMessage)
+BaseGraph<DataType, NodeBaseType>::checkLabel(const std::string & _label,
+    const std::string & errorMessage)
 {
   nm_iterator nodeIter = mapOfNodes.find(_label);
 

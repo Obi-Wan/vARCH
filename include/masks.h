@@ -38,11 +38,12 @@ inline Type DEAL_HWORD_FROM_BWORDS(pointer & x)
   return temp;
 }
 
-// Same as macro, but with perfectly defined behavior
-//
-//#define DEAL_SWORD_FROM_BWORDS(x) \
-//    (((int32_t)(*x++) & BWORD) + (((int32_t)(*x++) & BWORD) << 8) \
-//    + (((int32_t)(*x++) & BWORD) << 16) + (((int32_t)(*x++) & BWORD) << 24))
+/* Same as macro, but with perfectly defined behavior
+ *
+ *#define DEAL_SWORD_FROM_BWORDS(x) \
+ *    (((int32_t)(*x++) & BWORD) + (((int32_t)(*x++) & BWORD) << 8) \
+ *    + (((int32_t)(*x++) & BWORD) << 16) + (((int32_t)(*x++) & BWORD) << 24))
+ */
 template<typename Type = int32_t, typename pointer>
 inline Type DEAL_SWORD_FROM_BWORDS(pointer & x)
 {

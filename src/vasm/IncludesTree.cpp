@@ -59,10 +59,10 @@ IncludesNode::printStderr() const
   fprintf( stderr, "  in file '%s/%s'\n", getPath(), getName() );
 }
 
-string
+std::string
 IncludesNode::printString() const
 {
-  stringstream stream;
+  std::stringstream stream;
   stream << "  in file: '" << getPath() << "/" << getName() << "'";
   return stream.str();
 }
@@ -80,10 +80,10 @@ IncludesNode::printStderrStackIncludes() const
   }
 }
 
-string
+std::string
 IncludesNode::printStringStackIncludes() const
 {
-  stringstream stream;
+  std::stringstream stream;
   YYLTYPE includedPos = this->getInclusionPosition();
   for(IncludesNode * prnt = this->getParent(); prnt;
       prnt = prnt->getParent())

@@ -11,16 +11,13 @@
 #include "IR/IR_LowLevel_Statements.h"
 #include "algorithms/Labels.h"
 
-#include <deque>
 #include <list>
 
-using namespace std;
-
-typedef list<asm_statement *>         ListOfStmts;
-typedef vector<asm_data_statement *>  ListOfDataStmts;
+typedef std::list<asm_statement *>         ListOfStmts;
+typedef std::vector<asm_data_statement *>  ListOfDataStmts;
 
 struct asm_function {
-  const string name;
+  const std::string name;
   size_t functionOffset;
 
   YYLTYPE position;
@@ -30,12 +27,12 @@ struct asm_function {
   ListOfParams parameters;
 
   TableOfSymbols localSymbols;
-  list<ArgLabelRecord *> refs;
+  std::list<ArgLabelRecord *> refs;
 
-  asm_function(const YYLTYPE& pos, const string & _name)
+  asm_function(const YYLTYPE& pos, const std::string & _name)
     : name(_name), functionOffset(0), position(pos)
   { }
-  asm_function(const YYLTYPE& pos, const string && _name)
+  asm_function(const YYLTYPE& pos, const std::string && _name)
     : name(move(_name)), functionOffset(0), position(pos)
   { }
   ~asm_function();
@@ -45,10 +42,10 @@ struct asm_function {
   void checkAndAddLabel(asm_statement * stmt);
 
   void addStmt(asm_statement * stmt) { if (stmt) stmts.push_back(stmt); }
-  void addStmts(list<asm_statement *> && stmts);
+  void addStmts(std::list<asm_statement *> && stmts);
 
   void addStackLocal(asm_data_statement * stmt) { if (stmt) stackLocals.push_back(stmt); }
-  void addStackLocals(list<asm_data_statement *> && locs);
+  void addStackLocals(std::list<asm_data_statement *> && locs);
   void addParameter(asm_function_param * p) { if (p) parameters.push_back(p); }
 
   size_t getInstrSize() const;
