@@ -21,13 +21,14 @@
 class Chipset {
 public:
   Chipset(const uint32_t & _maxMem, DoubleWord * _mainMem);
-  virtual ~Chipset();
+  virtual ~Chipset() = default;
 
   void startClock();
 
-  void addComponent(Component *);
+  void addComponent(Component* comp) { components.push_back(comp); }
+
   //  void addCpu(Cpu &);
-  const Cpu & getCpu(const uint32_t & num = 0) const;
+  const Cpu & getCpu(const uint32_t & num = 0) const { return cpu; }
 
   void singlePutToComponent(const uint32_t & numComp, const uint32_t & signal);
   int32_t singleGetFromComponent(const uint32_t & numComp);

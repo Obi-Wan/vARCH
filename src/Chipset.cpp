@@ -25,10 +25,6 @@ Chipset::Chipset(const uint32_t& _maxMem, DoubleWord * _mainMem)
   components.push_back( new CharTerminal() );
 }
 
-//Chipset::Chipset(const Chipset& orig) { }
-
-Chipset::~Chipset() { }
-
 inline Bloat
 Chipset::loadBiosFromFile(const char * file)
 {
@@ -93,25 +89,6 @@ Chipset::startClock()
 
   DebugPrintf(("Exiting\n"));
   printf("\nExecution time (in pseudo-microseconds): %u\n\n", timeOfExecution);
-}
-
-
-void
-Chipset::addComponent(Component* comp)
-{
-  components.push_back(comp);
-}
-
-//void
-//Chipset::addCpu(Cpu & _cpu) {
-//  cpu = _cpu;
-//}
-
-const Cpu &
-Chipset::getCpu(const uint32_t & num) const
-{
-  /* for now num is just an API placeholder */
-  return cpu;
 }
 
 void
