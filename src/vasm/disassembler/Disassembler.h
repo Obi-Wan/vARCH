@@ -56,7 +56,7 @@ class Disassembler {
       const int8_t * const endIt);
   asm_arg * decodeArgument(const TypeOfArgument & p_arg_type,
       const ScaleOfArgument & p_arg_scale, const ArgumentValue & arg);
-  void decodeInstruction(const int8_t *& data, int32_t & instr,
+  void decodeInstruction(const int8_t *& data, uint32_t & instr,
       std::vector<TypeOfArgument> & type_args, std::vector<ScaleOfArgument> & scale_args);
 public:
 //  Disassembler();

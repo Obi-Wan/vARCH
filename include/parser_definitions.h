@@ -16,7 +16,7 @@
 #include <map>
 #include <sstream>
 
-template<typename NameType = std::string, typename ValueType = int32_t>
+template<typename NameType = std::string, typename ValueType = uint32_t>
 class DoubleCorrelationMap {
 protected:
   typedef std::map<NameType, ValueType> NameToValue;
@@ -25,7 +25,7 @@ protected:
   NameToValue nameToValue;
   ValueToName valueToName;
 
-  int32_t currValue;
+  uint32_t currValue;
 
   const std::string errorMsgName;
   const std::string errorMsgValue;
@@ -55,7 +55,7 @@ public:
 
   const ValueType & getItem(const NameType & name) const
   {
-    typename NameToValue::const_iterator value = nameToValue.find(name);
+    auto value = nameToValue.find(name);
     if (value == nameToValue.end()) {
       this->throwErrorName(name);
     }
@@ -63,7 +63,7 @@ public:
   }
   const NameType & getItem(const ValueType & value) const
   {
-    typename ValueToName::const_iterator name = valueToName.find(value);
+    auto name = valueToName.find(value);
     if (name == valueToName.end()) {
       this->throwErrorValue(value);
     }
@@ -77,11 +77,11 @@ public:
     : DoubleCorrelationMap(0, "No instruction called: ",
         "No such instruction value: ")
   {
-    assignNew("SLEEP",N_ARGS_ZERO);
+    assignNew("SLEEP", N_ARGS_ZERO);
     assignNew("PUSHA");
     assignNew("POPA");
     assignNew("RET");
-    assignNew("RETEX",N_ARGS_ZERO + SYSTEM);
+    assignNew("RETEX", N_ARGS_ZERO + SYSTEM);
     assignNew("REBOOT");
     assignNew("HALT");
 
@@ -151,9 +151,9 @@ public:
     assignNew("FQUOT");
   }
 
-  const int32_t & getInstr(const char * name) const { return getItem(name); }
-  const int32_t & getInstr(const std::string & name) const { return getItem(name); }
-  const std::string & getInstr(const int32_t & value) const { return getItem(value); }
+  const uint32_t & getInstr(const char * name) const { return getItem(name); }
+  const uint32_t & getInstr(const std::string & name) const { return getItem(name); }
+  const std::string & getInstr(const uint32_t & value) const { return getItem(value); }
 } ISet;
 
 static class ArgsTypeSet : public DoubleCorrelationMap<> {

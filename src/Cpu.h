@@ -17,7 +17,7 @@ class Chipset; /* just a class declaration */
 
 class Cpu {
 public:
-  Cpu(Chipset&, Mmu&);
+  Cpu(Chipset &, Mmu &);
 
   void init();
 
@@ -48,7 +48,7 @@ private:
 
   struct StackPointers {
   private:
-    Cpu& cpu;
+    Cpu & cpu;
 
     uint32_t sSP; /* supervisor stack pointer */
     uint32_t uSP; /* user stack pointer */
@@ -78,10 +78,10 @@ private:
   //|//////////////////////|//
   //|  Functions           |//
   //|//////////////////////|//
-  int32_t instructsZeroArg(const int32_t& instr, int32_t& newFlags);
-  int32_t instructsOneArg(const int32_t& instr, int32_t& newFlags);
-  int32_t instructsTwoArg(const int32_t& instr, int32_t& newFlags);
-  int32_t instructsThreeArg(const int32_t& instr, int32_t& newFlags);
+  int32_t instructsZeroArg(const uint32_t & instr, int32_t & newFlags);
+  int32_t instructsOneArg(const uint32_t & instr, int32_t & newFlags);
+  int32_t instructsTwoArg(const uint32_t & instr, int32_t & newFlags);
+  int32_t instructsThreeArg(const uint32_t & instr, int32_t & newFlags);
 
   /**
    * Temporary record for arguments processing

@@ -35,7 +35,7 @@ Disassembler::disassembleBytecode(asm_program & prog, const int8_t * data,
 
     for(const int8_t * code_p = func_data; code_p < code_p_end;)
     {
-      int32_t instr;
+      uint32_t instr;
       std::vector<TypeOfArgument> type_args;
       std::vector<ScaleOfArgument> scale_args;
 
@@ -307,11 +307,11 @@ Disassembler::printLocals(const ListOfDataStmts & locals, const size_t & funcOff
       bytecode.resize(stmt->getSize());
       Bloat::iterator it = bytecode.begin();
       stmt->emitCode(it);
-      for(const int8_t & num : bytecode)
+      for(const auto & num : bytecode)
       {
         std::cout << " ";
         std::cout.width(3);
-        std::cout << int32_t(num);
+        std::cout << uint32_t(num);
         std::cout.width(0);
       }
       std::cout << std::endl;
@@ -356,14 +356,14 @@ Disassembler::fetchArg(const TypeOfArgument & typeArg,
 }
 
 void
-Disassembler::decodeInstruction(const int8_t *& data, int32_t & instr,
+Disassembler::decodeInstruction(const int8_t *& data, uint32_t & instr,
     std::vector<TypeOfArgument> & type_args, std::vector<ScaleOfArgument> & scale_args)
 {
   instr = DEAL_SWORD_FROM_BWORDS(data);
 
   for (size_t arg_num = 0; arg_num < GET_NUM_ARGS(instr); arg_num++)
   {
-    const int32_t arg = GET_ARG(arg_num, instr);
+    const uint32_t arg = GET_ARG(arg_num, instr);
     const TypeOfArgument type_arg = (TypeOfArgument)GET_ARG_TYPE(arg);
     const ScaleOfArgument scale_arg = (ScaleOfArgument)GET_ARG_SCALE(arg);
     type_args.push_back(type_arg);
@@ -378,7 +378,7 @@ Disassembler::disassembleAndPrint(const Bloat & bytecode)
   const int8_t * code_p_end = &*bytecode.end();
   for(const int8_t * code_p = &*bytecode.begin(); code_p < code_p_end;)
   {
-    int32_t instr;
+    uint32_t instr;
     std::vector<TypeOfArgument> type_args;
     std::vector<ScaleOfArgument> scale_args;
 

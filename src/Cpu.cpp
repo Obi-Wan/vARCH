@@ -138,7 +138,7 @@ Cpu::coreStep()
   resetFlags(newFlags);
   DoubleWord fetchedInstr;
   timeDelay = memoryController.loadFromMem(fetchedInstr, progCounter, BYTE4);
-  int32_t currentInstr = int32_t( fetchedInstr.u32 );
+  uint32_t currentInstr = fetchedInstr.u32;
 
   SCALE_ADDR_INCREM(progCounter, BYTE4);
 
@@ -169,7 +169,7 @@ Cpu::coreStep()
 }
 
 inline int
-Cpu::instructsZeroArg(const int& instr, int& newFlags)
+Cpu::instructsZeroArg(const uint32_t & instr, int& newFlags)
 {
   DebugPrintf(("Instruction %s (Mem pos: %04u, num args: %u)\n",
       ISet.getInstr(instr).c_str(), progCounter, GET_NUM_ARGS(instr) ));
@@ -203,10 +203,11 @@ Cpu::instructsZeroArg(const int& instr, int& newFlags)
 }
 
 inline int32_t
-Cpu::instructsOneArg(const int32_t& instr, int32_t& newFlags)
+Cpu::instructsOneArg(const uint32_t & instr, int32_t& newFlags)
 {
-  const int32_t typeArg = GET_ARG_1(instr);
-  const int32_t polishedInstr = instr - ARG_1(typeArg);
+  const uint32_t typeArg = GET_ARG_1(instr);
+  const uint32_t polishedInstr = instr - ARG_1(typeArg);
+
   DebugPrintf(("Instruction %s (Mem pos: %04u, num args: %u)\n",
       ISet.getInstr(polishedInstr).c_str(), progCounter, GET_NUM_ARGS(polishedInstr) ));
 
@@ -303,11 +304,11 @@ Cpu::instructsOneArg(const int32_t& instr, int32_t& newFlags)
 }
 
 inline int32_t
-Cpu::instructsTwoArg(const int32_t& instr, int32_t& newFlags)
+Cpu::instructsTwoArg(const uint32_t & instr, int32_t& newFlags)
 {
-  const int32_t typeArg1 = GET_ARG_1(instr);
-  const int32_t typeArg2 = GET_ARG_2(instr);
-  const int32_t polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2);
+  const uint32_t typeArg1 = GET_ARG_1(instr);
+  const uint32_t typeArg2 = GET_ARG_2(instr);
+  const uint32_t polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2);
   DebugPrintf(("Instruction %s (Mem pos: %04u, num args: %u)\n",
       ISet.getInstr(polishedInstr).c_str(), progCounter, GET_NUM_ARGS(polishedInstr) ));
 
@@ -422,13 +423,13 @@ Cpu::instructsTwoArg(const int32_t& instr, int32_t& newFlags)
 }
 
 inline int32_t
-Cpu::instructsThreeArg(const int32_t& instr, int32_t& newFlags)
+Cpu::instructsThreeArg(const uint32_t & instr, int32_t& newFlags)
 {
-  const int32_t typeArg1 = GET_ARG_1(instr);
-  const int32_t typeArg2 = GET_ARG_2(instr);
-  const int32_t typeArg3 = GET_ARG_3(instr);
-  const int32_t polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2)
-                                      - ARG_3(typeArg3);
+  const uint32_t typeArg1 = GET_ARG_1(instr);
+  const uint32_t typeArg2 = GET_ARG_2(instr);
+  const uint32_t typeArg3 = GET_ARG_3(instr);
+  const uint32_t polishedInstr = instr - ARG_1(typeArg1) - ARG_2(typeArg2) - ARG_3(typeArg3);
+
   DebugPrintf(("Instruction %s (Mem pos: %04u, num args: %u)\n",
       ISet.getInstr(polishedInstr).c_str(), progCounter, GET_NUM_ARGS(polishedInstr) ));
 

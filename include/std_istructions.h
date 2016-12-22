@@ -12,16 +12,16 @@
 #include "macros.h"
 
 #define N_ARGS_ZERO   0
-#define N_ARGS_ONE    (1 << 30)
-#define N_ARGS_TWO    (2 << 30)
-#define N_ARGS_THREE  (3 << 30)
+#define N_ARGS_ONE    (1u << 30)
+#define N_ARGS_TWO    (2u << 30)
+#define N_ARGS_THREE  (3u << 30)
 
 #define GET_NUM_ARGS( x )  (((x) >> 30) & 3)
 
-#define JUMP          (1 << 29)
-#define CONDITIONAL   (1 << 28)
-#define SYSTEM        (1 << 27) /* Also old COMUNICATION */
-#define FLOAT         (1 << 26)
+#define JUMP          (1u << 29)
+#define CONDITIONAL   (1u << 28)
+#define SYSTEM        (1u << 27) /* Also old COMUNICATION */
+#define FLOAT         (1u << 26)
 
 /* ASM Helpers */
 #define NAME_OF( x ) #x
@@ -38,7 +38,7 @@
 #define GET_ARG_3( x ) (((x) >> 11) & 0x1f)
 /* End ASM Helpers */
 
-enum TypeOfArgument {
+enum TypeOfArgument : uint8_t {
   /* Immediate */
   IMMED = 0,              // 000
   /* Register */
@@ -192,7 +192,7 @@ union ArgumentValue {
 /// STD Instructions
 ////////////////////////////////////////////////////////////////////////////////
 
-enum StdInstructions {
+enum StdInstructions : uint32_t {
 
   SLEEP         = N_ARGS_ZERO,
   PUSHA,
@@ -257,7 +257,7 @@ enum StdInstructions {
 
 };
 
-enum FloatIstructions {
+enum FloatIstructions : uint32_t {
   FNOT           = N_ARGS_ONE + FLOAT,
   FINCR,
   FDECR,

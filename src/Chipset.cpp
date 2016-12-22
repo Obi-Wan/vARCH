@@ -15,7 +15,7 @@
 
 Chipset::Chipset(const uint32_t& _maxMem, DoubleWord * _mainMem)
     : cpu(* (new Cpu(*this,*(new Mmu(_maxMem,_mainMem))))), mainMem(_mainMem)
-      , maxMem(_maxMem)
+    , maxMem(_maxMem)
 {
   // let's init memory, and print some debug info
   initMem();
@@ -49,7 +49,7 @@ Chipset::initMem()
     const size_t blocksNum = biosLoad.size() / 4;
     for (block = 0; block < blocksNum; block++)
     {
-      mainMem[block].u32 = *((int32_t *)&biosLoad[block*4]);
+      mainMem[block].u32 = *((uint32_t *)&biosLoad[block*4]);
     }
     const size_t remaining = biosLoad.size() - blocksNum * 4;
     for (size_t count = 0; count < remaining; count++)

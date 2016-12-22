@@ -41,11 +41,11 @@ struct asm_statement {
 
 struct asm_instruction_statement : asm_statement {
 
-  const int32_t instruction;
+  const uint32_t instruction;
 
   std::vector<asm_arg *> args;
 
-  asm_instruction_statement(const YYLTYPE& pos, const int32_t _instr)
+  asm_instruction_statement(const YYLTYPE& pos, const uint32_t _instr)
     : asm_statement(pos), instruction(_instr)
   { }
   asm_instruction_statement(const asm_instruction_statement & stmt)
