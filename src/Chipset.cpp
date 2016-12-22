@@ -69,7 +69,7 @@ Chipset::startClock()
   DebugPrintf(("Starting execution\n"));
   uint32_t timeOfExecution = 0;
 
-  int32_t result = 0;
+  StdInstructions result = SLEEP;
   do {
     // Let's execute the next istruction
     result = cpu.coreStep();

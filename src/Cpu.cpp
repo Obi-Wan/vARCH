@@ -129,7 +129,7 @@ Cpu::dumpRegistersAndMemory() const
 //  restoreFlags(old);
 }
 
-int
+StdInstructions
 Cpu::coreStep()
 {
   //DebugPrintf(("Proceding with instructions execution\n"));
@@ -142,7 +142,7 @@ Cpu::coreStep()
 
   SCALE_ADDR_INCREM(progCounter, BYTE4);
 
-  int res = 0;
+  StdInstructions res = SLEEP;
 
   try {
     switch (GET_NUM_ARGS(currentInstr)) {
@@ -168,18 +168,18 @@ Cpu::coreStep()
   return res;
 }
 
-inline int
-Cpu::instructsZeroArg(const uint32_t & instr, int& newFlags)
+inline StdInstructions
+Cpu::instructsZeroArg(const uint32_t & instr, int32_t & newFlags)
 {
   DebugPrintf(("Instruction %s (Mem pos: %04u, num args: %u)\n",
       ISet.getInstr(instr).c_str(), progCounter, GET_NUM_ARGS(instr) ));
 
   switch (instr) {
     case SLEEP:
-      return instr;
+      return static_cast<StdInstructions>(instr);
     case REBOOT:
     case HALT:
-      return (flags & F_SVISOR) ? instr : SLEEP;
+      return (flags & F_SVISOR) ? static_cast<StdInstructions>(instr) : SLEEP;
       
     case PUSHA:
       sP.pushAllRegs();
@@ -199,10 +199,10 @@ Cpu::instructsZeroArg(const uint32_t & instr, int& newFlags)
     default:
       throw WrongInstructionException();
   }
-  return 0;
+  return SLEEP;
 }
 
-inline int32_t
+inline StdInstructions
 Cpu::instructsOneArg(const uint32_t & instr, int32_t& newFlags)
 {
   const uint32_t typeArg = GET_ARG_1(instr);
@@ -300,11 +300,11 @@ Cpu::instructsOneArg(const uint32_t & instr, int32_t& newFlags)
     storeArg(temp, argRecord);
   }
 
-  return 0;
+  return SLEEP;
 }
 
-inline int32_t
-Cpu::instructsTwoArg(const uint32_t & instr, int32_t& newFlags)
+inline StdInstructions
+Cpu::instructsTwoArg(const uint32_t & instr, int32_t & newFlags)
 {
   const uint32_t typeArg1 = GET_ARG_1(instr);
   const uint32_t typeArg2 = GET_ARG_2(instr);
@@ -419,11 +419,11 @@ Cpu::instructsTwoArg(const uint32_t & instr, int32_t& newFlags)
     storeArg(temp1, argRecord1);
   }
 
-  return 0;
+  return SLEEP;
 }
 
-inline int32_t
-Cpu::instructsThreeArg(const uint32_t & instr, int32_t& newFlags)
+inline StdInstructions
+Cpu::instructsThreeArg(const uint32_t & instr, int32_t & newFlags)
 {
   const uint32_t typeArg1 = GET_ARG_1(instr);
   const uint32_t typeArg2 = GET_ARG_2(instr);
@@ -495,7 +495,7 @@ Cpu::instructsThreeArg(const uint32_t & instr, int32_t& newFlags)
     storeArg(temp3, argRecord3);
   }
 
-  return 0;
+  return SLEEP;
 }
 
 
