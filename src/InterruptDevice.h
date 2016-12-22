@@ -71,7 +71,7 @@ public:
 
 class InterruptDevice {
 public:
-  InterruptDevice() : interruptId(-1), interruptPriority(-1), interruptHandler(NULL) { }
+  InterruptDevice() : interruptId(-1), interruptPriority(-1), interruptHandler(nullptr) { }
 //  InterruptDevice(const InterruptDevice& orig);
 //  virtual ~InterruptDevice();
 

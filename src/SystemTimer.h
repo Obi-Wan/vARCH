@@ -15,27 +15,29 @@
 class SystemTimer : public Component {
 public:
 
-  enum TimerFeatures {
+  enum TimerFeatures : uint32_t {
     TIMER_0100_HZ =     (1 <<  0),
     TIMER_0250_HZ =     (1 <<  1),
     TIMER_0300_HZ =     (1 <<  2),
     TIMER_1000_HZ =     (1 <<  3),
   };
 
-  SystemTimer(const int& features);
+  SystemTimer(const TimerFeatures & features)
+  : timerFeatures(features), timerTimeout(0), timePassed(0), lastTimeCheck(0)
+  { };
 
-  void put(const short int& request, const int& arg);
+  void put(const ComponentRequestType & request, const int32_t & arg);
 
   void checkInterruptEvents();
 
-  void setTimer(const TimerFeatures&);
-  void stopTimer() { timerTimout = 0; }
+  void setTimer(const TimerFeatures &);
+  void stopTimer() { timerTimeout = 0; }
 private:
 
-  int timerFeatures;
+  TimerFeatures timerFeatures;
 
-  int timerTimout;
-  long int timePassed;
+  uint32_t timerTimeout;
+  uint64_t timePassed;
 
   suseconds_t lastTimeCheck;
 };

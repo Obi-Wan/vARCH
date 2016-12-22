@@ -10,17 +10,15 @@
 
 #include "InterruptDevice.h"
 
-#define DATA_READY_TRUE     1
-#define DATA_READY_FALSE    0
-#define DATA_READY_ERROR   -1
-
 class Component : public InterruptDevice {
 public:
-  Component();
+  Component()
+    : dataReady(DataReady::DATA_READY_FALSE), simpleUnsafeResponse(0)
+    { }
 //  Component(const Component& orig);
-  virtual ~Component();
+  virtual ~Component() = default;
 
-  enum ComponentType {
+  enum ComponentType : uint8_t {
     COMP_CHAR     =     (1 <<  0),
     COMP_BLOCK    =     (1 <<  1),
     COMP_KEYBOARD =     (1 <<  2),
@@ -28,22 +26,43 @@ public:
     COMP_CONSOLE  =     (1 <<  4),
   };
 
-  enum ComponentRequest {
+  enum class ComponentRequestType : uint8_t {
     COMP_TYPE,
     COMP_GET_FEATURES,
     COMP_SET_FEATURES,
   };
 
-  virtual void put(const short int& request, const int& arg);
-  int get();
+  enum DataReady : int8_t {
+    DATA_READY_ERROR = (-1),
+    DATA_READY_FALSE = 0,
+    DATA_READY_TRUE  = 1,
+  };
 
-  int isDataReady() { return dataReady; }
+  virtual void put(const ComponentRequestType & request, const int32_t & arg) {
+    switch (request) {
+      case ComponentRequestType::COMP_TYPE:
+        simpleUnsafeResponse = static_cast<int32_t>(ComponentType::COMP_CHAR);
+        dataReady = DataReady::DATA_READY_TRUE;
+        break;
+      case ComponentRequestType::COMP_GET_FEATURES:
+        dataReady = DataReady::DATA_READY_ERROR;
+        break;
+      case ComponentRequestType::COMP_SET_FEATURES:
+        dataReady = DataReady::DATA_READY_ERROR;
+        break;
+    }
+  }
+  const int32_t & get() {
+    dataReady = DataReady::DATA_READY_FALSE;
+    return simpleUnsafeResponse;
+  }
+
+  const DataReady & isDataReady() { return dataReady; }
+
 protected:
-  int dataReady;
+  DataReady dataReady;
 
-  int simpleUnsafeResponse;
-
-private:
+  int32_t simpleUnsafeResponse;
 };
 
 #endif	/* _COMPONENT_H */

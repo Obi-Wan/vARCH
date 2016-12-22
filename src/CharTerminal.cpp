@@ -18,19 +18,19 @@ CharTerminal::CharTerminal() { }
 
 
 void
-CharTerminal::put(const int16_t& request, const int32_t& arg)
+CharTerminal::put(const ComponentRequestType & request, const int32_t& arg)
 {
   DebugPrintf(("CharTerminal: got signal %d (arg: %d, %d)\n", request,
                 arg, (arg & CHAR_MASK)));
   switch (request) {
-    case COMP_TYPE:
+    case ComponentRequestType::COMP_TYPE:
       simpleUnsafeResponse = COMP_CONSOLE;
-      dataReady = DATA_READY_TRUE;
+      dataReady = DataReady::DATA_READY_TRUE;
       break;
-    case COMP_SET_FEATURES:
+    case ComponentRequestType::COMP_SET_FEATURES:
       printf("%c", (char)(arg & CHAR_MASK));
       simpleUnsafeResponse = true;
-      dataReady = DATA_READY_TRUE;
+      dataReady = DataReady::DATA_READY_TRUE;
       break;
     default:
 //      WarningPrintf(("No signal recognized"));
