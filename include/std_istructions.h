@@ -108,23 +108,23 @@ enum ModifierOfArgument {
 #define SPECIAL_REGS  2
 
 enum Registers {
-  REG_DATA_1 =      (NUM_REGS * DATA_REGS),
+  REG_DATA_0 =      (NUM_REGS * DATA_REGS),
+  REG_DATA_1,
   REG_DATA_2,
   REG_DATA_3,
   REG_DATA_4,
   REG_DATA_5,
   REG_DATA_6,
   REG_DATA_7,
-  REG_DATA_8,
 
-  REG_ADDR_1 =      (NUM_REGS * ADDR_REGS),
+  REG_ADDR_0 =      (NUM_REGS * ADDR_REGS),
+  REG_ADDR_1,
   REG_ADDR_2,
   REG_ADDR_3,
   REG_ADDR_4,
   REG_ADDR_5,
   REG_ADDR_6,
   REG_ADDR_7,
-  REG_ADDR_8,
 
   STACK_POINTER =   (NUM_REGS * SPECIAL_REGS),
   USER_STACK_POINTER,

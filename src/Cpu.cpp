@@ -803,9 +803,9 @@ inline const int32_t
 Cpu::getReg(const int32_t & regPos)
 {
   switch (regPos) {
-    case REG_DATA_1 ... REG_DATA_8:
+    case REG_DATA_0 ... REG_DATA_7:
       return regsData[ regPos % NUM_REGS ];
-    case REG_ADDR_1 ... REG_ADDR_8:
+    case REG_ADDR_0 ... REG_ADDR_7:
       return regsAddr[ regPos % NUM_REGS ];
     case USER_STACK_POINTER:
       return (flags & F_SVISOR) ? sP.getUStackPointer() : sP.getStackPointer();
@@ -827,10 +827,10 @@ inline void
 Cpu::setReg(const int32_t & regPos, const int32_t & value)
 {
   switch (regPos) {
-    case REG_DATA_1 ... REG_DATA_8:
+    case REG_DATA_0 ... REG_DATA_7:
       regsData[ regPos % NUM_REGS ] = value;
       break;
-    case REG_ADDR_1 ... REG_ADDR_8:
+    case REG_ADDR_0 ... REG_ADDR_7:
       regsAddr[ regPos % NUM_REGS ] = value;
       break;
     case USER_STACK_POINTER:

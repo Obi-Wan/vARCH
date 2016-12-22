@@ -176,7 +176,7 @@ Frame::mindReturnStmts(ListOfStmts & stmts)
 
         asm_immediate_arg * regArg = new asm_immediate_arg(ret->position);
         regArg->type = REG;
-        regArg->content.regNum = REG_DATA_1;
+        regArg->content.regNum = REG_DATA_0;
         regArg->isTemp = false;
 
         stmt->addArg(regArg);
@@ -237,7 +237,7 @@ Frame::updateFramePointer(asm_function & function)
 
     asm_immediate_arg * regArg2 = new asm_immediate_arg(function.position);
     regArg2->type = REG;
-    regArg2->content.regNum = REG_ADDR_8;
+    regArg2->content.regNum = REG_ADDR_7;
     regArg2->isTemp = false;
 
     stmt->addArg(regArg2);
@@ -254,7 +254,7 @@ Frame::updateFramePointer(asm_function & function)
 
       asm_immediate_arg * regArg = new asm_immediate_arg(function.position);
       regArg->type = REG;
-      regArg->content.regNum = REG_ADDR_8;
+      regArg->content.regNum = REG_ADDR_7;
       regArg->isTemp = false;
 
       stmt->addArg(regArg);
@@ -267,7 +267,7 @@ Frame::updateFramePointer(asm_function & function)
 
       asm_immediate_arg * regArg = new asm_immediate_arg(function.position);
       regArg->type = REG;
-      regArg->content.regNum = REG_ADDR_8;
+      regArg->content.regNum = REG_ADDR_7;
       regArg->isTemp = false;
 
       stmt->addArg(regArg);
