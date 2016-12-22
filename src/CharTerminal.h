@@ -14,13 +14,11 @@
 
 class CharTerminal : public Component {
 public:
-  CharTerminal();
-//  CharTerminal(const CharTerminal& orig);
+  CharTerminal() = default;
 //  virtual ~CharTerminal();
 
   void put(const ComponentRequestType & request, const int32_t & arg);
 private:
-
 };
 
 #endif	/* _CHARTERMINAL_H */

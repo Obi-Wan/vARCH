@@ -10,13 +10,6 @@
 #include "../include/macros.h"
 #include "CharTerminal.h"
 
-CharTerminal::CharTerminal() { }
-
-//CharTerminal::CharTerminal(const CharTerminal& orig) { }
-//
-//CharTerminal::~CharTerminal() { }
-
-
 void
 CharTerminal::put(const ComponentRequestType & request, const int32_t& arg)
 {
@@ -24,7 +17,7 @@ CharTerminal::put(const ComponentRequestType & request, const int32_t& arg)
                 arg, (arg & CHAR_MASK)));
   switch (request) {
     case ComponentRequestType::COMP_TYPE:
-      simpleUnsafeResponse = COMP_CONSOLE;
+      simpleUnsafeResponse = static_cast<int32_t>(ComponentType::COMP_CONSOLE);
       dataReady = DataReady::DATA_READY_TRUE;
       break;
     case ComponentRequestType::COMP_SET_FEATURES:
@@ -33,7 +26,7 @@ CharTerminal::put(const ComponentRequestType & request, const int32_t& arg)
       dataReady = DataReady::DATA_READY_TRUE;
       break;
     default:
-//      WarningPrintf(("No signal recognized"));
+      InfoPrintf(("Signal not recognized (for CharTerminal): %u", static_cast<uint32_t>(request)));
       Component::put(request, arg);
       break;
   }

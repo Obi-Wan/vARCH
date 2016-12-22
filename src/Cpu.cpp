@@ -132,33 +132,6 @@ Cpu::dumpRegistersAndMemory() const
 int
 Cpu::coreStep()
 {
-  //DebugPrintf(("Processing interrupts to see if they can stop execution\n"));
-  // Let's now consider interrupts
-  if (chipset.hasInterruptReady()) {
-    const InterruptHandler::InterruptsRecord &intRecord = chipset.getTopInterrupt();
-    if (intRecord.getPriority() > INT_GET(flags)) {
-      DebugPrintf(("we got an interrupt!"));
-      int32_t currentFlags = flags;
-      flags += F_SVISOR;
-      sP.push(currentFlags);
-      sP.push(progCounter);
-
-      DoubleWord doubleWord;
-
-      timeDelay = memoryController.loadFromMem(doubleWord, regsAddr[7] +
-              2 * intRecord.getDeviceId(), BYTE4);
-      progCounter = doubleWord.u32;
-
-      timeDelay += memoryController.loadFromMem( doubleWord,
-              regsAddr[7] + 2 * intRecord.getDeviceId() + 1, BYTE4);
-      restoreFlags( int32_t(doubleWord.u32) );
-
-      chipset.topInterruptServed();
-    }
-  } else {
-    timeDelay = 0;
-  }
-
   //DebugPrintf(("Proceding with instructions execution\n"));
   // Now proced with instruction execution
   int32_t newFlags = flags;

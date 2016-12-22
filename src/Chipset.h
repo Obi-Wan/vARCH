@@ -18,19 +18,19 @@
 #define EXTRACT_REQUEST(x) (EXTRACT_HIGHER_HWORD_FROM_SWORD(x))
 #define EXTRACT_DEVICE(x)  (EXTRACT_LOWER__HWORD_FROM_SWORD(x))
 
-class Chipset : public InterruptHandler {
+class Chipset {
 public:
-  Chipset(const uint32_t& _maxMem, DoubleWord * _mainMem);
+  Chipset(const uint32_t & _maxMem, DoubleWord * _mainMem);
   virtual ~Chipset();
 
   void startClock();
 
   void addComponent(Component *);
   //  void addCpu(Cpu &);
-  const Cpu& getCpu(const uint32_t & num = 0) const;
+  const Cpu & getCpu(const uint32_t & num = 0) const;
 
-  void singlePutToComponent(const uint32_t& numComp, const uint32_t& signal);
-  int32_t singleGetFromComponent(const uint32_t& numComp);
+  void singlePutToComponent(const uint32_t & numComp, const uint32_t & signal);
+  int32_t singleGetFromComponent(const uint32_t & numComp);
 
 private:
   Cpu & cpu;

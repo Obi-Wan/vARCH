@@ -8,22 +8,22 @@
 #ifndef _COMPONENT_H
 #define	_COMPONENT_H
 
-#include "InterruptDevice.h"
+#include "macros.h"
 
-class Component : public InterruptDevice {
+class Component {
 public:
   Component()
     : dataReady(DataReady::DATA_READY_FALSE), simpleUnsafeResponse(0)
     { }
-//  Component(const Component& orig);
+  Component(const Component & orig) = default;
   virtual ~Component() = default;
 
   enum ComponentType : uint8_t {
-    COMP_CHAR     =     (1 <<  0),
-    COMP_BLOCK    =     (1 <<  1),
-    COMP_KEYBOARD =     (1 <<  2),
-    COMP_TIMER    =     (1 <<  3),
-    COMP_CONSOLE  =     (1 <<  4),
+    COMP_CHAR     = (1u <<  0),
+    COMP_BLOCK    = (1u <<  1),
+    COMP_KEYBOARD = (1u <<  2),
+    COMP_TIMER    = (1u <<  3),
+    COMP_CONSOLE  = (1u <<  4),
   };
 
   enum class ComponentRequestType : uint8_t {

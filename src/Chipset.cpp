@@ -11,7 +11,6 @@
 #include "macros.h"
 
 #include "Chipset.h"
-#include "SystemTimer.h"
 #include "CharTerminal.h"
 
 Chipset::Chipset(const uint32_t& _maxMem, DoubleWord * _mainMem)
@@ -22,9 +21,6 @@ Chipset::Chipset(const uint32_t& _maxMem, DoubleWord * _mainMem)
   initMem();
   cpu.dumpRegistersAndMemory();
 
-  // next we add the system timer to the components connected to the chipset
-  components.push_back( new SystemTimer(
-      SystemTimer::TIMER_0250_HZ | SystemTimer::TIMER_0100_HZ ));
   // then we add a charterminal
   components.push_back( new CharTerminal() );
 }
@@ -79,12 +75,6 @@ Chipset::startClock()
 
   int32_t result = 0;
   do {
-    // Let's trigger events
-    for (size_t i = 0; i < components.size(); i++)
-    {
-      components[i]->checkInterruptEvents();
-    }
-
     // Let's execute the next istruction
     result = cpu.coreStep();
 
@@ -127,32 +117,37 @@ Chipset::getCpu(const uint32_t & num) const
 void
 Chipset::singlePutToComponent(const uint32_t & signal, const uint32_t & arg)
 {
-  DebugPrintf(("Signal  in dec %d in ex %x\n", signal, signal));
-  uint16_t request = EXTRACT_REQUEST(signal);
-  DebugPrintf(("Request in dec %d in ex %x\n", request, request));
-  uint16_t device  = EXTRACT_DEVICE(signal);
-  DebugPrintf(("Device in dec %d in ex %x\n", device, device));
+  size_t device = static_cast<size_t>(EXTRACT_DEVICE(signal));
 
-  if (device > components.size())
-  {
-    WarningPrintf(("accessing a non existent component: %d\n", device));
+  Component::ComponentRequestType request =
+      static_cast<Component::ComponentRequestType>(EXTRACT_REQUEST(signal));
+
+#ifdef DEBUG
+  deb_sig = static_cast<uint32_t>(signal);
+  deb_req = static_cast<uint32_t>(request);
+  deb_dev = static_cast<uint32_t>(device);
+  DebugPrintf(("Signal  in dec %u in ex %x\n", deb_sig, deb_sig));
+  DebugPrintf(("Request in dec %u in ex %x\n", deb_req, deb_req));
+  DebugPrintf(("Device  in dec %u in ex %x\n", deb_dev, deb_dev));
+#endif
+
+  if ( ((size_t)device) >= components.size()) {
+    std::string error_msg = std::string("accessing a non existent component: ")
+                            + std::to_string(device);
+    InfoPrintf(("%s\n", error_msg.c_str()));
+    throw WrongComponentException(error_msg);
   }
-  else
-  {
-    components[device]->put(request, arg);
-  }
+  components[device]->put(request, arg);
 }
 
 int32_t
 Chipset::singleGetFromComponent(const uint32_t& numComp)
 {
-  if ( ((uint32_t)numComp) > components.size())
+  if ( ((size_t)numComp) > components.size())
   {
-    WarningPrintf(("accessing a non existent component: %d\n", numComp));
-    return DATA_READY_ERROR;
+    std::string error_msg = std::string("accessing a non existent component: ") + std::to_string(numComp);
+    WarningPrintf(("%s\n", error_msg.c_str()));
+    throw WrongComponentException(error_msg);
   }
-  else
-  {
-    return components[numComp]->get();
-  }
+  return components[numComp]->get();
 }

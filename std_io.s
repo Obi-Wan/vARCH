@@ -5,9 +5,9 @@
 
   .local
     .printCmd: .const
-      .i32_t  131072
+      .i32_t  131072 ; In case of only one component!
     .printCmd1: .const
-      .i32_t  131073
+      .i32_t  131073 ; In case of charterminal being the second component!
     .endChar: .const
       .i16_t   0
   .end
@@ -16,7 +16,7 @@
 .test:
   EQ,     (%T001) : .i8_t,    .endChar : .i16_t
   IFJ,    @exit
-  PUT,    (%T001)+ : .i8_t,   .printCmd1
+  PUT,    (%T001)+ : .i8_t,   .printCmd
   INCR,   %T002
   JMP,    @test
 .exit:
