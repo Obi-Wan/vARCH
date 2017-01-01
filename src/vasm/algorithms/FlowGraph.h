@@ -123,19 +123,11 @@ LiveMap<DataType>::printLiveMap() const
   for(; live_in != end_live_in && live_out != end_live_out;
       live_in++, live_out++)
   {
-    std::cout << "Node " << live_in->first->label << std::endl << "   live-in  (num: "
-        << live_in->second.size() << "):";
-    for(us_iterator ins = live_in->second.begin(); ins != live_in->second.end();
-        ins++)
-    {
-      std::cout << " T" << *ins;
-    }
+    std::cout << "Node " << live_in->first->label << std::endl
+        << "   live-in  (num: " << live_in->second.size() << "):";
+    for(auto & live_in_el : live_in->second) { std::cout << " T" << live_in_el; }
     std::cout << "\n   live-out (num: " << live_out->second.size() << "):";
-    for(us_iterator outs = live_out->second.begin();
-        outs != live_out->second.end(); outs++)
-    {
-      std::cout << " T" << *outs;
-    }
+    for(auto & live_out_el : live_out->second.end()) { std::cout << " T" << live_out_el; }
     std::cout << std::endl;
   }
 }
@@ -167,7 +159,7 @@ size_t
 FlowGraph<DataType>::_numUses(const uint32_t & uid, const NodeType * const node)
   const
 {
-  const um_iterator usesIter = uses.find(node);
+  const auto & usesIter = uses.find(node);
   return usesIter->second.count(uid);
 }
 
@@ -176,7 +168,7 @@ size_t
 FlowGraph<DataType>::_numDefs(const uint32_t & uid, const NodeType * const node)
   const
 {
-  const um_iterator defsIter = defs.find(node);
+  const auto & defsIter = defs.find(node);
   return defsIter->second.count(uid);
 }
 
