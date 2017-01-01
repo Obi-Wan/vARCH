@@ -43,32 +43,6 @@ private:
   /** The raw_data registers */
   int32_t regsData[NUM_REGS];
 
-  struct StackPointers {
-  private:
-    Cpu & cpu;
-
-    uint32_t sSP; /* supervisor stack pointer */
-    uint32_t uSP; /* user stack pointer */
-  public:
-    StackPointers(Cpu& _c);
-    
-    void setStackPointer(const uint32_t& newSP) {
-      if (cpu.flags & F_SVISOR) sSP = newSP; else uSP = newSP;
-    }
-    void setUStackPointer(const uint32_t& newSP) { uSP = newSP; }
-
-    const uint32_t & getStackPointer() const throw() {
-      return (cpu.flags & F_SVISOR) ? sSP : uSP;
-    }
-    const uint32_t & getUStackPointer() const throw() { return uSP; }
-
-    void push(const int32_t& data);
-    int32_t pop();
-
-    void pushAllRegs();
-    void popAllRegs();
-  } sP;
-
   /** The program counter */
   uint32_t progCounter;
 
@@ -76,6 +50,27 @@ private:
    * It is a dedicated register, so that we don't need to "waste" a normal
    * register for this */
   uint32_t framePointer;
+
+  /** supervisor stack pointer */
+  uint32_t supStackPointer;
+  /** user stack pointer */
+  uint32_t usrStackPointer;
+
+  void setStackPointer(const uint32_t & newSP) {
+    if (flags & F_SVISOR) supStackPointer = newSP; else usrStackPointer = newSP;
+  }
+  void setUStackPointer(const uint32_t & newSP) { usrStackPointer = newSP; }
+
+  const uint32_t & getStackPointer() const throw() {
+    return (flags & F_SVISOR) ? supStackPointer : usrStackPointer;
+  }
+  const uint32_t & getUStackPointer() const throw() { return usrStackPointer; }
+
+  void pushToStack(const int32_t & data);
+  int32_t popFromStack();
+
+  void pushAllRegsToStack();
+  void popAllRegsFromStack();
 
   //|//////////////////////|//
   //|  Functions           |//

@@ -18,67 +18,52 @@
 #include <cstdio>
 #include <sstream>
 
-inline
+INLINE
 Cpu::ArgRecord::ArgRecord(const int32_t & packedType, const int32_t & data)
   : scale(GET_ARG_SCALE(packedType)), type(GET_ARG_TYPE(packedType))
   , raw_data(data)
 { }
 
-inline
-Cpu::StackPointers::StackPointers(Cpu& _c)
-  : cpu(_c)
-{
-  uint32_t stackInitialPos = this->cpu.memoryController.getLimit();
-  SCALE_ADDR_DECREM(stackInitialPos, BYTE4);
-  uSP = sSP = stackInitialPos;
-}
-
-inline void
-Cpu::StackPointers::push(const int32_t& data) {
-  uint32_t& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
+INLINE void
+Cpu::pushToStack(const int32_t & data) {
+  uint32_t & ref = (flags & F_SVISOR) ? supStackPointer : usrStackPointer;
   SCALE_ADDR_DECREM(ref, BYTE4);
-  cpu.memoryController.storeToMemUI32(uint32_t(data), ref);
+  this->memoryController.storeToMemUI32(uint32_t(data), ref);
 }
 
-inline int32_t
-Cpu::StackPointers::pop() {
-  uint32_t& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
+INLINE int32_t
+Cpu::popFromStack() {
+  uint32_t & ref = (flags & F_SVISOR) ? supStackPointer : usrStackPointer;
   DoubleWord data;
-  cpu.memoryController.loadFromMem(data, ref, BYTE4);
+  this->memoryController.loadFromMem(data, ref, BYTE4);
   SCALE_ADDR_INCREM(ref, BYTE4);
   return fromMemorySpace(data, BYTE4);
 }
 
-inline void
-Cpu::StackPointers::pushAllRegs() {
-  uint32_t& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
+INLINE void
+Cpu::pushAllRegsToStack() {
+  uint32_t & ref = (flags & F_SVISOR) ? supStackPointer : usrStackPointer;
   for(uint32_t i = 0; i < NUM_REGS; i++) {
     SCALE_ADDR_DECREM(ref, BYTE4);
-    cpu.memoryController.storeToMemUI32(uint32_t(cpu.regsData[i]), ref);
-    SCALE_ADDR_DECREM(ref, BYTE4);
-    cpu.memoryController.storeToMemUI32(uint32_t(cpu.regsAddr[i]), ref);
+    this->memoryController.storeToMemUI32(uint32_t(this->regsData[i]), ref);
   }
 }
 
-inline void
-Cpu::StackPointers::popAllRegs() {
-  uint32_t& ref = (cpu.flags & F_SVISOR) ? sSP : uSP;
+INLINE void
+Cpu::popAllRegsFromStack() {
+  uint32_t & ref = (flags & F_SVISOR) ? supStackPointer : usrStackPointer;
   DoubleWord data;
   for(int32_t i = NUM_REGS-1; i >= 0; i--) {
-    cpu.memoryController.loadFromMem(data, ref, BYTE4);
+    this->memoryController.loadFromMem(data, ref, BYTE4);
     SCALE_ADDR_INCREM(ref, BYTE4);
-    cpu.regsAddr[i] = fromMemorySpace(data, BYTE4);
-
-    cpu.memoryController.loadFromMem(data, ref, BYTE4);
-    SCALE_ADDR_INCREM(ref, BYTE4);
-    cpu.regsData[i] = fromMemorySpace(data, BYTE4);
+    this->regsData[i] = fromMemorySpace(data, BYTE4);
   }
 }
 
 #define SET_ARITM_FLAGS( x ) (( x < 0) ? F_NEGATIVE : ( (! x ) ? F_ZERO : 0 ))
 
 Cpu::Cpu(Chipset& _chipset, Mmu& mC)
-  : timeDelay(0), flags(0), chipset(_chipset), memoryController(mC), sP(*this)
+  : timeDelay(0), flags(0), chipset(_chipset), memoryController(mC)
   , progCounter(0)
 {
   init();
@@ -90,9 +75,11 @@ Cpu::init() {
   resetFlags(flags);
   flags += F_SVISOR | INT_PUT( INT_MAX_S_PR ); // start in supervisor mode
   resetRegs();
+
+  // Setting stack pointers
   uint32_t stackInitialPos = memoryController.getLimit();
   SCALE_ADDR_DECREM(stackInitialPos, BYTE4);
-  sP.setStackPointer(stackInitialPos);
+  usrStackPointer = supStackPointer = stackInitialPos;
 }
 
 /** Writes to standard output the content of registers, program counter
@@ -172,7 +159,7 @@ Cpu::coreStep()
   return res;
 }
 
-inline StdInstructions
+INLINE StdInstructions
 Cpu::instructsZeroArg(const uint32_t & instr, int32_t & newFlags)
 {
   DebugPrintf(("Instruction %s (Mem pos: %04u, num args: %u)\n",
@@ -186,18 +173,18 @@ Cpu::instructsZeroArg(const uint32_t & instr, int32_t & newFlags)
       return (flags & F_SVISOR) ? static_cast<StdInstructions>(instr) : SLEEP;
       
     case PUSHA:
-      sP.pushAllRegs();
+      pushAllRegsToStack();
       break;
     case POPA:
-      sP.popAllRegs();
+      popAllRegsFromStack();
       break;
     case RET:
-      progCounter = sP.pop();
+      progCounter = popFromStack();
       break;
     case RETEX:
       flags += F_SVISOR;
-      progCounter = sP.pop();
-      newFlags = sP.pop();
+      progCounter = popFromStack();
+      newFlags = popFromStack();
       break;
 
     default:
@@ -206,7 +193,7 @@ Cpu::instructsZeroArg(const uint32_t & instr, int32_t & newFlags)
   return SLEEP;
 }
 
-inline StdInstructions
+INLINE StdInstructions
 Cpu::instructsOneArg(const uint32_t & instr, int32_t& newFlags)
 {
   const uint32_t typeArg = GET_ARG_1(instr);
@@ -215,7 +202,7 @@ Cpu::instructsOneArg(const uint32_t & instr, int32_t& newFlags)
   DebugPrintf(("Instruction %s (Mem pos: %04u, num args: %u)\n",
       ISet.getInstr(polishedInstr).c_str(), progCounter, GET_NUM_ARGS(polishedInstr) ));
 
-  const size_t scaleArg1 = (GET_ARG_TYPE(typeArg) == IMMED) ? GET_ARG_SCALE(typeArg) : BYTE4;
+  const uint8_t scaleArg1 = (GET_ARG_TYPE(typeArg) == IMMED) ? GET_ARG_SCALE(typeArg) : BYTE4;
 
   DoubleWord rawArg;
   timeDelay += memoryController.loadFromMem(rawArg, progCounter, scaleArg1);
@@ -255,13 +242,13 @@ Cpu::instructsOneArg(const uint32_t & instr, int32_t& newFlags)
     }
 
     case STACK:
-      sP.setStackPointer(temp);
+      setStackPointer(temp);
       break;
     case PUSH:
-      sP.push(temp);
+      pushToStack(temp);
       break;
     case POP:
-      temp = sP.pop();
+      temp = popFromStack();
       break;
       
     case IFJ:
@@ -274,7 +261,7 @@ Cpu::instructsOneArg(const uint32_t & instr, int32_t& newFlags)
       progCounter += temp;
       break;
     case JSR:
-      sP.push(progCounter);
+      pushToStack(progCounter);
       progCounter += temp;
       break;
     case TCJ:
@@ -307,7 +294,7 @@ Cpu::instructsOneArg(const uint32_t & instr, int32_t& newFlags)
   return SLEEP;
 }
 
-inline StdInstructions
+INLINE StdInstructions
 Cpu::instructsTwoArg(const uint32_t & instr, int32_t & newFlags)
 {
   const uint32_t typeArg1 = GET_ARG_1(instr);
@@ -316,8 +303,8 @@ Cpu::instructsTwoArg(const uint32_t & instr, int32_t & newFlags)
   DebugPrintf(("Instruction %s (Mem pos: %04u, num args: %u)\n",
       ISet.getInstr(polishedInstr).c_str(), progCounter, GET_NUM_ARGS(polishedInstr) ));
 
-  const size_t scaleArg1 = (GET_ARG_TYPE(typeArg1) == IMMED) ? GET_ARG_SCALE(typeArg1) : BYTE4;
-  const size_t scaleArg2 = (GET_ARG_TYPE(typeArg2) == IMMED) ? GET_ARG_SCALE(typeArg2) : BYTE4;
+  const uint8_t scaleArg1 = (GET_ARG_TYPE(typeArg1) == IMMED) ? GET_ARG_SCALE(typeArg1) : BYTE4;
+  const uint8_t scaleArg2 = (GET_ARG_TYPE(typeArg2) == IMMED) ? GET_ARG_SCALE(typeArg2) : BYTE4;
 
   DoubleWord rawArg1, rawArg2;
   timeDelay += memoryController.loadFromMem(rawArg1, progCounter, scaleArg1);
@@ -426,7 +413,7 @@ Cpu::instructsTwoArg(const uint32_t & instr, int32_t & newFlags)
   return SLEEP;
 }
 
-inline StdInstructions
+INLINE StdInstructions
 Cpu::instructsThreeArg(const uint32_t & instr, int32_t & newFlags)
 {
   const uint32_t typeArg1 = GET_ARG_1(instr);
@@ -437,9 +424,9 @@ Cpu::instructsThreeArg(const uint32_t & instr, int32_t & newFlags)
   DebugPrintf(("Instruction %s (Mem pos: %04u, num args: %u)\n",
       ISet.getInstr(polishedInstr).c_str(), progCounter, GET_NUM_ARGS(polishedInstr) ));
 
-  const size_t scaleArg1 = (GET_ARG_TYPE(typeArg1) == IMMED) ? GET_ARG_SCALE(typeArg1) : BYTE4;
-  const size_t scaleArg2 = (GET_ARG_TYPE(typeArg2) == IMMED) ? GET_ARG_SCALE(typeArg2) : BYTE4;
-  const size_t scaleArg3 = (GET_ARG_TYPE(typeArg3) == IMMED) ? GET_ARG_SCALE(typeArg3) : BYTE4;
+  const uint8_t scaleArg1 = (GET_ARG_TYPE(typeArg1) == IMMED) ? GET_ARG_SCALE(typeArg1) : BYTE4;
+  const uint8_t scaleArg2 = (GET_ARG_TYPE(typeArg2) == IMMED) ? GET_ARG_SCALE(typeArg2) : BYTE4;
+  const uint8_t scaleArg3 = (GET_ARG_TYPE(typeArg3) == IMMED) ? GET_ARG_SCALE(typeArg3) : BYTE4;
 
   DoubleWord rawArg1, rawArg2, rawArg3;
   timeDelay += memoryController.loadFromMem(rawArg1, progCounter, scaleArg1);
@@ -503,7 +490,7 @@ Cpu::instructsThreeArg(const uint32_t & instr, int32_t & newFlags)
 }
 
 
-inline uint32_t
+INLINE uint32_t
 Cpu::loadArg(int32_t & temp, const ArgRecord & arg)
 {
   DebugPrintf(("- LOAD:  Type: %9s, scale (Num bytes): %u, code: 0x%04X\n",
@@ -628,7 +615,7 @@ Cpu::loadArg(int32_t & temp, const ArgRecord & arg)
   }
 }
 
-inline uint32_t
+INLINE uint32_t
 Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
 {
   DebugPrintf(("- STORE: Type: %9s, scale (Num bytes): %u, code: 0x%04X\n",
@@ -777,16 +764,16 @@ Cpu::storeArg(const int32_t & temp, const ArgRecord & arg)
 }
 
 
-inline const int32_t
+INLINE const int32_t
 Cpu::getReg(const int32_t & regPos)
 {
   switch (regPos) {
     case REG_DATA_0 ... (NUM_REGS-1):
       return regsData[regPos];
     case USER_STACK_POINTER:
-      return (flags & F_SVISOR) ? sP.getUStackPointer() : sP.getStackPointer();
+      return getUStackPointer();
     case STACK_POINTER:
-      return sP.getStackPointer();
+      return getStackPointer();
     case FRAME_POINTER:
       return framePointer;
     case STATE_REGISTER:
@@ -801,7 +788,7 @@ Cpu::getReg(const int32_t & regPos)
   }
 }
 
-inline void
+INLINE void
 Cpu::setReg(const int32_t & regPos, const int32_t & value)
 {
   switch (regPos) {
@@ -809,14 +796,10 @@ Cpu::setReg(const int32_t & regPos, const int32_t & value)
       regsData[regPos] = value;
       break;
     case USER_STACK_POINTER:
-      if (flags & F_SVISOR) {
-        sP.setUStackPointer(value);
-      } else {
-        sP.setStackPointer(value);
-      }
+      setUStackPointer(value);
       break;
     case STACK_POINTER:
-      sP.setStackPointer(value);
+      setStackPointer(value);
       break;
     case FRAME_POINTER:
       framePointer = value;
@@ -839,7 +822,7 @@ Cpu::setReg(const int32_t & regPos, const int32_t & value)
   }
 }
 
-inline int32_t
+INLINE int32_t
 Cpu::fromMemorySpace(const DoubleWord & data, const uint8_t & scale)
 {
   switch (scale) {
@@ -854,7 +837,7 @@ Cpu::fromMemorySpace(const DoubleWord & data, const uint8_t & scale)
   }
 }
 
-inline void
+INLINE void
 Cpu::toMemorySpace(DoubleWord & data, const int32_t & value,
       const uint8_t & scale)
 {
@@ -873,7 +856,7 @@ Cpu::toMemorySpace(DoubleWord & data, const int32_t & value,
   }
 }
 
-inline bool
+INLINE bool
 Cpu::isAutoIncrDecrArg(const ArgRecord & arg)
 {
   switch (arg.type) {
