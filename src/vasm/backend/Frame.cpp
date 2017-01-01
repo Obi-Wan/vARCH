@@ -42,6 +42,7 @@ Frame::init(asm_function & function)
                 << " Line: " << par->position.first_line << ".\n"
                 << par->position.fileNode->printStringStackIncludes()
                 << std::endl;
+      stream << "    (ERROR: " << e.getMessage() << ")" << std::endl;
       throw WrongArgumentException(stream.str());
     }
   }

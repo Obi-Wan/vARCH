@@ -26,12 +26,16 @@ TempsMap::putTemp(const std::string && label, const uint32_t & uid,
 {
   if (!ignoreDups) {
     if (labelToUID.count(label)) {
+      const auto dup_uid = labelToUID.find(label);
       throw DuplicateLabelException("Temporary with label " + label +
-          " already existing");
+          " already exists, with value: '" + std::to_string(dup_uid->second) +
+          "' while trying to add value: '" + std::to_string(uid) + "'");
     }
     if (uidToLabel.count(uid)) {
+      const auto dup_lab = uidToLabel.find(uid);
       throw DuplicateLabelException("Temporary with uid associated to label " +
-          label + " already existing");
+          label + " already exists, with label: '" + dup_lab->second +
+          "' while trying to add label: '" + label + "'");
     }
   }
 
@@ -142,8 +146,6 @@ void
 ReverseAliasMap::add(const uint32_t & alias, const uint32_t & final,
     AliasMap & aliasMap)
 {
-  typedef std::set<uint32_t>::const_iterator sa_c_iterator;
-
   iterator finalIt = this->find(final);
 
   /* If destination is not in ReverseMap yet, let's create an entry */
