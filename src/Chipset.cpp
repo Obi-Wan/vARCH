@@ -72,7 +72,16 @@ Chipset::startClock()
   StdInstructions result = SLEEP;
   do {
     // Let's execute the next istruction
-    result = cpu.coreStep();
+    try {
+      result = cpu.coreStep();
+    } catch (const BasicException & e) {
+      printf("\n\n -> EXECUTION ERROR! <-\n%s", e.what());
+      throw(e);
+    }
+
+#ifdef DEBUG
+    cpu.dumpRegistersAndMemory();
+#endif
 
     const uint32_t waitTime = 100 + cpu.getTimeDelay();
     timeOfExecution += waitTime;
@@ -87,7 +96,6 @@ Chipset::startClock()
     }
   } while (result != HALT);
 
-  DebugPrintf(("Exiting\n"));
   printf("\nExecution time (in pseudo-microseconds): %u\n\n", timeOfExecution);
 }
 

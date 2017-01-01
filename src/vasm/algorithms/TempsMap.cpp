@@ -45,14 +45,8 @@ TempsMap::putTemp(const uint32_t & uid, const bool & ignoreDups)
   std::stringstream stream;
   stream.fill('0');
   switch (uid) {
-    case 1 ... 8: {
+    case 1 ... NUM_REGS: {
       stream << "R";
-      stream.width(2);
-      stream << uid;
-      break;
-    }
-    case 9 ... 16: {
-      stream << "A";
       stream.width(2);
       stream << uid;
       break;
@@ -63,6 +57,10 @@ TempsMap::putTemp(const uint32_t & uid, const bool & ignoreDups)
     }
     case USER_STACK_POINTER+1: {
       stream << "USP";
+      break;
+    }
+    case FRAME_POINTER+1: {
+      stream << "FP";
       break;
     }
     case STATE_REGISTER+1: {

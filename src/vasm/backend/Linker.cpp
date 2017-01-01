@@ -235,7 +235,7 @@ Linker::assignValuesToLocalLabels()
             argument.content.regNum = STACK_POINTER;
             argument.displacement = (int32_t)(func->getStackedDataSize() - localLabel->offset);
           } else {
-            argument.content.regNum = REG_ADDR_7;
+            argument.content.regNum = FRAME_POINTER;
             argument.displacement = - int32_t(localLabel->offset);
           }
         }
@@ -308,7 +308,7 @@ Linker::assignValuesToLabels()
             argument.content.regNum = STACK_POINTER;
             argument.displacement = (int32_t)(func->getStackedDataSize() - localLabel->offset);
           } else {
-            argument.content.regNum = REG_ADDR_7;
+            argument.content.regNum = FRAME_POINTER;
             argument.displacement = - int32_t(localLabel->offset);
           }
         }

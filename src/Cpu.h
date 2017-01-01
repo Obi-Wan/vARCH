@@ -43,9 +43,6 @@ private:
   /** The raw_data registers */
   int32_t regsData[NUM_REGS];
 
-  /** The addresses registers */
-  int32_t regsAddr[NUM_REGS];
-
   struct StackPointers {
   private:
     Cpu & cpu;
@@ -75,6 +72,11 @@ private:
   /** The program counter */
   uint32_t progCounter;
 
+  /** The frame pointer
+   * It is a dedicated register, so that we don't need to "waste" a normal
+   * register for this */
+  uint32_t framePointer;
+
   //|//////////////////////|//
   //|  Functions           |//
   //|//////////////////////|//
@@ -99,11 +101,11 @@ private:
   uint32_t storeArg(const int32_t & value, const ArgRecord & argRecord);
 
   /* Regs functions */
-  const int32_t getReg(const int32_t& arg);
-  void setReg(const int32_t& arg, const int32_t& value);
+  const int32_t getReg(const int32_t & arg);
+  void setReg(const int32_t & arg, const int32_t & value);
 
   void resetRegs() throw() {
-    for(size_t i = 0; i < NUM_REGS; i++) regsData[i] = regsAddr[i] = 0;
+    for(size_t i = 0; i < NUM_REGS; i++) { regsData[i] = 0; }
   }
 
   /* Flags functions */

@@ -16,7 +16,7 @@ void
 Frame::init(asm_function & function)
 {
   // Adding registers to TempsMap
-  for(uint32_t numReg = 0; numReg < NUM_REGS * 2; numReg++)
+  for(uint32_t numReg = 0; numReg < NUM_REGS; numReg++)
   {
     const uint32_t shiftedTempUID = shiftArgUID( numReg, false);
     tempsMap.putTemp( shiftedTempUID, true);
@@ -237,7 +237,7 @@ Frame::updateFramePointer(asm_function & function)
 
     asm_immediate_arg * regArg2 = new asm_immediate_arg(function.position);
     regArg2->type = REG;
-    regArg2->content.regNum = REG_ADDR_7;
+    regArg2->content.regNum = FRAME_POINTER;
     regArg2->isTemp = false;
 
     stmt->addArg(regArg2);
@@ -254,7 +254,7 @@ Frame::updateFramePointer(asm_function & function)
 
       asm_immediate_arg * regArg = new asm_immediate_arg(function.position);
       regArg->type = REG;
-      regArg->content.regNum = REG_ADDR_7;
+      regArg->content.regNum = FRAME_POINTER;
       regArg->isTemp = false;
 
       stmt->addArg(regArg);
@@ -267,7 +267,7 @@ Frame::updateFramePointer(asm_function & function)
 
       asm_immediate_arg * regArg = new asm_immediate_arg(function.position);
       regArg->type = REG;
-      regArg->content.regNum = REG_ADDR_7;
+      regArg->content.regNum = FRAME_POINTER;
       regArg->isTemp = false;
 
       stmt->addArg(regArg);

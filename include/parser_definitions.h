@@ -210,7 +210,7 @@ public:
   RegsTypeSet()
     : DoubleCorrelationMap(0, "No such register: ", "No such enum register arg: ")
   {
-    assignNew("R0", NUM_REGS * DATA_REGS);
+    assignNew("R0", 0);
     assignNew("R1");
     assignNew("R2");
     assignNew("R3");
@@ -219,17 +219,9 @@ public:
     assignNew("R6");
     assignNew("R7");
 
-    assignNew("A0", NUM_REGS * ADDR_REGS);
-    assignNew("A1");
-    assignNew("A2");
-    assignNew("A3");
-    assignNew("A4");
-    assignNew("A5");
-    assignNew("A6");
-    assignNew("A7");
-
-    assignNew("SP", NUM_REGS * SPECIAL_REGS);
+    assignNew("SP", NUM_REGS);
     assignNew("USP");
+    assignNew("FP");
 
     assignNew("SR");
     assignNew("PC");

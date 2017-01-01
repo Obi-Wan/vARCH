@@ -101,32 +101,36 @@ Cpu::init() {
 void
 Cpu::dumpRegistersAndMemory() const
 {
-//  int old = setFlags(F_SVISOR);
-
-  printf("Data Registers:");
-  for(size_t i = 0; i < NUM_REGS; i++) {
-    printf(" %d", regsData[i]);
+  printf(" Registers:\n");
+  const size_t half_regs = NUM_REGS / 2 + NUM_REGS % 2;
+  for(size_t curr_reg = 0; curr_reg < half_regs; curr_reg++) {
+    printf("  R%d: %08d", curr_reg, regsData[curr_reg]);
+    const size_t other_reg = half_regs + curr_reg;
+    if (other_reg < NUM_REGS) {
+      printf("  R%d: %08d", other_reg, regsData[other_reg]);
+    }
+    printf("\n");
   }
-  
-  printf("\nAddress Registers:");
-  for (size_t i = 0; i < NUM_REGS; i++) {
-    printf(" %d", regsAddr[i]);
-  }
+  printf("\n");
 
-  printf("\nProgram Counter: %d\n",progCounter);
+  printf("     PC: 0x%08X (%04u)\n", progCounter, progCounter);
+  printf("     FP: 0x%08X (%04u)\n", framePointer, framePointer);
+  printf("    uSP: 0x%08X (%04u)\n", usrStackPointer, usrStackPointer);
+  printf("    sSP: 0x%08X (%04u)\n", supStackPointer, supStackPointer);
 
-  printf( "Stack pointers, user: %04u \tsupervisor: %04u\n",
-          sP.getUStackPointer(), sP.getStackPointer());
-
+  printf("\n");
+  printf(" Memory:    Address | Data\n");
+  const uint32_t min_addr = std::min(usrStackPointer, supStackPointer);
+  const uint32_t max_addr = memoryController.getMaxMem() - (1 << BYTE4);
   DoubleWord doubleWord;
-  for(uint32_t i = 0; i < memoryController.getMaxMem(); i += 4) {
-    memoryController.loadFromMem(doubleWord, i, BYTE4);
-    printf( "Mem: %04lu Data: %12d (31b %4d, %4d, %4d, %4d 0b)\n", (uint64_t) i,
-            doubleWord.u32,
-            doubleWord.u8[3], doubleWord.u8[2], doubleWord.u8[1], doubleWord.u8[0]);
+  for(uint32_t addr = max_addr; addr >= min_addr; SCALE_ADDR_DECREM(addr, BYTE4))
+  {
+    memoryController.loadFromMem(doubleWord, addr, BYTE4);
+    printf("%8s 0x%08X | %04d (0x%08X) (31b %4d, %4d, %4d, %4d 0b)\n", "", addr,
+           doubleWord.u32, doubleWord.u32,
+           doubleWord.u8[3], doubleWord.u8[2], doubleWord.u8[1], doubleWord.u8[0]);
   }
-
-//  restoreFlags(old);
+  printf(" -------------------+------------------\n");
 }
 
 StdInstructions
@@ -777,14 +781,14 @@ inline const int32_t
 Cpu::getReg(const int32_t & regPos)
 {
   switch (regPos) {
-    case REG_DATA_0 ... REG_DATA_7:
-      return regsData[ regPos % NUM_REGS ];
-    case REG_ADDR_0 ... REG_ADDR_7:
-      return regsAddr[ regPos % NUM_REGS ];
+    case REG_DATA_0 ... (NUM_REGS-1):
+      return regsData[regPos];
     case USER_STACK_POINTER:
       return (flags & F_SVISOR) ? sP.getUStackPointer() : sP.getStackPointer();
     case STACK_POINTER:
       return sP.getStackPointer();
+    case FRAME_POINTER:
+      return framePointer;
     case STATE_REGISTER:
       return flags;
     case PROGRAM_COUNTER:
@@ -801,11 +805,8 @@ inline void
 Cpu::setReg(const int32_t & regPos, const int32_t & value)
 {
   switch (regPos) {
-    case REG_DATA_0 ... REG_DATA_7:
-      regsData[ regPos % NUM_REGS ] = value;
-      break;
-    case REG_ADDR_0 ... REG_ADDR_7:
-      regsAddr[ regPos % NUM_REGS ] = value;
+    case REG_DATA_0 ... (NUM_REGS-1):
+      regsData[regPos] = value;
       break;
     case USER_STACK_POINTER:
       if (flags & F_SVISOR) {
@@ -816,6 +817,9 @@ Cpu::setReg(const int32_t & regPos, const int32_t & value)
       break;
     case STACK_POINTER:
       sP.setStackPointer(value);
+      break;
+    case FRAME_POINTER:
+      framePointer = value;
       break;
     case STATE_REGISTER:
       if (flags & F_SVISOR) {
