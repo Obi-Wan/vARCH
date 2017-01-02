@@ -137,18 +137,6 @@ public:
     assignNew("IFMOJ");
     assignNew("IFLEJ");
     assignNew("IFMEJ");
-
-    /* Float instructions */
-    assignNew("FNOT", N_ARGS_ONE + FLOAT);
-    assignNew("FINCR");
-    assignNew("FDECR");
-
-    assignNew("FMOV", N_ARGS_TWO + FLOAT);
-    assignNew("FADD");
-    assignNew("FMULT");
-    assignNew("FSUB");
-    assignNew("FDIV");
-    assignNew("FQUOT");
   }
 
   const uint32_t & getInstr(const char * name) const { return getItem(name); }
