@@ -84,6 +84,7 @@ public:
     assignNew("RETEX", N_ARGS_ZERO + SYSTEM);
     assignNew("REBOOT");
     assignNew("HALT");
+    assignNew("DUMP");
 
     assignNew("NOT", N_ARGS_ONE);
     assignNew("INCR");

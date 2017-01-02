@@ -186,6 +186,9 @@ Cpu::instructsZeroArg(const uint32_t & instr, int32_t & newFlags)
       progCounter = popFromStack();
       newFlags = popFromStack();
       break;
+    case DUMP:
+      this->dumpRegistersAndMemory();
+      break;
 
     default:
       throw WrongInstructionException();

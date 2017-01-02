@@ -182,6 +182,7 @@ enum StdInstructions : uint32_t {
   RETEX         = N_ARGS_ZERO + SYSTEM,
   REBOOT,
   HALT,
+  DUMP,
 
   NOT           = N_ARGS_ONE,
   INCR,
