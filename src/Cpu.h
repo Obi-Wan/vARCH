@@ -35,10 +35,10 @@ private:
   int32_t flags;
 
   /** link to the chipset */
-  Chipset& chipset;
+  Chipset & chipset;
 
   /** the MMU */
-  Mmu& memoryController;
+  Mmu & memoryController;
 
   /** The raw_data registers */
   int32_t regsData[NUM_REGS];

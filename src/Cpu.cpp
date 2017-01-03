@@ -89,35 +89,56 @@ void
 Cpu::dumpRegistersAndMemory() const
 {
   printf(" Registers:\n");
-  const size_t half_regs = NUM_REGS / 2 + NUM_REGS % 2;
-  for(size_t curr_reg = 0; curr_reg < half_regs; curr_reg++) {
-    printf("  R%d: %08d", curr_reg, regsData[curr_reg]);
-    const size_t other_reg = half_regs + curr_reg;
+  const uint32_t half_regs = NUM_REGS / 2 + NUM_REGS % 2;
+  for(uint32_t curr_reg = 0; curr_reg < half_regs; curr_reg++) {
+    printf("  R%02u: %08d (0x%08X)", curr_reg, regsData[curr_reg],
+        static_cast<uint32_t>(regsData[curr_reg]));
+    const uint32_t other_reg = half_regs + curr_reg;
     if (other_reg < NUM_REGS) {
-      printf("  R%d: %08d", other_reg, regsData[other_reg]);
+      printf("  R%02u: %08d (0x%08X)", other_reg, regsData[other_reg],
+          static_cast<uint32_t>(regsData[other_reg]));
     }
     printf("\n");
   }
   printf("\n");
 
-  printf("     PC: 0x%08X (%04u)\n", progCounter, progCounter);
-  printf("     FP: 0x%08X (%04u)\n", framePointer, framePointer);
-  printf("    uSP: 0x%08X (%04u)\n", usrStackPointer, usrStackPointer);
+  printf("     PC: 0x%08X (%04u)", progCounter, progCounter);
   printf("    sSP: 0x%08X (%04u)\n", supStackPointer, supStackPointer);
+  printf("     FP: 0x%08X (%04u)", framePointer, framePointer);
+  printf("    uSP: 0x%08X (%04u)\n", usrStackPointer, usrStackPointer);
 
   printf("\n");
-  printf(" Memory:    Address | Data\n");
+  printf("         T S I E N Z O C\n");
+  printf("     SR: %u %u %u %u %u %u %u %u\n", bool(F_TRACE & flags),
+      bool(F_SVISOR & flags), bool(F_INT_MASK & flags), bool(F_EXTEND & flags),
+      bool(F_NEGATIVE & flags), bool(F_ZERO & flags), bool(F_OVERFLOW & flags),
+      bool(F_CARRY & flags));
+
+  printf("\n");
+  printf(" Memory:         Address    | Data\n");
+  printf(" ---------------------------+------------------\n");
   const uint32_t min_addr = std::min(usrStackPointer, supStackPointer);
   const uint32_t max_addr = memoryController.getMaxMem() - (1 << BYTE4);
   DoubleWord doubleWord;
   for(uint32_t addr = max_addr; addr >= min_addr; SCALE_ADDR_DECREM(addr, BYTE4))
   {
+    std::string ptr_descr = "";
+    if (addr == framePointer) ptr_descr += "FP";
+    if (addr == supStackPointer) {
+      if (ptr_descr.empty()) ptr_descr += "sSP";
+      else ptr_descr += ", sSP";
+    }
+    if (addr == usrStackPointer) {
+      if (ptr_descr.empty()) ptr_descr += "uSP";
+      else ptr_descr += ", uSP";
+    }
+    if (!ptr_descr.empty()) ptr_descr += " ->";
     memoryController.loadFromMem(doubleWord, addr, BYTE4);
-    printf("%8s 0x%08X | %04d (0x%08X) (31b %4d, %4d, %4d, %4d 0b)\n", "", addr,
-           doubleWord.u32, doubleWord.u32,
-           doubleWord.u8[3], doubleWord.u8[2], doubleWord.u8[1], doubleWord.u8[0]);
+    printf(" %15s 0x%08X | %04d (0x%08X) (31b %4d, %4d, %4d, %4d 0b)\n",
+        ptr_descr.c_str(), addr, doubleWord.u32, doubleWord.u32,
+        doubleWord.u8[3], doubleWord.u8[2], doubleWord.u8[1], doubleWord.u8[0]);
   }
-  printf(" -------------------+------------------\n");
+  printf(" ---------------------------+------------------\n");
 }
 
 StdInstructions
