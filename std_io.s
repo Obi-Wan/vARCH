@@ -16,7 +16,7 @@
 .test:
   EQ,     (%T001) : .i8_t,    .endChar : .i16_t
   IFJ,    @exit
-  PUT,    (%T001)+ : .i8_t,   .printCmd
+  PUT,    (%T001)+ : .i8_t,   .printCmd1
   INCR,   %T002
   JMP,    @test
 .exit:

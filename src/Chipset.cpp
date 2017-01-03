@@ -13,7 +13,7 @@
 #include "Chipset.h"
 #include "CharTerminal.h"
 
-Chipset::Chipset(const uint32_t& _maxMem, DoubleWord * _mainMem)
+Chipset::Chipset(const uint32_t & _maxMem, DoubleWord * _mainMem)
     : cpu(* (new Cpu(*this,*(new Mmu(_maxMem,_mainMem))))), mainMem(_mainMem)
     , maxMem(_maxMem)
 {
@@ -21,6 +21,7 @@ Chipset::Chipset(const uint32_t& _maxMem, DoubleWord * _mainMem)
   initMem();
   cpu.dumpRegistersAndMemory();
 
+  components.push_back( this );
   // then we add a charterminal
   components.push_back( new CharTerminal() );
 }
@@ -30,6 +31,27 @@ Chipset::loadBiosFromFile(const char * file)
 {
   BinLoader handler(file);
   return handler.getBinFileContent();
+}
+
+void
+Chipset::put(const ComponentRequestType & request, const int32_t & arg) {
+  switch (request) {
+    case ComponentRequestType::COMP_TYPE:
+      simpleUnsafeResponse = static_cast<int32_t>(ComponentType::COMP_CHAR);
+      dataReady = DataReady::DATA_READY_TRUE;
+      break;
+    case ComponentRequestType::COMP_GET_FEATURES:
+      switch (arg) {
+        case 0:
+          simpleUnsafeResponse = static_cast<int32_t>(this->components.size());
+          break;
+      }
+      dataReady = DataReady::DATA_READY_TRUE;
+      break;
+    case ComponentRequestType::COMP_SET_FEATURES:
+      dataReady = DataReady::DATA_READY_ERROR;
+      break;
+  }
 }
 
 void
@@ -126,7 +148,7 @@ Chipset::singlePutToComponent(const uint32_t & signal, const uint32_t & arg)
 }
 
 int32_t
-Chipset::singleGetFromComponent(const uint32_t& numComp)
+Chipset::singleGetFromComponent(const uint32_t & numComp)
 {
   if ( ((size_t)numComp) > components.size())
   {
